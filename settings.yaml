@@ -1,0 +1,102 @@
+IndexHedgingEngineService:
+  Name: Default
+
+  WalletId:
+    settings-key: IndexHedgingEngineService-WalletId
+
+  Db:
+    DataConnectionString:
+      settings-key: IndexHedgingEngineService-DataConnectionString
+      types:
+      - AzureTableStorage
+
+    LogsConnectionString:
+      settings-key: IndexHedgingEngineService-LogsConnectionString
+      types:
+      - AzureTableStorage
+
+  Rabbit:
+    Subscribers:
+      LykkeTrades:
+        ConnectionString:
+          settings-key: RabbitMQConnectionString
+          types:
+          - RabbitMq
+        Exchange:
+          settings-key: MatchingEngineSpotEventsExchange
+        Queue:
+          settings-key: IndexHedgingEngineService-Rabbit-Subscribers-Queue
+
+      LykkeHedgeTrades:
+        ConnectionString:
+          settings-key: RabbitMQConnectionString
+          types:
+          - RabbitMq
+        Exchange:
+          settings-key: MatchingEngineSpotEventsExchange
+        Queue:
+          settings-key: IndexHedgingEngineService-Rabbit-Subscribers-LykkeHedgeTrades-Queue
+
+      LykkeOrderBooks:
+        ConnectionString:
+          settings-key: IndexHedgingEngineService-Rabbit-Subscribers-LykkeOrderBooks-ConnectionString
+          types:
+          - RabbitMq
+        Exchange:
+          settings-key: IndexHedgingEngineService-Rabbit-Subscribers-LykkeOrderBooks-Exchange
+        Queue:
+          settings-key: IndexHedgingEngineService-Rabbit-Subscribers-Queue
+
+      IndexTickPrices:
+        ConnectionString:
+          settings-key: RawPriceRabbitMq
+          types:
+          - RabbitMq
+        Exchange:
+          settings-key: CryptoIndexService-PublishingTickPricesExchangeName
+        Queue:
+          settings-key: IndexHedgingEngineService-Rabbit-Subscribers-Queue
+
+      Quotes:
+        ConnectionString:
+          settings-key: RawPriceRabbitMq
+          types:
+          - RabbitMq
+        Exchanges:
+          settings-key: IndexHedgingEngineService-Rabbit-Subscribers-Quotes-Exchanges
+          types:
+          - JsonArray
+        Queue:
+          settings-key: IndexHedgingEngineService-Rabbit-Subscribers-Queue
+
+AssetsServiceClient:
+  ServiceUrl:
+    settings-key: AssetsServiceUrl
+
+BalancesServiceClient:
+  ServiceUrl:
+    settings-key: BalancesServiceUrl
+
+ExchangeOperationsServiceClient:
+  ServiceUrl:
+    settings-key: ExchangeOperationsServiceUrl
+
+MatchingEngineClient:
+  IpEndpoint:
+    Port:
+      settings-key: MatchingEngine-Port
+    Host:
+      settings-key: MatchingEngine-Host
+
+SlackNotifications:
+  AzureQueue:
+    ConnectionString:
+      settings-key: SlackNotificationsConnString
+      types:
+      - AzureTableStorage
+    QueueName:
+      settings-key: SlackQueueName
+
+MonitoringServiceClient:
+  MonitoringServiceUrl:
+    settings-key: MonitoringServiceUrl
