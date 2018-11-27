@@ -39,7 +39,7 @@ namespace Lykke.Service.IndexHedgingEngine
             CreateMap<Funding, FundingModel>(MemberList.Source);
 
             CreateMap<HedgeLimitOrder, HedgeLimitOrderModel>(MemberList.Source)
-                .ForSourceMember(src => src.Context, opt => opt.Ignore());
+                .ForSourceMember(src => src.Context, opt => opt.DoNotValidate());
 
             CreateMap<IndexPrice, IndexPriceModel>(MemberList.Source);
             CreateMap<AssetWeight, AssetWeightModel>(MemberList.Source);
@@ -48,15 +48,15 @@ namespace Lykke.Service.IndexHedgingEngine
             CreateMap<IndexSettingsModel, IndexSettings>(MemberList.Destination);
 
             CreateMap<LimitOrder, LimitOrderModel>(MemberList.Source);
-            
+
             CreateMap<OrderBook, OrderBookModel>(MemberList.Source);
 
             CreateMap<Position, PositionModel>(MemberList.Source);
-            
+
             CreateMap<AssetInvestment, AssetInvestmentModel>(MemberList.Destination);
-            
+
             CreateMap<IndexReport, IndexReportModel>(MemberList.Source);
-            
+
             CreateMap<PositionReport, PositionReportModel>(MemberList.Source);
 
             CreateMap<HedgeSettings, HedgeSettingsModel>(MemberList.Source);
@@ -70,7 +70,7 @@ namespace Lykke.Service.IndexHedgingEngine
             CreateMap<InternalTrade, InternalTradeModel>(MemberList.Source);
 
             CreateMap<VirtualTrade, VirtualTradeModel>(MemberList.Source);
-            
+
             CreateMap<Quote, QuoteModel>(MemberList.Destination);
         }
     }
