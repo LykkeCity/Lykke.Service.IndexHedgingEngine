@@ -132,6 +132,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     continue;
                 }
 
+                if (assetInvestment.IsDisabled)
+                    continue;
+
                 decimal volume = Math.Round(Math.Abs(assetInvestment.RemainingAmount / assetInvestment.Quote.Mid),
                     assetHedgeSettings.VolumeAccuracy);
 

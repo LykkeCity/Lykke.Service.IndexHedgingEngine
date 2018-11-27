@@ -33,6 +33,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         public decimal RemainingAmount { get; set; }
         
         /// <summary>
+        /// Indicates that the asset is disabled in index.
+        /// </summary>
+        public bool IsDisabled { get; set; }
+        
+        /// <summary>
         /// A collection of asset investment in indices.
         /// </summary>
         public IReadOnlyCollection<AssetIndexInvestment> Indices { get; set; }
