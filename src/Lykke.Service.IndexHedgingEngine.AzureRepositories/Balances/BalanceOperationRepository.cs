@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -20,7 +20,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances
         }
 
         public async Task<IReadOnlyCollection<BalanceOperation>> GetAsync(DateTime startDate, DateTime endDate,
-            int limit)
+            int limit, string assetId, BalanceOperationType balanceOperationType)
         {
             string filter = TableQuery.CombineFilters(
                 TableQuery.GenerateFilterCondition(nameof(AzureTableEntity.PartitionKey), QueryComparisons.GreaterThan,
@@ -28,6 +28,20 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances
                 TableOperators.And,
                 TableQuery.GenerateFilterCondition(nameof(AzureTableEntity.PartitionKey), QueryComparisons.LessThan,
                     GetPartitionKey(startDate.Date.AddMilliseconds(-1))));
+
+            if (!string.IsNullOrEmpty(assetId))
+            {
+                filter = TableQuery.CombineFilters(filter, TableOperators.And,
+                    TableQuery.GenerateFilterCondition(nameof(BalanceOperationEntity.AssetId),
+                        QueryComparisons.Equal, assetId));
+            }
+
+            if (balanceOperationType != BalanceOperationType.None)
+            {
+                filter = TableQuery.CombineFilters(filter, TableOperators.And,
+                    TableQuery.GenerateFilterCondition(nameof(BalanceOperationEntity.Type),
+                        QueryComparisons.Equal, balanceOperationType.ToString()));
+            }
 
             var query = new TableQuery<BalanceOperationEntity>().Where(filter).Take(limit);
 
