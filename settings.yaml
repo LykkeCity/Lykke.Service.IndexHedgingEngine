@@ -15,11 +15,25 @@ IndexHedgingEngineService:
       types:
       - AzureTableStorage
 
+    LykkeTradesMeQueuesDeduplicatorConnectionString:
+      settings-key: IndexHedgingEngineService-LykkeTradesMeQueuesDeduplicatorConnectionString
+      types:
+      - AzureTableStorage
+
+    LykkeHedgeTradesMeQueuesDeduplicatorConnectionString:
+      settings-key: IndexHedgingEngineService-LykkeHedgeTradesMeQueuesDeduplicatorConnectionString
+      types:
+      - AzureTableStorage
+
   Rabbit:
     Subscribers:
       LykkeTrades:
         ConnectionString:
-          settings-key: RabbitMQConnectionString
+          settings-key: MatchingEngineRabbitMqConnectionString
+          types:
+          - RabbitMq
+        AlternateConnectionString:
+          settings-key: AlternateMatchingEngineRabbitMqConnectionString
           types:
           - RabbitMq
         Exchange:
@@ -29,7 +43,11 @@ IndexHedgingEngineService:
 
       LykkeHedgeTrades:
         ConnectionString:
-          settings-key: RabbitMQConnectionString
+          settings-key: MatchingEngineRabbitMqConnectionString
+          types:
+          - RabbitMq
+        AlternateConnectionString:
+          settings-key: AlternateMatchingEngineRabbitMqConnectionString
           types:
           - RabbitMq
         Exchange:

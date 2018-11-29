@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Net;
 using Autofac;
+using Autofac.Features.AttributeFilters;
 using JetBrains.Annotations;
 using Lykke.Sdk;
 using Lykke.Service.Assets.Client;
@@ -43,7 +44,12 @@ namespace Lykke.Service.IndexHedgingEngine
                     })
                     .ToArray()));
             builder.RegisterModule(new AzureRepositories.AutofacModule(
-                _settings.Nested(o => o.IndexHedgingEngineService.Db.DataConnectionString)));
+                _settings.Nested(o => o.IndexHedgingEngineService.Db
+                    .DataConnectionString),
+                _settings.Nested(o => o.IndexHedgingEngineService.Db
+                    .LykkeTradesMeQueuesDeduplicatorConnectionString),
+                _settings.Nested(o => o.IndexHedgingEngineService.Db
+                    .LykkeHedgeTradesMeQueuesDeduplicatorConnectionString)));
 
             builder.RegisterType<StartupManager>()
                 .As<IStartupManager>();
@@ -61,13 +67,15 @@ namespace Lykke.Service.IndexHedgingEngine
                 .WithParameter(TypedParameter.From(_settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers
                     .LykkeTrades))
                 .AsSelf()
-                .SingleInstance();
+                .SingleInstance()
+                .WithAttributeFiltering();
 
             builder.RegisterType<LykkeHedgeTradeSubscriber>()
                 .WithParameter(TypedParameter.From(_settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers
                     .LykkeHedgeTrades))
                 .AsSelf()
-                .SingleInstance();
+                .SingleInstance()
+                .WithAttributeFiltering();
             
             builder.RegisterType<LykkeOrderBookSubscriber>()
                 .WithParameter(TypedParameter.From(_settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers
