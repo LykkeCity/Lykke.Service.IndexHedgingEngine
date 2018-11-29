@@ -21,10 +21,10 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// <param name="endDate">The end date of period.</param>
         /// <param name="limit">The maximum number of operations.</param>
         /// <param name="assetId">The asset identifier.</param>
-        /// <param name="balanceOperationType">The type of a balance operation.</param>
+        /// <param name="type">The type of a balance operation.</param>
         /// <returns>A collection of balance operations.</returns>
         [Get("/api/Audit/balances")]
         Task<IReadOnlyCollection<BalanceOperationModel>> GetBalanceOperationsAsync(DateTime startDate, DateTime endDate,
-            int limit, string assetId, BalanceOperationType balanceOperationType);
+            int limit, string assetId, BalanceOperationType type);
     }
 }

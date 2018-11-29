@@ -26,12 +26,12 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         [HttpGet("balances")]
         [ProducesResponseType(typeof(IReadOnlyCollection<BalanceOperationModel>), (int) HttpStatusCode.OK)]
         public async Task<IReadOnlyCollection<BalanceOperationModel>> GetBalanceOperationsAsync(DateTime startDate,
-            DateTime endDate, int limit, string assetId, BalanceOperationType balanceOperationType)
+            DateTime endDate, int limit, string assetId, BalanceOperationType type)
         {
-            var operationType = Mapper.Map<Domain.BalanceOperationType>(balanceOperationType) ;
+            var modelType = Mapper.Map<Domain.BalanceOperationType>(type) ;
 
             IReadOnlyCollection<Domain.BalanceOperation> balanceOperations =
-                await _balanceOperationService.GetAsync(startDate, endDate, limit, assetId, operationType);
+                await _balanceOperationService.GetAsync(startDate, endDate, limit, assetId, modelType);
 
             return Mapper.Map<List<BalanceOperationModel>>(balanceOperations);
         }
