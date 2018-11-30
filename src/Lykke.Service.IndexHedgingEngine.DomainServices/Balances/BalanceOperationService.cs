@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -18,9 +18,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
             _balanceOperationRepository = balanceOperationRepository;
         }
 
-        public Task<IReadOnlyCollection<BalanceOperation>> GetAsync(DateTime startDate, DateTime endDate, int limit)
+        public Task<IReadOnlyCollection<BalanceOperation>> GetAsync(DateTime startDate, DateTime endDate, int limit,
+            string assetId, BalanceOperationType balanceOperationType)
         {
-            return _balanceOperationRepository.GetAsync(startDate, endDate, limit);
+            return _balanceOperationRepository.GetAsync(startDate, endDate, limit, assetId, balanceOperationType);
         }
 
         public Task AddAsync(BalanceOperation balanceOperation)
