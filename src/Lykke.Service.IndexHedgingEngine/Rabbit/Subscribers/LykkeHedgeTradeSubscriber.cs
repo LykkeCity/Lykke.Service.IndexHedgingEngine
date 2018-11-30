@@ -49,7 +49,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
         public void Start()
         {
             var settings = RabbitMqSubscriptionSettings
-                .ForSubscriber(_settings.ConnectionString, _settings.Exchange, $"{_settings.Queue}-hedge")
+                .ForSubscriber(_settings.ConnectionString, _settings.Exchange, $"{_settings.Queue}")
                 .UseRoutingKey(((int) MessageType.Order).ToString())
                 .MakeDurable();
 
