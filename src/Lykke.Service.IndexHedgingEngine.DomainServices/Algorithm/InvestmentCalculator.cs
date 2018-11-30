@@ -24,6 +24,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                 var indexInvestments = new List<AssetIndexInvestment>();
 
+                bool isDisabled = false;
+
                 foreach (IndexSettings indexSettings in indicesSettings)
                 {
                     Token token = tokens.SingleOrDefault(o => o.AssetId == indexSettings.AssetId);
@@ -38,8 +40,13 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                     decimal price = indexPrice?.Value ?? 0;
 
-                    assetInvestment += openVolume * price * weight;
+                    decimal amount = openVolume * price * weight;
+                    
+                    assetInvestment += amount;
 
+                    isDisabled = isDisabled ||
+                                 (index?.Weights.SingleOrDefault(o => o.AssetId == assetId)?.IsDisabled ?? false);
+                    
                     indexInvestments.Add(new AssetIndexInvestment
                     {
                         Name = indexSettings.Name,
@@ -47,7 +54,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                         Price = price,
                         OpenVolume = token?.OpenVolume ?? 0,
                         OppositeVolume = token?.OppositeVolume ?? 0,
-                        Amount = assetInvestment,
+                        Amount = amount,
                         Weight = weight
                     });
                 }
@@ -69,6 +76,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                     Quote = quote,
                     TotalAmount = indexInvestments.Sum(o => o.Amount),
                     RemainingAmount = remainingVolume,
+                    IsDisabled = isDisabled,
                     Indices = indexInvestments
                 });
             }

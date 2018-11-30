@@ -88,7 +88,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                     PnL = volumeInUsd.HasValue ? currentPosition.OppositeVolume + volumeInUsd : null,
                     HedgeLimitOrder = hedgeLimitOrder,
                     AssetInvestment = assetInvestment,
-                    Error = GetError(assetHedgeSettings, assetInvestment?.Quote)
+                    Error = GetError(assetHedgeSettings, assetInvestment?.Quote, assetInvestment?.IsDisabled ?? false)
                 });
 
                 IEnumerable<Position> otherPositions = positions
@@ -111,7 +111,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                         PnL = volumeInUsd.HasValue ? position.OppositeVolume + volumeInUsd : null,
                         HedgeLimitOrder = null,
                         AssetInvestment = null,
-                        Error = GetError(null, quote)
+                        Error = GetError(null, quote, false)
                     });
                 }
             }
@@ -129,7 +129,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
             return null;
         }
 
-        private static string GetError(AssetHedgeSettings assetHedgeSettings, Quote quote)
+        private static string GetError(AssetHedgeSettings assetHedgeSettings, Quote quote, bool isDisabled)
         {
             if (assetHedgeSettings != null)
             {
@@ -143,6 +143,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
             if (quote == null)
                 return "No quote";
 
+            if (isDisabled)
+                return "Asset disabled";
+            
             return null;
         }
     }

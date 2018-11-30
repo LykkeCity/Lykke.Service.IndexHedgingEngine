@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac.Features.AttributeFilters;
 using Common;
 using Common.Log;
 using Lykke.Common.Log;
@@ -23,6 +24,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
         private readonly SubscriberSettings _settings;
         private readonly ISettingsService _settingsService;
         private readonly IInternalHedgeTradeHandler _internalHedgeTradeHandler;
+        private readonly IDeduplicator _deduplicator;
         private readonly ILogFactory _logFactory;
         private readonly ILog _log;
 
@@ -32,11 +34,13 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
             SubscriberSettings settings,
             ISettingsService settingsService,
             IInternalHedgeTradeHandler internalHedgeTradeHandler,
+            [KeyFilter("LykkeHedgeTradesDeduplicator")] IDeduplicator deduplicator,
             ILogFactory logFactory)
         {
             _settings = settings;
             _settingsService = settingsService;
             _internalHedgeTradeHandler = internalHedgeTradeHandler;
+            _deduplicator = deduplicator;
             _logFactory = logFactory;
 
             _log = logFactory.CreateLog(this);
@@ -45,7 +49,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
         public void Start()
         {
             var settings = RabbitMqSubscriptionSettings
-                .ForSubscriber(_settings.ConnectionString, _settings.Exchange, $"{_settings.Queue}-hedge")
+                .ForSubscriber(_settings.ConnectionString, _settings.Exchange, $"{_settings.Queue}")
                 .UseRoutingKey(((int) MessageType.Order).ToString())
                 .MakeDurable();
 
@@ -57,7 +61,8 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                 .SetMessageReadStrategy(new MessageReadQueueStrategy())
                 .Subscribe(ProcessMessageAsync)
                 .CreateDefaultBinding()
-                .SetDeduplicator(new InMemoryDeduplcator(TimeSpan.FromDays(1)))
+                .SetAlternativeExchange(_settings.AlternateConnectionString)
+                .SetDeduplicator(_deduplicator)
                 .Start();
         }
 

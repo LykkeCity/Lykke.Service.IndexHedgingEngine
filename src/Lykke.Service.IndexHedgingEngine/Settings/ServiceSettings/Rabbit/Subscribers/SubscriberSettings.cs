@@ -9,6 +9,10 @@ namespace Lykke.Service.IndexHedgingEngine.Settings.ServiceSettings.Rabbit.Subsc
         [AmqpCheck]
         public string ConnectionString { get; set; }
 
+        [Optional]
+        [AmqpCheck]
+        public string AlternateConnectionString { get; set; }
+
         public string Exchange { get; set; }
 
         public string Queue { get; set; }

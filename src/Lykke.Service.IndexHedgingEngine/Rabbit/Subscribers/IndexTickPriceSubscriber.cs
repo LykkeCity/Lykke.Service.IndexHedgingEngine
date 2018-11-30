@@ -64,7 +64,9 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
             try
             {
                 var index = new Index(message.AssetPair, message.Ask, message.Source, message.Timestamp,
-                    message.Weights.Select(o => new AssetWeight(o.Key, o.Value)).ToArray());
+                    message.AssetsInfo
+                        .Select(o => new AssetWeight(o.AssetId, o.Weight, o.Price, o.IsDisabled))
+                        .ToArray());
 
                 _indexHandler.HandleIndexAsync(index);
             }
