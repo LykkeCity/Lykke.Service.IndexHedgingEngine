@@ -153,9 +153,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
                 Token token = (await GetAsync(assetId)).Copy();
                 
                 if (tradeType == TradeType.Sell)
-                    token.DecreaseVolume(volume, oppositeVolume);
-                else
                     token.IncreaseVolume(volume, oppositeVolume);
+                else
+                    token.DecreaseVolume(volume, oppositeVolume);
                 
                 await _tokenRepository.InsertOrReplaceAsync(token);
 
