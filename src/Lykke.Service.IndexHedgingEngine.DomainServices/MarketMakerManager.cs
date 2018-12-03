@@ -59,8 +59,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             try
             {
-                bool updateRequired = false;
-
                 IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
 
                 foreach (InternalTrade internalTrade in internalTrades)
@@ -74,13 +72,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
                         await _tokenService.UpdateVolumeAsync(indexSettings.AssetId, internalTrade.Type,
                             internalTrade.Volume, internalTrade.OppositeVolume);
-
-                        updateRequired = true;
                     }
                 }
-
-                if (updateRequired)
-                    await _hedgeService.ExecuteAsync();
             }
             finally
             {
