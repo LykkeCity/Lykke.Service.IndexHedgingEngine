@@ -61,7 +61,7 @@ IndexHedgingEngineService:
           types:
           - RabbitMq
         Exchange:
-          settings-key: MatchingEngineSpotEventsExchange
+          settings-key: IndexHedgingEngineService-Rabbit-Subscribers-LykkeOrderBooks-Exchange
         Queue:
           settings-key: IndexHedgingEngineService-Rabbit-Subscribers-Queue
 
