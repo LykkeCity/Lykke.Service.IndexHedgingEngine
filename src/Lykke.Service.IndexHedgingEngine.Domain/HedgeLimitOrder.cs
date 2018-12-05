@@ -16,7 +16,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The name of the exchange.
         /// </summary>
         public string Exchange { get; set; }
-        
+
         /// <summary>
         /// The identifier of asset.
         /// </summary>
@@ -31,6 +31,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The limit order type.
         /// </summary>
         public LimitOrderType Type { get; set; }
+
+        /// <summary>
+        /// The type of the limit order price.
+        /// </summary>
+        public PriceType PriceType { get; set; }
 
         /// <summary>
         /// The creation time of limit order.
@@ -53,7 +58,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         public string Context { get; set; }
 
         public static HedgeLimitOrder Create(string exchange, string assetId, string assetPairId,
-            LimitOrderType limitOrderType, decimal price, decimal volume)
+            LimitOrderType limitOrderType, PriceType priceType, decimal price, decimal volume)
         {
             return new HedgeLimitOrder
             {
@@ -62,6 +67,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
                 AssetId = assetId,
                 AssetPairId = assetPairId,
                 Type = limitOrderType,
+                PriceType = priceType,
                 Timestamp = DateTime.UtcNow,
                 Price = price,
                 Volume = volume

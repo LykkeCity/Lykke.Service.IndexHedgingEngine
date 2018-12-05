@@ -43,6 +43,12 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.HedgeLimitOrders
         public DateTime Timestamp { get; set; }
 
         /// <summary>
+        /// The type of the limit order price.
+        /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
+        public PriceType PriceType { get; set; }
+        
+        /// <summary>
         /// The limit order price.
         /// </summary>
         public decimal Price { get; set; }

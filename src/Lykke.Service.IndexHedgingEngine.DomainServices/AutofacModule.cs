@@ -167,6 +167,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             builder.RegisterType<RateService>()
                 .As<IRateService>()
                 .SingleInstance();
+            
+            builder.RegisterType<RiskExposureReportService>()
+                .As<IRiskExposureReportService>()
+                .SingleInstance();
         }
     }
 }

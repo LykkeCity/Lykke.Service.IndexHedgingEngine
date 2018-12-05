@@ -41,12 +41,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                     decimal price = indexPrice?.Value ?? 0;
 
                     decimal amount = openVolume * price * weight;
-                    
+
                     assetInvestment += amount;
 
                     isDisabled = isDisabled ||
                                  (index?.Weights.SingleOrDefault(o => o.AssetId == assetId)?.IsDisabled ?? false);
-                    
+
                     indexInvestments.Add(new AssetIndexInvestment
                     {
                         Name = indexSettings.Name,
@@ -66,7 +66,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                 assetPrices.TryGetValue(assetId, out Quote quote);
 
                 decimal assetPrice = quote?.Mid ?? 0;
-                
+
                 decimal remainingVolume = assetVolume * assetPrice - assetInvestment;
 
                 assetsInvestments.Add(new AssetInvestment
@@ -83,13 +83,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
             return assetsInvestments;
         }
-        
-        public static decimal CalculateHedgeLimitOrderPrice(Quote quote, decimal investments, HedgeSettings hedgeSettings)
+
+        public static decimal CalculateHedgeLimitOrderPrice(Quote quote, decimal investments,
+            HedgeSettings hedgeSettings, out PriceType priceType)
         {
             decimal absoluteInvestments = Math.Abs(investments);
 
             if (hedgeSettings.ThresholdDown < absoluteInvestments && absoluteInvestments < hedgeSettings.ThresholdUp)
             {
+                priceType = PriceType.Limit;
+                
                 return investments > 0
                     ? quote.Ask
                     : quote.Bid;
@@ -97,6 +100,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
             if (hedgeSettings.ThresholdUp <= absoluteInvestments)
             {
+                priceType = PriceType.Market;
+                
                 return investments > 0
                     ? quote.Bid * (1 - hedgeSettings.MarketOrderMarkup)
                     : quote.Ask * (1 + hedgeSettings.MarketOrderMarkup);

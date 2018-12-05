@@ -142,12 +142,15 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     ? LimitOrderType.Sell
                     : LimitOrderType.Buy;
 
+                PriceType priceType;
+                
                 decimal price = InvestmentCalculator.CalculateHedgeLimitOrderPrice(assetInvestment.Quote,
-                        assetInvestment.RemainingAmount, hedgeSettings)
+                        assetInvestment.RemainingAmount, hedgeSettings, out priceType)
                     .TruncateDecimalPlaces(assetHedgeSettings.PriceAccuracy, limitOrderType == LimitOrderType.Sell);
 
                 HedgeLimitOrder hedgeLimitOrder = HedgeLimitOrder.Create(assetHedgeSettings.Exchange,
-                    assetHedgeSettings.AssetId, assetHedgeSettings.AssetPairId, limitOrderType, price, volume);
+                    assetHedgeSettings.AssetId, assetHedgeSettings.AssetPairId, limitOrderType, priceType, price,
+                    volume);
 
                 hedgeLimitOrder.Context = assetInvestment.ToJson();
 
