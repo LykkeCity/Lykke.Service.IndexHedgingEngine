@@ -9,21 +9,32 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
     public class VirtualExchangeAdapter : IExchangeAdapter
     {
         private readonly IPositionService _positionService;
+        private readonly IHedgeLimitOrderService _hedgeLimitOrderService;
         private readonly IVirtualTradeService _virtualTradeService;
 
-        public VirtualExchangeAdapter(IPositionService positionService, IVirtualTradeService virtualTradeService)
+        public VirtualExchangeAdapter(
+            IPositionService positionService,
+            IHedgeLimitOrderService hedgeLimitOrderService,
+            IVirtualTradeService virtualTradeService)
         {
             _positionService = positionService;
+            _hedgeLimitOrderService = hedgeLimitOrderService;
             _virtualTradeService = virtualTradeService;
         }
 
         public string Name => ExchangeNames.Virtual;
 
         public Task CancelLimitOrderAsync(string assetId)
-            => Task.CompletedTask;
+        {
+            _hedgeLimitOrderService.Close(assetId);
+            
+            return Task.CompletedTask;
+        }
 
         public async Task ExecuteLimitOrderAsync(HedgeLimitOrder hedgeLimitOrder)
         {
+            await _hedgeLimitOrderService.AddAsync(hedgeLimitOrder);
+            
             VirtualTrade virtualTrade = VirtualTrade.Create(
                 hedgeLimitOrder.Id,
                 hedgeLimitOrder.AssetId,
@@ -39,6 +50,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
                 virtualTrade.OppositeVolume);
 
             await _virtualTradeService.AddAsync(virtualTrade);
+            
+            _hedgeLimitOrderService.Close(hedgeLimitOrder.AssetId);
         }
     }
 }

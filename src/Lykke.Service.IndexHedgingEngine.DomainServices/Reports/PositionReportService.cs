@@ -136,7 +136,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                 if (!assetHedgeSettings.Approved)
                     return "Asset hedge settings not approved";
 
-                if (!assetHedgeSettings.Enabled)
+                if (assetHedgeSettings.Mode == AssetHedgeMode.Disabled)
                     return "Asset hedging disabled";
             }
 

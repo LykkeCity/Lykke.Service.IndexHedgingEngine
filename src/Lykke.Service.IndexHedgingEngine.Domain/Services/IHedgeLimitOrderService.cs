@@ -9,6 +9,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task<HedgeLimitOrder> GetByIdAsync(string hedgeLimitOrderId);
 
-        Task UpdateAsync(IReadOnlyCollection<HedgeLimitOrder> hedgeLimitOrders);
+        Task AddAsync(HedgeLimitOrder hedgeLimitOrder);
+
+        void Close(string assetId);
     }
 }

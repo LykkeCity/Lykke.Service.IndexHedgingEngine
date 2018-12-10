@@ -23,7 +23,8 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// Closes position by current quote.
         /// </summary>
         /// <param name="model">The model that describes a close operation.</param>
-        [Post("/api/Positions")]
-        Task CloseAsync([Body] ClosePositionOperationModel model);
+        /// <param name="userId">The identifier of the user who closed position.</param>
+        [Post("/api/Positions/close")]
+        Task CloseAsync([Body] ClosePositionOperationModel model, string userId);
     }
 }

@@ -46,6 +46,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
         {
             _hedgeLimitOrders[hedgeLimitOrder.AssetId] = hedgeLimitOrder;
 
+            await _hedgeLimitOrderService.AddAsync(hedgeLimitOrder);
+            
             await _lykkeExchangeService.ApplyAsync(hedgeLimitOrder.AssetPairId, new[]
             {
                 new LimitOrder
@@ -75,6 +77,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
 
                 await _positionService.UpdateAsync(hedgeLimitOrder.AssetId, Name, internalTrade.Type,
                     internalTrade.Volume, internalTrade.OppositeVolume);
+                
+                hedgeLimitOrder.ExecuteVolume(internalTrade.Volume);
+                
+                if(hedgeLimitOrder.Volume <= 0)
+                    _hedgeLimitOrderService.Close(hedgeLimitOrder.AssetId);
             }
         }
     }

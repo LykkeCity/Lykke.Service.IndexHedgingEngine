@@ -42,7 +42,7 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         /// <inheritdoc/>
         /// <response code="200">A collection of exchange settings.</response>
         [HttpGet("exchanges")]
-        [ProducesResponseType(typeof(AccountSettingsModel), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ExchangeSettingsModel), (int) HttpStatusCode.OK)]
         public async Task<IReadOnlyCollection<ExchangeSettingsModel>> GetExchangesAsync()
         {
             IReadOnlyCollection<ExchangeSettings> exchangeSettings = await _settingsService.GetExchangesAsync();

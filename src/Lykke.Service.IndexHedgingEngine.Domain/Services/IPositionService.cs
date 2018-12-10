@@ -9,8 +9,6 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task<Position> GetByAssetIdAsync(string assetId, string exchange);
 
-        Task CloseAsync(string assetId, string exchange);
-
         Task UpdateAsync(string assetId, string exchange, TradeType tradeType, decimal volume, decimal oppositeVolume);
 
         Task DeleteAsync(string assetId, string exchange);

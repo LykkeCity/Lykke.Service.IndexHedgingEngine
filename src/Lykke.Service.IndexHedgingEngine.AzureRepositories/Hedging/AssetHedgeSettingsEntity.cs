@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
 using Lykke.AzureStorage.Tables.Entity.ValueTypesMerging;
+using Lykke.Service.IndexHedgingEngine.Domain;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
 {
@@ -13,7 +14,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
         private int _volumeAccuracy;
         private int _priceAccuracy;
         private bool _approved;
-        private bool _enabled;
+        private AssetHedgeMode _mode;
 
         public AssetHedgeSettingsEntity()
         {
@@ -83,14 +84,14 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
             }
         }
 
-        public bool Enabled
+        public AssetHedgeMode Mode
         {
-            get => _enabled;
+            get => _mode == AssetHedgeMode.None ? AssetHedgeMode.Disabled : _mode;
             set
             {
-                if (_enabled != value)
+                if (_mode != value)
                 {
-                    _enabled = value;
+                    _mode = value;
                     MarkValueTypePropertyAsDirty();
                 }
             }
