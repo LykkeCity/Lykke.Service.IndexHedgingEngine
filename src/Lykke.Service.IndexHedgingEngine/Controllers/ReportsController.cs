@@ -1,12 +1,19 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Lykke.Service.IndexHedgingEngine.Client.Api;
+using Lykke.Service.IndexHedgingEngine.Client.Models;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Reports;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Balances;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Hedging;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Indices;
+using Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Positions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.IndexHedgingEngine.Controllers
@@ -16,13 +23,16 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
     {
         private readonly IPositionReportService _positionReportService;
         private readonly IIndexReportService _indexReportService;
+        private readonly IRiskExposureReportService _riskExposureReportService;
 
         public ReportsController(
             IPositionReportService positionReportService,
-            IIndexReportService indexReportService)
+            IIndexReportService indexReportService,
+            IRiskExposureReportService riskExposureReportService)
         {
             _positionReportService = positionReportService;
             _indexReportService = indexReportService;
+            _riskExposureReportService = riskExposureReportService;
         }
 
         /// <inheritdoc/>
@@ -69,6 +79,17 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             IReadOnlyCollection<IndexReport> indexReports = await _indexReportService.GetAsync();
 
             return Mapper.Map<IndexReportModel[]>(indexReports);
+        }
+        
+        /// <inheritdoc/>
+        /// <response code="200">A risk exposure report.</response>
+        [HttpGet("riskexposure")]
+        [ProducesResponseType(typeof(RiskExposureReportModel), (int) HttpStatusCode.OK)]
+        public async Task<RiskExposureReportModel> GetRiskExposureReportsAsync()
+        {
+            RiskExposureReport riskExposureReport = await _riskExposureReportService.GetAsync();
+
+            return Mapper.Map<RiskExposureReportModel>(riskExposureReport);
         }
     }
 }

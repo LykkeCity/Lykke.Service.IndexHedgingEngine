@@ -39,5 +39,12 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// <returns>A collection of of index reports.</returns>
         [Get("/api/Reports/indices")]
         Task<IReadOnlyCollection<IndexReportModel>> GetIndexReportsAsync();
+        
+        /// <summary>
+        /// Returns risk exposure report.
+        /// </summary>
+        /// <returns>A risk exposure report.</returns>
+        [Get("/api/Reports/riskexposure")]
+        Task<RiskExposureReportModel> GetRiskExposureReportsAsync();
     }
 }

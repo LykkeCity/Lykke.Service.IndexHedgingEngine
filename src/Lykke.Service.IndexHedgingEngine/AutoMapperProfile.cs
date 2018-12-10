@@ -72,6 +72,12 @@ namespace Lykke.Service.IndexHedgingEngine
             CreateMap<VirtualTrade, VirtualTradeModel>(MemberList.Source);
 
             CreateMap<Quote, QuoteModel>(MemberList.Destination);
+            
+            CreateMap<AssetDelta, AssetDeltaModel>(MemberList.Destination);
+            CreateMap<InstrumentDeltaReport, InstrumentDeltaReportModel>(MemberList.Destination);
+            CreateMap<RiskExposureReport, RiskExposureReportModel>(MemberList.Destination);
+            CreateMap<TokenReport, TokenReportModel>(MemberList.Destination);
+
         }
     }
 }

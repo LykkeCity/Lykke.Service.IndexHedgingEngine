@@ -15,6 +15,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders
         private DateTime _date;
         private decimal _price;
         private decimal _volume;
+        private PriceType _priceType;
 
         public HedgeLimitOrderEntity()
         {
@@ -29,7 +30,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders
         public string Id { get; set; }
 
         public string Exchange { get; set; }
-        
+
         public string AssetId { get; set; }
 
         public string AssetPairId { get; set; }
@@ -60,6 +61,19 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders
             }
         }
 
+        public PriceType PriceType
+        {
+            get => _priceType == PriceType.None ? PriceType.Limit : _priceType;
+            set
+            {
+                if (_priceType != value)
+                {
+                    _priceType = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
         public decimal Price
         {
             get => _price;
@@ -85,7 +99,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders
                 }
             }
         }
-        
+
         public string Context { get; set; }
     }
 }

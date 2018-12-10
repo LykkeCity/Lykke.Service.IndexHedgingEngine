@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace Lykke.Service.IndexHedgingEngine.Client.Models.IndexPrices
+namespace Lykke.Service.IndexHedgingEngine.Client.Models
 {
     /// <summary>
     /// Represents an asset weight in index.
