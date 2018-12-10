@@ -9,6 +9,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task<AssetHedgeSettings> GetByAssetIdAsync(string assetId);
 
+        Task<AssetHedgeSettings> GetByAssetIdAsync(string assetId, string exchange);
+        
         Task<AssetHedgeSettings> EnsureAsync(string assetId);
 
         Task AddAsync(AssetHedgeSettings assetHedgeSettings);

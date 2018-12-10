@@ -57,6 +57,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// </summary>
         public string Context { get; set; }
 
+        public void ExecuteVolume(decimal volume)
+        {
+            Volume -= volume;
+        }
+
         public static HedgeLimitOrder Create(string exchange, string assetId, string assetPairId,
             LimitOrderType limitOrderType, PriceType priceType, decimal price, decimal volume)
         {

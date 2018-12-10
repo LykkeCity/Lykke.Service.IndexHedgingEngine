@@ -38,14 +38,14 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         public int PriceAccuracy { get; set; }
 
         /// <summary>
-        /// Indicates that the asset hedge settings was approved after auto creation.
+        /// Returns <c>false</c> if asset hedge settings created automatically and indicates that the user should update default settings.
         /// </summary>
         public bool Approved { get; set; }
 
         /// <summary>
-        /// Indicates that the asset hedge settings enabled.
+        /// The asset hedging mode.
         /// </summary>
-        public bool Enabled { get; set; }
+        public AssetHedgeMode Mode { get; set; }
 
         public void Update(AssetHedgeSettings assetHedgeSettings)
         {
@@ -54,7 +54,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
             MinVolume = assetHedgeSettings.MinVolume;
             VolumeAccuracy = assetHedgeSettings.VolumeAccuracy;
             PriceAccuracy = assetHedgeSettings.PriceAccuracy;
-            Enabled = assetHedgeSettings.Enabled;
+            Mode = assetHedgeSettings.Mode;
         }
 
         public void Approve()
@@ -73,7 +73,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
                 VolumeAccuracy = 0,
                 PriceAccuracy = 0,
                 Approved = false,
-                Enabled = false
+                Mode = AssetHedgeMode.Disabled
             };
         }
     }

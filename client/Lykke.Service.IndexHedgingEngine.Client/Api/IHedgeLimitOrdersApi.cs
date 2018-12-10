@@ -18,5 +18,21 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// <returns>A collection of hedge limit orders.</returns>
         [Get("/api/HedgeLimitOrders")]
         Task<IReadOnlyCollection<HedgeLimitOrderModel>> GetAllAsync();
+
+        /// <summary>
+        /// Creates hedge limit order.
+        /// </summary>
+        /// <param name="model">The model that describes hedge limit order creation details.</param>
+        /// <param name="userId">The identifier of the user who created hedge limit order.</param>
+        [Post("/api/HedgeLimitOrders/create")]
+        Task CreateAsync([Body] HedgeLimitOrderCreateModel model, string userId);
+        
+        /// <summary>
+        /// Creates hedge limit order.
+        /// </summary>
+        /// <param name="model">The model that describes hedge limit order cancellation details.</param>
+        /// <param name="userId">The identifier of the user who cancel hedge limit order.</param>
+        [Post("/api/HedgeLimitOrders/cancel")]
+        Task CancelAsync([Body] HedgeLimitOrderCancelModel model, string userId);
     }
 }

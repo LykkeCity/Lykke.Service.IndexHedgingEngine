@@ -14,17 +14,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Positions
     public class PositionService : IPositionService
     {
         private readonly IPositionRepository _positionRepository;
-        private readonly IRateService _rateService;
         private readonly ILog _log;
         private readonly InMemoryCache<Position> _cache;
 
         public PositionService(
             IPositionRepository positionRepository,
-            IRateService rateService,
             ILogFactory logFactory)
         {
             _positionRepository = positionRepository;
-            _rateService = rateService;
             _log = logFactory.CreateLog(this);
             _cache = new InMemoryCache<Position>(GetKey, false);
         }
@@ -48,24 +45,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Positions
             IReadOnlyCollection<Position> positions = await GetAllAsync();
 
             return positions.SingleOrDefault(o => o.AssetId == assetId && o.Exchange == exchange);
-        }
-
-        public async Task CloseAsync(string assetId, string exchange)
-        {
-            Position position = await GetByAssetIdAsync(assetId, exchange);
-
-            if (position == null)
-                throw new EntityNotFoundException();
-
-            decimal rate = _rateService.GetRateInUsd(position.AssetId, position.Exchange);
-
-            position.Close(rate);
-
-            await _positionRepository.UpdateAsync(position);
-
-            _cache.Set(position);
-
-            _log.InfoWithDetails("Position closed", position);
         }
 
         public async Task UpdateAsync(string assetId, string exchange, TradeType tradeType, decimal volume,

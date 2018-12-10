@@ -1,4 +1,6 @@
 using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Lykke.Service.IndexHedgingEngine.Client.Models.AssetHedgeSettings
 {
@@ -39,13 +41,14 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.AssetHedgeSettings
         public int PriceAccuracy { get; set; }
 
         /// <summary>
-        /// Indicates that the asset hedge settings was approved after auto creation.
+        /// Returns <c>false</c> if asset hedge settings created automatically and indicates that the user should update default settings.
         /// </summary>
         public bool Approved { get; set; }
 
         /// <summary>
-        /// Indicates that the asset hedge settings enabled.
+        /// The asset hedging mode.
         /// </summary>
-        public bool Enabled { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public AssetHedgeMode Mode { get; set; }
     }
 }
