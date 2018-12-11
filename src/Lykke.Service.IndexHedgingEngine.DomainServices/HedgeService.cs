@@ -204,7 +204,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 AssetHedgeSettings assetHedgeSettings =
                     await _assetHedgeSettingsService.EnsureAsync(assetInvestment.AssetId);
 
-                if (assetHedgeSettings.Mode != AssetHedgeMode.Auto || assetHedgeSettings.Mode != AssetHedgeMode.Idle)
+                if (assetHedgeSettings.Mode != AssetHedgeMode.Auto && assetHedgeSettings.Mode != AssetHedgeMode.Idle)
                     continue;
 
                 if (assetInvestment.Quote == null)
@@ -254,15 +254,24 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 if (_exchangeAdapters.TryGetValue(assetHedgeSettings.Exchange, out IExchangeAdapter exchangeAdapter))
                 {
                     if (hedgeLimitOrder == null)
-                        await exchangeAdapter.CancelLimitOrderAsync(assetId);
-                    else if (assetHedgeSettings.Mode != AssetHedgeMode.Manual)
-                        await exchangeAdapter.ExecuteLimitOrderAsync(hedgeLimitOrder);
+                    {
+                        if (assetHedgeSettings.Mode != AssetHedgeMode.Manual)
+                            await exchangeAdapter.CancelLimitOrderAsync(assetId);
+                    }
+                    else
+                    {
+                        if (assetHedgeSettings.Mode == AssetHedgeMode.Auto)
+                            await exchangeAdapter.ExecuteLimitOrderAsync(hedgeLimitOrder);
+                    }
                 }
-                else if (hedgeLimitOrder != null)
+                else
                 {
-                    _log.WarningWithDetails("There is no exchange provider", new {assetHedgeSettings, hedgeLimitOrder});
-
-                    // TODO: send health issue
+                    if (hedgeLimitOrder != null)
+                    {
+                        _log.WarningWithDetails("There is no exchange provider",
+                            new {assetHedgeSettings, hedgeLimitOrder});
+                        // TODO: send health issue
+                    }
                 }
             }
         }
