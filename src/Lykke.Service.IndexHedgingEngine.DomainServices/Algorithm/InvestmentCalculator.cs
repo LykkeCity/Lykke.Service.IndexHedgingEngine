@@ -38,7 +38,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                     decimal openVolume = token?.OpenVolume ?? 0;
 
-                    decimal price = indexPrice?.Value ?? 0;
+                    decimal price = indexPrice?.Price ?? 0;
 
                     decimal amount = openVolume * price * weight;
 
