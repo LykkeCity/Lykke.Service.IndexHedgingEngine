@@ -22,16 +22,13 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
     {
         private readonly IReloadingManager<string> _connectionString;
         private readonly IReloadingManager<string> _lykkeTradesDeduplicatorConnectionString;
-        private readonly IReloadingManager<string> _lykkeHedgeTradesDeduplicatorConnectionString;
 
         public AutofacModule(
             IReloadingManager<string> connectionString,
-            IReloadingManager<string> lykkeTradesDeduplicatorConnectionString,
-            IReloadingManager<string> lykkeHedgeTradesDeduplicatorConnectionString)
+            IReloadingManager<string> lykkeTradesDeduplicatorConnectionString)
         {
             _connectionString = connectionString;
             _lykkeTradesDeduplicatorConnectionString = lykkeTradesDeduplicatorConnectionString;
-            _lykkeHedgeTradesDeduplicatorConnectionString = lykkeHedgeTradesDeduplicatorConnectionString;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -133,13 +130,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
             builder.Register(container => new AzureStorageDeduplicator(
                     AzureTableStorage<DuplicateEntity>.Create(_lykkeTradesDeduplicatorConnectionString,
                         "LykkeTradesDeduplicator", container.Resolve<ILogFactory>())))
-                .Named<IDeduplicator>("LykkeTradesDeduplicator")
-                .SingleInstance();
-
-            builder.Register(container => new AzureStorageDeduplicator(
-                    AzureTableStorage<DuplicateEntity>.Create(_lykkeHedgeTradesDeduplicatorConnectionString,
-                        "LykkeHedgeTradesDeduplicator", container.Resolve<ILogFactory>())))
-                .Named<IDeduplicator>("LykkeHedgeTradesDeduplicator")
+                .As<IDeduplicator>()
                 .SingleInstance();
         }
     }

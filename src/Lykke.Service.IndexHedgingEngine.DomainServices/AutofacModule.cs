@@ -61,7 +61,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             builder.RegisterType<LykkeExchangeAdapter>()
                 .As<IExchangeAdapter>()
-                .As<IInternalHedgeTradeHandler>()
+                .As<IInternalTradeHandler>()
                 .SingleInstance();
 
             builder.RegisterType<AssetHedgeSettingsService>()

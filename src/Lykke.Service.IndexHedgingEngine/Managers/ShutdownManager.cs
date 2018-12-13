@@ -10,7 +10,6 @@ namespace Lykke.Service.IndexHedgingEngine.Managers
     public class ShutdownManager : IShutdownManager
     {
         private readonly LykkeTradeSubscriber _lykkeTradeSubscriber;
-        private readonly LykkeHedgeTradeSubscriber _lykkeHedgeTradeSubscriber;
         private readonly LykkeOrderBookSubscriber _lykkeOrderBookSubscriber;
         private readonly IndexTickPriceSubscriber _indexTickPriceSubscriber;
         private readonly LykkeBalancesTimer _lykkeBalancesTimer;
@@ -18,14 +17,12 @@ namespace Lykke.Service.IndexHedgingEngine.Managers
 
         public ShutdownManager(
             LykkeTradeSubscriber lykkeTradeSubscriber,
-            LykkeHedgeTradeSubscriber lykkeHedgeTradeSubscriber,
             LykkeOrderBookSubscriber lykkeOrderBookSubscriber,
             IndexTickPriceSubscriber indexTickPriceSubscriber,
             LykkeBalancesTimer lykkeBalancesTimer,
             QuoteSubscriber[] quoteSubscribers)
         {
             _lykkeTradeSubscriber = lykkeTradeSubscriber;
-            _lykkeHedgeTradeSubscriber = lykkeHedgeTradeSubscriber;
             _lykkeOrderBookSubscriber = lykkeOrderBookSubscriber;
             _indexTickPriceSubscriber = indexTickPriceSubscriber;
             _lykkeBalancesTimer = lykkeBalancesTimer;
@@ -37,8 +34,6 @@ namespace Lykke.Service.IndexHedgingEngine.Managers
             _indexTickPriceSubscriber.Stop();
 
             _lykkeOrderBookSubscriber.Stop();
-
-            _lykkeHedgeTradeSubscriber.Stop();
 
             _lykkeTradeSubscriber.Stop();
 

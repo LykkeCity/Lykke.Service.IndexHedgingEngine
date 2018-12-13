@@ -7,9 +7,7 @@ namespace Lykke.Service.IndexHedgingEngine.Settings.ServiceSettings.Rabbit.Subsc
     public class RabbitSubscribers
     {
         public SubscriberSettings LykkeTrades { get; set; }
-        
-        public SubscriberSettings LykkeHedgeTrades { get; set; }
-        
+
         public SubscriberSettings LykkeOrderBooks { get; set; }
         
         public SubscriberSettings IndexTickPrices { get; set; }

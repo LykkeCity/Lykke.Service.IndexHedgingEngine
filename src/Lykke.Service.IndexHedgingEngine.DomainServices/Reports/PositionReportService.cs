@@ -88,7 +88,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                     PnL = volumeInUsd.HasValue ? currentPosition.OppositeVolume + volumeInUsd : null,
                     HedgeLimitOrder = hedgeLimitOrder,
                     AssetInvestment = assetInvestment,
-                    Error = GetError(assetHedgeSettings, assetInvestment?.Quote, assetInvestment?.IsDisabled ?? false)
+                    Error = ValidateAssetHedgeSettings(assetHedgeSettings)
+                            ?? ValidateInvestments(assetInvestment)
+                            ?? ValidateQuote(assetInvestment?.Quote)
                 });
 
                 IEnumerable<Position> otherPositions = positions
@@ -111,7 +113,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                         PnL = volumeInUsd.HasValue ? position.OppositeVolume + volumeInUsd : null,
                         HedgeLimitOrder = null,
                         AssetInvestment = null,
-                        Error = GetError(null, quote, false)
+                        Error = ValidateAssetHedgeSettings(assetHedgeSettings)
+                                ?? ValidateQuote(quote)
                     });
                 }
             }
@@ -129,7 +132,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
             return null;
         }
 
-        private static string GetError(AssetHedgeSettings assetHedgeSettings, Quote quote, bool isDisabled)
+        private static string ValidateAssetHedgeSettings(AssetHedgeSettings assetHedgeSettings)
         {
             if (assetHedgeSettings != null)
             {
@@ -139,13 +142,27 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                 if (assetHedgeSettings.Mode == AssetHedgeMode.Disabled)
                     return "Asset hedging disabled";
             }
+            else
+            {
+                return "No settings";
+            }
+            
+            return null;
+        }
 
+        private static string ValidateInvestments(AssetInvestment assetInvestment)
+        {
+            if(assetInvestment?.IsDisabled == true)
+                return "Asset disabled";
+
+            return null;
+        }
+
+        private static string ValidateQuote(Quote quote)
+        {
             if (quote == null)
                 return "No quote";
 
-            if (isDisabled)
-                return "Asset disabled";
-            
             return null;
         }
     }

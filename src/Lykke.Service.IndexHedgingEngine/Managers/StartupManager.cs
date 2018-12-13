@@ -10,7 +10,6 @@ namespace Lykke.Service.IndexHedgingEngine.Managers
     public class StartupManager : IStartupManager
     {
         private readonly LykkeTradeSubscriber _lykkeTradeSubscriber;
-        private readonly LykkeHedgeTradeSubscriber _lykkeHedgeTradeSubscriber;
         private readonly LykkeOrderBookSubscriber _lykkeOrderBookSubscriber;
         private readonly IndexTickPriceSubscriber _indexTickPriceSubscriber;
         private readonly LykkeBalancesTimer _lykkeBalancesTimer;
@@ -18,14 +17,12 @@ namespace Lykke.Service.IndexHedgingEngine.Managers
 
         public StartupManager(
             LykkeTradeSubscriber lykkeTradeSubscriber,
-            LykkeHedgeTradeSubscriber lykkeHedgeTradeSubscriber,
             LykkeOrderBookSubscriber lykkeOrderBookSubscriber,
             IndexTickPriceSubscriber indexTickPriceSubscriber,
             LykkeBalancesTimer lykkeBalancesTimer,
             QuoteSubscriber[] quoteSubscribers)
         {
             _lykkeTradeSubscriber = lykkeTradeSubscriber;
-            _lykkeHedgeTradeSubscriber = lykkeHedgeTradeSubscriber;
             _lykkeOrderBookSubscriber = lykkeOrderBookSubscriber;
             _indexTickPriceSubscriber = indexTickPriceSubscriber;
             _lykkeBalancesTimer = lykkeBalancesTimer;
@@ -38,8 +35,6 @@ namespace Lykke.Service.IndexHedgingEngine.Managers
             
             _lykkeTradeSubscriber.Start();
 
-            _lykkeHedgeTradeSubscriber.Start();
-            
             _lykkeOrderBookSubscriber.Start();
 
             _indexTickPriceSubscriber.Start();
