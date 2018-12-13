@@ -74,12 +74,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades
 
             Mapper.Map(internalTrade, entity);
 
-            await _storage.InsertAsync(entity);
+            await _storage.InsertOrReplaceAsync(entity);
 
             AzureIndex index = new AzureIndex(GetIndexPartitionKey(internalTrade.Id), GetRowKey(internalTrade.Id),
                 entity);
 
-            await _indicesStorage.InsertAsync(index);
+            await _indicesStorage.InsertOrReplaceAsync(index);
         }
 
         private static string GetPartitionKey(DateTime timestamp)

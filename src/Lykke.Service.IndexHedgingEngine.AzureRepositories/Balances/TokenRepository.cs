@@ -23,7 +23,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances
             return Mapper.Map<Token[]>(entities);
         }
 
-        public async Task InsertOrReplaceAsync(Token token)
+        public async Task SaveAsync(Token token)
         {
             var entity = new TokenEntity(GetPartitionKey(), GetRowKey(token.AssetId));
 

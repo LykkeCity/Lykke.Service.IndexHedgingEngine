@@ -46,8 +46,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
                     return Task.CompletedTask;
                 });
 
-            _tokenServiceMock.Setup(o => o.UpdateVolumeAsync(
-                    It.IsAny<string>(), It.IsAny<TradeType>(), It.IsAny<decimal>(), It.IsAny<decimal>()))
+            _tokenServiceMock.Setup(o => o.UpdateVolumeAsync(It.IsAny<string>(), It.IsAny<InternalTrade>()))
                 .Returns(() => Task.CompletedTask);
             
             _marketMakerManager = new MarketMakerManager(
