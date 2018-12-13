@@ -7,6 +7,6 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Repositories
     {
         Task<IReadOnlyCollection<Token>> GetAllAsync();
 
-        Task InsertOrReplaceAsync(Token token);
+        Task SaveAsync(Token token);
     }
 }

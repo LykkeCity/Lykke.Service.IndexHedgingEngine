@@ -72,7 +72,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
 
             try
             {
-                Token token = (await GetAsync(assetId)).Copy();
+                Token previousToken = await GetAsync(assetId);
+                Token currentToken = previousToken.Copy();
 
                 string walletId = await _settingsService.GetWalletIdAsync();
 
@@ -81,17 +82,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
                 switch (balanceOperationType)
                 {
                     case BalanceOperationType.CashIn:
-                        token.IncreaseAmount(amount);
-                        transactionId =
-                            await _lykkeExchangeService.CashInAsync(walletId, assetId, amount, userId, comment);
+                        currentToken.IncreaseAmount(amount);
+                        transactionId = await _lykkeExchangeService
+                            .CashInAsync(walletId, assetId, amount, userId, comment);
                         break;
 
                     case BalanceOperationType.CashOut:
-                        token.DecreaseAmount(amount);
+                        currentToken.DecreaseAmount(amount);
                         try
                         {
-                            transactionId =
-                                await _lykkeExchangeService.CashOutAsync(walletId, assetId, amount, userId, comment);
+                            transactionId = await _lykkeExchangeService
+                                .CashOutAsync(walletId, assetId, amount, userId, comment);
                         }
                         catch (BalanceOperationException exception) when (exception.Code == 401)
                         {
@@ -105,9 +106,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
                             typeof(BalanceOperationType));
                 }
 
-                await _tokenRepository.InsertOrReplaceAsync(token);
+                await _tokenRepository.SaveAsync(currentToken);
 
-                _cache.Set(token);
+                _cache.Set(currentToken);
 
                 var balanceOperation = new BalanceOperation
                 {
@@ -122,13 +123,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
 
                 await _balanceOperationService.AddAsync(balanceOperation);
 
-                _log.InfoWithDetails("Token amount updated", balanceOperation);
+                _log.InfoWithDetails("Token amount updated", new
+                {
+                    PreviuosToken = previousToken,
+                    CurrentToken = currentToken,
+                    BalanceOperation = balanceOperation
+                });
             }
             catch (Exception exception)
             {
                 _log.WarningWithDetails("An error occurred while updating token", exception, new
                 {
-                    assetId,
+                    AssetId = assetId,
                     Type = balanceOperationType,
                     Amount = amount,
                     Comment = comment,
@@ -143,34 +149,37 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
             }
         }
 
-        public async Task UpdateVolumeAsync(string assetId, TradeType tradeType, decimal volume,
-            decimal oppositeVolume)
+        public async Task UpdateVolumeAsync(string assetId, InternalTrade internalTrade)
         {
             await _semaphore.WaitAsync();
 
             try
             {
-                Token token = (await GetAsync(assetId)).Copy();
-                
-                if (tradeType == TradeType.Sell)
-                    token.IncreaseVolume(volume, oppositeVolume);
+                Token previousToken = await GetAsync(assetId);
+                Token currentToken = previousToken.Copy();
+
+                if (internalTrade.Type == TradeType.Sell)
+                    currentToken.IncreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
                 else
-                    token.DecreaseVolume(volume, oppositeVolume);
-                
-                await _tokenRepository.InsertOrReplaceAsync(token);
+                    currentToken.DecreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
 
-                _cache.Set(token);
+                await _tokenRepository.SaveAsync(currentToken);
 
-                _log.InfoWithDetails("Token open amount updated", token);
+                _cache.Set(currentToken);
+
+                _log.InfoWithDetails("Token open amount updated", new
+                {
+                    PreviuosToken = previousToken,
+                    CurrentToken = currentToken,
+                    InternalTrade = internalTrade
+                });
             }
             catch (Exception exception)
             {
                 _log.WarningWithDetails("An error occurred while updating open tokens", exception, new
                 {
-                    assetId,
-                    tradeType,
-                    volume,
-                    oppositeVolume
+                    AssetId = assetId,
+                    InternalTrade = internalTrade
                 });
 
                 throw;

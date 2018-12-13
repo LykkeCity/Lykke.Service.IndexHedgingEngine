@@ -70,8 +70,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     {
                         await _internalTradeService.RegisterAsync(internalTrade);
 
-                        await _tokenService.UpdateVolumeAsync(indexSettings.AssetId, internalTrade.Type,
-                            internalTrade.Volume, internalTrade.OppositeVolume);
+                        await _tokenService.UpdateVolumeAsync(indexSettings.AssetId, internalTrade);
                     }
                 }
             }
