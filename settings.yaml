@@ -20,11 +20,6 @@ IndexHedgingEngineService:
       types:
       - AzureTableStorage
 
-    LykkeHedgeTradesMeQueuesDeduplicatorConnectionString:
-      settings-key: IndexHedgingEngineService-LykkeHedgeTradesMeQueuesDeduplicatorConnectionString
-      types:
-      - AzureTableStorage
-
   Rabbit:
     Subscribers:
       LykkeTrades:

@@ -8,7 +8,7 @@ using Lykke.Service.IndexHedgingEngine.Domain.Services;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
 {
-    public class LykkeExchangeAdapter : IExchangeAdapter, IInternalHedgeTradeHandler
+    public class LykkeExchangeAdapter : IExchangeAdapter, IInternalTradeHandler
     {
         private readonly IPositionService _positionService;
         private readonly ILykkeTradeService _lykkeTradeService;

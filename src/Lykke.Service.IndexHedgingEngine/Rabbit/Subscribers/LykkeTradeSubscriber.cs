@@ -23,7 +23,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
     {
         private readonly SubscriberSettings _settings;
         private readonly ISettingsService _settingsService;
-        private readonly IInternalTradeHandler _internalTradeHandler;
+        private readonly IInternalTradeHandler[] _internalTradeHandlers;
         private readonly IDeduplicator _deduplicator;
         private readonly ILogFactory _logFactory;
         private readonly ILog _log;
@@ -33,13 +33,13 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
         public LykkeTradeSubscriber(
             SubscriberSettings settings,
             ISettingsService settingsService,
-            IInternalTradeHandler internalTradeHandler,
-            [KeyFilter("LykkeTradesDeduplicator")] IDeduplicator deduplicator,
+            IInternalTradeHandler[] internalTradeHandlers,
+            IDeduplicator deduplicator,
             ILogFactory logFactory)
         {
             _settings = settings;
             _settingsService = settingsService;
-            _internalTradeHandler = internalTradeHandler;
+            _internalTradeHandlers = internalTradeHandlers;
             _deduplicator = deduplicator;
             _logFactory = logFactory;
 
@@ -113,7 +113,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                             internalTrades.AddRange(Map(order));
                     }
 
-                    await _internalTradeHandler.HandleInternalTradesAsync(internalTrades);
+                    await Task.WhenAll(_internalTradeHandlers.Select(o => o.HandleInternalTradesAsync(internalTrades)));
                 }
                 catch (Exception exception)
                 {

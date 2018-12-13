@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Net;
 using Autofac;
-using Autofac.Features.AttributeFilters;
 using JetBrains.Annotations;
 using Lykke.Sdk;
 using Lykke.Service.Assets.Client;
@@ -47,9 +46,7 @@ namespace Lykke.Service.IndexHedgingEngine
                 _settings.Nested(o => o.IndexHedgingEngineService.Db
                     .DataConnectionString),
                 _settings.Nested(o => o.IndexHedgingEngineService.Db
-                    .LykkeTradesMeQueuesDeduplicatorConnectionString),
-                _settings.Nested(o => o.IndexHedgingEngineService.Db
-                    .LykkeHedgeTradesMeQueuesDeduplicatorConnectionString)));
+                    .LykkeTradesMeQueuesDeduplicatorConnectionString)));
 
             builder.RegisterType<StartupManager>()
                 .As<IStartupManager>();
@@ -67,15 +64,7 @@ namespace Lykke.Service.IndexHedgingEngine
                 .WithParameter(TypedParameter.From(_settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers
                     .LykkeTrades))
                 .AsSelf()
-                .SingleInstance()
-                .WithAttributeFiltering();
-
-            builder.RegisterType<LykkeHedgeTradeSubscriber>()
-                .WithParameter(TypedParameter.From(_settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers
-                    .LykkeHedgeTrades))
-                .AsSelf()
-                .SingleInstance()
-                .WithAttributeFiltering();
+                .SingleInstance();
             
             builder.RegisterType<LykkeOrderBookSubscriber>()
                 .WithParameter(TypedParameter.From(_settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers
