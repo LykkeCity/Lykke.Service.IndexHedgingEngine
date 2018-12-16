@@ -27,7 +27,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly ILimitOrderService _limitOrderService;
         private readonly IAssetsReadModelRepository _assetsReadModelRepository;
         private readonly IAssetPairsReadModelRepository _assetPairsReadModelRepository;
-        private readonly IMarketMakerStateService _marketMakerStateService;
+
         private readonly ILog _log;
 
         public MarketMakerService(
@@ -40,7 +40,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             ILimitOrderService limitOrderService,
             IAssetsReadModelRepository assetsReadModelRepository,
             IAssetPairsReadModelRepository assetPairsReadModelRepository,
-            IMarketMakerStateService marketMakerStateService,
             ILogFactory logFactory)
         {
             _indexSettingsService = indexSettingsService;
@@ -51,7 +50,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _limitOrderService = limitOrderService;
             _assetsReadModelRepository = assetsReadModelRepository;
             _assetPairsReadModelRepository = assetPairsReadModelRepository;
-            _marketMakerStateService = marketMakerStateService;
             _log = logFactory.CreateLog(this);
         }
 
@@ -89,7 +87,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 indexPrice,
                 indexSettings
             });
-            
+
             Asset asset = _assetsReadModelRepository.TryGet(indexSettings.AssetId);
             AssetPair assetPair = _assetPairsReadModelRepository.TryGet(indexSettings.AssetPairId);
 
@@ -108,8 +106,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             await ValidateBalanceAsync(limitOrders, assetPair);
 
-            await ValidateMarketMakerStateAsync(limitOrders);
-            
             LimitOrder[] allowedLimitOrders = limitOrders
                 .Where(o => o.Error == LimitOrderError.None)
                 .ToArray();
@@ -120,7 +116,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             await _lykkeExchangeService.ApplyAsync(indexSettings.AssetPairId, allowedLimitOrders);
         }
-        
+
         private async Task ValidateBalanceAsync(IReadOnlyCollection<LimitOrder> limitOrders, AssetPair assetPair)
         {
             Asset baseAsset = _assetsReadModelRepository.TryGet(assetPair.BaseAssetId);
@@ -184,17 +180,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        private async Task ValidateMarketMakerStateAsync(IEnumerable<LimitOrder> limitOrders)
-        {
-            MarketMakerState marketMakerState = await _marketMakerStateService.GetAsync();
-
-            if (marketMakerState.Status != MarketMakerStatus.Active)
-            {
-                foreach (LimitOrder limitOrder in limitOrders.Where(o => o.Error == LimitOrderError.None))
-                    limitOrder.Error = LimitOrderError.Idle;
-            }
-        }
-        
         private static void ValidateMinVolume(IEnumerable<LimitOrder> limitOrders, decimal minVolume)
         {
             foreach (LimitOrder limitOrder in limitOrders.Where(o => o.Error == LimitOrderError.None))

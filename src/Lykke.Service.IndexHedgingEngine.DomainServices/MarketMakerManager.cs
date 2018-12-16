@@ -18,6 +18,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly IInternalTradeService _internalTradeService;
         private readonly IIndexSettingsService _indexSettingsService;
         private readonly ITokenService _tokenService;
+        private readonly IMarketMakerStateService _marketMakerStateService;
 
         public MarketMakerManager(
             IMarketMakerService marketMakerService,
@@ -25,7 +26,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             IIndexService indexService,
             IInternalTradeService internalTradeService,
             IIndexSettingsService indexSettingsService,
-            ITokenService tokenService)
+            ITokenService tokenService,
+            IMarketMakerStateService marketMakerStateService)
         {
             _marketMakerService = marketMakerService;
             _hedgeService = hedgeService;
@@ -33,10 +35,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _internalTradeService = internalTradeService;
             _indexSettingsService = indexSettingsService;
             _tokenService = tokenService;
+            _marketMakerStateService = marketMakerStateService;
         }
 
         public async Task HandleIndexAsync(Index index)
         {
+            MarketMakerState marketMakerState = await _marketMakerStateService.GetAsync();
+
+            if (marketMakerState.Status != MarketMakerStatus.Active)
+                return;
+            
             await _semaphore.WaitAsync();
 
             try
