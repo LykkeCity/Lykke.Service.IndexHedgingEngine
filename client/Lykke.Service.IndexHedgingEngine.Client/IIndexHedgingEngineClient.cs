@@ -20,6 +20,16 @@ namespace Lykke.Service.IndexHedgingEngine.Client
         IAssetLinksApi AssetLinks { get; }
 
         /// <summary>
+        /// Asset pairs API.
+        /// </summary>
+        IAssetPairsApi AssetPairs { get; }
+
+        /// <summary>
+        /// Assets API.
+        /// </summary>
+        IAssetsApi Assets { get; }
+
+        /// <summary>
         /// Audit API.
         /// </summary>
         IAuditApi Audit { get; }

@@ -15,6 +15,8 @@ namespace Lykke.Service.IndexHedgingEngine.Client
         {
             AssetHedgeSettings = httpClientGenerator.Generate<IAssetHedgeSettingsApi>();
             AssetLinks = httpClientGenerator.Generate<IAssetLinksApi>();
+            AssetPairs = httpClientGenerator.Generate<IAssetPairsApi>();
+            Assets = httpClientGenerator.Generate<IAssetsApi>();
             Audit = httpClientGenerator.Generate<IAuditApi>();
             Balances = httpClientGenerator.Generate<IBalancesApi>();
             Funding = httpClientGenerator.Generate<IFundingApi>();
@@ -34,6 +36,12 @@ namespace Lykke.Service.IndexHedgingEngine.Client
 
         /// <inheritdoc/>
         public IAssetLinksApi AssetLinks { get; }
+
+        /// <inheritdoc/>
+        public IAssetPairsApi AssetPairs { get; }
+
+        /// <inheritdoc/>
+        public IAssetsApi Assets { get; }
 
         /// <inheritdoc/>
         public IAuditApi Audit { get; }
