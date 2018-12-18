@@ -69,6 +69,8 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                         .ToArray());
 
                 _indexHandler.HandleIndexAsync(index);
+
+                _log.InfoWithDetails("Index price handled", message);
             }
             catch (Exception exception)
             {

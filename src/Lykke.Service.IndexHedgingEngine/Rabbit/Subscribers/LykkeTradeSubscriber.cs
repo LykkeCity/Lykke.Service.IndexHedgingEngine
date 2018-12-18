@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Autofac.Features.AttributeFilters;
 using Common;
 using Common.Log;
 using Lykke.Common.Log;
@@ -114,6 +113,8 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                     }
 
                     await Task.WhenAll(_internalTradeHandlers.Select(o => o.HandleInternalTradesAsync(internalTrades)));
+
+                    _log.InfoWithDetails("Lykke trades handled", internalTrades);
                 }
                 catch (Exception exception)
                 {
