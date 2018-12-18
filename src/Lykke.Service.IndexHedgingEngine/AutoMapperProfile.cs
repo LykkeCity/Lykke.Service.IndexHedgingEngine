@@ -3,6 +3,8 @@ using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Client.Models;
 using Lykke.Service.IndexHedgingEngine.Client.Models.AssetHedgeSettings;
 using Lykke.Service.IndexHedgingEngine.Client.Models.AssetLinks;
+using Lykke.Service.IndexHedgingEngine.Client.Models.AssetPairs;
+using Lykke.Service.IndexHedgingEngine.Client.Models.Assets;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Audit;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Balances;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Funding;
@@ -30,6 +32,12 @@ namespace Lykke.Service.IndexHedgingEngine
 
             CreateMap<AssetLink, AssetLinkModel>(MemberList.Source);
             CreateMap<AssetLinkModel, AssetLink>(MemberList.Destination);
+
+            CreateMap<AssetPairSettings, AssetPairSettingsModel>(MemberList.Source);
+            CreateMap<AssetPairSettingsModel, AssetPairSettings>(MemberList.Destination);
+
+            CreateMap<AssetSettings, AssetSettingsModel>(MemberList.Source);
+            CreateMap<AssetSettingsModel, AssetSettings>(MemberList.Destination);
 
             CreateMap<BalanceOperation, BalanceOperationModel>(MemberList.Source);
             CreateMap<BalanceOperationModel, BalanceOperation>(MemberList.Destination);
@@ -72,12 +80,11 @@ namespace Lykke.Service.IndexHedgingEngine
             CreateMap<VirtualTrade, VirtualTradeModel>(MemberList.Source);
 
             CreateMap<Quote, QuoteModel>(MemberList.Destination);
-            
+
             CreateMap<AssetDelta, AssetDeltaModel>(MemberList.Destination);
             CreateMap<InstrumentDeltaReport, InstrumentDeltaReportModel>(MemberList.Destination);
             CreateMap<RiskExposureReport, RiskExposureReportModel>(MemberList.Destination);
             CreateMap<TokenReport, TokenReportModel>(MemberList.Destination);
-
         }
     }
 }

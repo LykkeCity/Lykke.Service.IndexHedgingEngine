@@ -10,6 +10,7 @@ using Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Hedging;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Indices;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Instruments;
 using Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Positions;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Reports;
@@ -86,6 +87,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             builder.RegisterType<IndexPriceService>()
                 .As<IIndexPriceService>()
+                .SingleInstance();
+            
+            builder.RegisterType<InstrumentService>()
+                .As<IInstrumentService>()
                 .SingleInstance();
 
             builder.RegisterType<LimitOrderService>()

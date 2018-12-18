@@ -9,6 +9,7 @@ using Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders;
+using Lykke.Service.IndexHedgingEngine.AzureRepositories.Instruments;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Positions;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades;
@@ -67,6 +68,18 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                     AzureTableStorage<IndexSettingsEntity>.Create(_connectionString,
                         "IndexSettings", container.Resolve<ILogFactory>())))
                 .As<IIndexSettingsRepository>()
+                .SingleInstance();
+
+            builder.Register(container => new AssetSettingsRepository(
+                    AzureTableStorage<AssetSettingsEntity>.Create(_connectionString,
+                        "AssetSettings", container.Resolve<ILogFactory>())))
+                .As<IAssetSettingsRepository>()
+                .SingleInstance();
+
+            builder.Register(container => new AssetPairSettingsRepository(
+                    AzureTableStorage<AssetPairSettingsEntity>.Create(_connectionString,
+                        "AssetPairSettings", container.Resolve<ILogFactory>())))
+                .As<IAssetPairSettingsRepository>()
                 .SingleInstance();
 
             builder.Register(container => new HedgeLimitOrderRepository(

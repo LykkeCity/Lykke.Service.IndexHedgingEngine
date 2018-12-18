@@ -4,6 +4,7 @@ using Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders;
+using Lykke.Service.IndexHedgingEngine.AzureRepositories.Instruments;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Positions;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades;
@@ -32,6 +33,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
 
             CreateMap<IndexSettings, IndexSettingsEntity>(MemberList.Source);
             CreateMap<IndexSettingsEntity, IndexSettings>(MemberList.Destination);
+
+            CreateMap<AssetSettings, AssetSettingsEntity>(MemberList.Source);
+            CreateMap<AssetSettingsEntity, AssetSettings>(MemberList.Destination);
+
+            CreateMap<AssetPairSettings, AssetPairSettingsEntity>(MemberList.Source);
+            CreateMap<AssetPairSettingsEntity, AssetPairSettings>(MemberList.Destination);
 
             CreateMap<HedgeLimitOrder, HedgeLimitOrderEntity>(MemberList.Source)
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp));
