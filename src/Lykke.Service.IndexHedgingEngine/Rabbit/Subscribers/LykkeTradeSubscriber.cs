@@ -57,7 +57,6 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                         TimeSpan.FromSeconds(10),
                         next: new DeadQueueErrorHandlingStrategy(_logFactory, settings)))
                 .SetMessageDeserializer(new ProtobufMessageDeserializer<ExecutionEvent>())
-                .SetMessageReadStrategy(new MessageReadQueueStrategy())
                 .Subscribe(ProcessMessageAsync)
                 .CreateDefaultBinding()
                 .SetAlternativeExchange(_settings.AlternateConnectionString)
@@ -86,6 +85,12 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
 
             Order[] orders = message.Orders
                 .Where(o => o.WalletId == walletId)
+                .ToArray();
+
+            if (orders.Any())
+                _log.Info("Lykke trades received", message);
+
+            orders = orders
                 .Where(o => o.Side != OrderSide.UnknownOrderSide)
                 .Where(o => o.Trades?.Count > 0)
                 .ToArray();
