@@ -77,11 +77,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                         currentPosition.Volume);
                 }
 
+                Quote assetQuote;
+
+                if (assetInvestment == null)
+                    assetQuote = _rateService.GetQuoteUsd(assetHedgeSettings.AssetId, assetHedgeSettings.Exchange);
+                else
+                    assetQuote = assetInvestment.Quote;
+
                 positionReports.Add(new PositionReport
                 {
                     AssetId = assetId,
                     Exchange = assetHedgeSettings.Exchange,
-                    Quote = assetInvestment?.Quote,
+                    Quote = assetQuote,
                     Volume = currentPosition?.Volume,
                     VolumeInUsd = volumeInUsd,
                     OppositeVolume = currentPosition?.OppositeVolume,
@@ -90,7 +97,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                     AssetInvestment = assetInvestment,
                     Error = ValidateAssetHedgeSettings(assetHedgeSettings)
                             ?? ValidateInvestments(assetInvestment)
-                            ?? ValidateQuote(assetInvestment?.Quote)
+                            ?? ValidateQuote(assetQuote)
                 });
 
                 IEnumerable<Position> otherPositions = positions
@@ -98,7 +105,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
 
                 foreach (Position position in otherPositions)
                 {
-                    Quote quote = _rateService.GetQuoteUsd(position.AssetId, position.Exchange);
+                    Quote otherPositionQuote = _rateService.GetQuoteUsd(position.AssetId, position.Exchange);
 
                     volumeInUsd = GetVolumeInUsd(position.AssetId, position.Exchange, position.Volume);
 
@@ -106,7 +113,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                     {
                         AssetId = assetId,
                         Exchange = position.Exchange,
-                        Quote = quote,
+                        Quote = otherPositionQuote,
                         Volume = position.Volume,
                         VolumeInUsd = volumeInUsd,
                         OppositeVolume = position.OppositeVolume,
@@ -114,7 +121,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                         HedgeLimitOrder = null,
                         AssetInvestment = null,
                         Error = ValidateAssetHedgeSettings(assetHedgeSettings)
-                                ?? ValidateQuote(quote)
+                                ?? ValidateQuote(otherPositionQuote)
                     });
                 }
             }
