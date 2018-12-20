@@ -55,10 +55,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                 .ToArray();
             
             decimal totalRemainingAmount = investments.Sum(o => o.RemainingAmount);
-            
+
             return new RiskExposureReport
             {
-                UsdCash = totalRemainingAmount,
+                // If remaining amount is negative position in usd should be displayed as positive.
+                UsdCash = -totalRemainingAmount,
                 Indices = GetIndexReports(indicesSettings, indexPrices, tokens),
                 Tokens = GetTokensDelta(indicesSettings, indexPrices, tokens),
                 Assets = GetAssetsDelta(assets, assetHedgeSettings, positions)
