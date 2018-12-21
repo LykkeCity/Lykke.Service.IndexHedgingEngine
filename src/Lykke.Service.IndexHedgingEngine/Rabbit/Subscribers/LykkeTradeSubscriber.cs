@@ -88,7 +88,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                 .ToArray();
 
             if (orders.Any())
-                _log.Info("Lykke trades received", message);
+                _log.InfoWithDetails("Lykke trades received", message);
 
             orders = orders
                 .Where(o => o.Side != OrderSide.UnknownOrderSide)

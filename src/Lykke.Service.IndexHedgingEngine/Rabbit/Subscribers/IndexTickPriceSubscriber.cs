@@ -43,7 +43,6 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
             _subscriber = new RabbitMqSubscriber<IndexTickPrice>(_logFactory, settings,
                     new ResilientErrorHandlingStrategy(_logFactory, settings, TimeSpan.FromSeconds(10)))
                 .SetMessageDeserializer(new JsonMessageDeserializer<IndexTickPrice>())
-                .SetMessageReadStrategy(new MessageReadQueueStrategy())
                 .Subscribe(ProcessMessageAsync)
                 .CreateDefaultBinding()
                 .Start();

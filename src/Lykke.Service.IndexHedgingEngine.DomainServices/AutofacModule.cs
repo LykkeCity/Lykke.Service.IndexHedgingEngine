@@ -77,10 +77,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<IInvestmentService>()
                 .SingleInstance();
 
-            builder.RegisterType<IndexService>()
-                .As<IIndexService>()
-                .SingleInstance();
-
             builder.RegisterType<IndexSettingsService>()
                 .As<IIndexSettingsService>()
                 .SingleInstance();

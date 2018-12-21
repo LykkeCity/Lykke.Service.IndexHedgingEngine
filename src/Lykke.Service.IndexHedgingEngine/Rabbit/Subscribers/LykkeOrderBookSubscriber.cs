@@ -40,12 +40,10 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                 .ForSubscriber(_settings.ConnectionString, _settings.Exchange, _settings.Queue);
 
             settings.DeadLetterExchangeName = null;
-            settings.IsDurable = false;
 
             _subscriber = new RabbitMqSubscriber<LykkeOrderBook>(_logFactory, settings,
                     new ResilientErrorHandlingStrategy(_logFactory, settings, TimeSpan.FromSeconds(10)))
                 .SetMessageDeserializer(new JsonMessageDeserializer<LykkeOrderBook>())
-                .SetMessageReadStrategy(new MessageReadQueueStrategy())
                 .Subscribe(ProcessMessageAsync)
                 .CreateDefaultBinding()
                 .Start();

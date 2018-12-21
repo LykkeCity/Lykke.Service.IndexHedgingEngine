@@ -31,7 +31,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly ILog _log;
 
         public MarketMakerService(
-            IIndexService indexService,
             IIndexSettingsService indexSettingsService,
             IIndexPriceService indexPriceService,
             IBalanceService balanceService,
