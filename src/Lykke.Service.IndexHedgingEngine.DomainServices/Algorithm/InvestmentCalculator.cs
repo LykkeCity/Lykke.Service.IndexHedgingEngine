@@ -11,7 +11,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             IEnumerable<string> assets,
             IReadOnlyCollection<IndexSettings> indicesSettings,
             IReadOnlyCollection<Token> tokens,
-            IReadOnlyCollection<Index> indices,
             IReadOnlyCollection<IndexPrice> indexPrices,
             IReadOnlyCollection<Position> positions,
             IReadOnlyDictionary<string, Quote> assetPrices)
@@ -20,8 +19,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
             foreach (string assetId in assets)
             {
-                decimal assetInvestment = 0;
-
                 var indexInvestments = new List<AssetIndexInvestment>();
 
                 bool isDisabled = false;
@@ -30,28 +27,23 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                 {
                     Token token = tokens.SingleOrDefault(o => o.AssetId == indexSettings.AssetId);
 
-                    Index index = indices.SingleOrDefault(o => o.Name == indexSettings.Name);
+                    IndexPrice indexPrice = indexPrices.Single(o => o.Name == indexSettings.Name);
 
-                    IndexPrice indexPrice = indexPrices.SingleOrDefault(o => o.Name == indexSettings.Name);
+                    AssetWeight assetWeight = indexPrice.Weights.SingleOrDefault(o => o.AssetId == assetId);
 
-                    decimal weight = index?.Weights.SingleOrDefault(o => o.AssetId == assetId)?.Weight ?? 0;
+                    decimal weight = assetWeight?.Weight ?? 0;
 
                     decimal openVolume = token?.OpenVolume ?? 0;
 
-                    decimal price = indexPrice?.Price ?? 0;
+                    decimal amount = openVolume * indexPrice.Price * weight;
 
-                    decimal amount = openVolume * price * weight;
-
-                    assetInvestment += amount;
-
-                    isDisabled = isDisabled ||
-                                 (index?.Weights.SingleOrDefault(o => o.AssetId == assetId)?.IsDisabled ?? false);
+                    isDisabled = isDisabled || (assetWeight?.IsDisabled ?? false);
 
                     indexInvestments.Add(new AssetIndexInvestment
                     {
                         Name = indexSettings.Name,
-                        Value = index?.Value ?? 0,
-                        Price = price,
+                        Value = indexPrice.Value,
+                        Price = indexPrice.Price,
                         OpenVolume = token?.OpenVolume ?? 0,
                         OppositeVolume = token?.OppositeVolume ?? 0,
                         Amount = amount,
@@ -67,15 +59,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                 decimal assetPrice = quote?.Mid ?? 0;
 
-                decimal remainingVolume = assetVolume * assetPrice - assetInvestment;
+                decimal totalAmount = indexInvestments.Sum(o => o.Amount);
+                
+                decimal remainingAmount = assetVolume * assetPrice - totalAmount;
 
                 assetsInvestments.Add(new AssetInvestment
                 {
                     AssetId = assetId,
                     Volume = assetVolume,
                     Quote = quote,
-                    TotalAmount = indexInvestments.Sum(o => o.Amount),
-                    RemainingAmount = remainingVolume,
+                    TotalAmount = totalAmount,
+                    RemainingAmount = remainingAmount,
                     IsDisabled = isDisabled,
                     Indices = indexInvestments
                 });
@@ -92,7 +86,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             if (hedgeSettings.ThresholdDown < absoluteInvestments && absoluteInvestments < hedgeSettings.ThresholdUp)
             {
                 priceType = PriceType.Limit;
-                
+
                 return investments > 0
                     ? quote.Ask
                     : quote.Bid;
@@ -101,7 +95,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             if (hedgeSettings.ThresholdUp <= absoluteInvestments)
             {
                 priceType = PriceType.Market;
-                
+
                 return investments > 0
                     ? quote.Bid * (1 - hedgeSettings.MarketOrderMarkup)
                     : quote.Ask * (1 + hedgeSettings.MarketOrderMarkup);

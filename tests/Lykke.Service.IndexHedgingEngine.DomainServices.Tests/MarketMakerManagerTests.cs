@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.Logs;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -15,9 +16,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
         
         private readonly Mock<IHedgeService> _hedgeServiceMock =
             new Mock<IHedgeService>();
-        
-        private readonly Mock<IIndexService> _indexServiceMock =
-            new Mock<IIndexService>();
         
         private readonly Mock<IInternalTradeService> _internalTradeServiceMock =
             new Mock<IInternalTradeService>();
@@ -55,11 +53,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
             _marketMakerManager = new MarketMakerManager(
                 _marketMakerServiceMock.Object,
                 _hedgeServiceMock.Object,
-                _indexServiceMock.Object,
                 _internalTradeServiceMock.Object,
                 _indexSettingsServiceMock.Object,
                 _tokenServiceMock.Object,
-                _marketMakerStateService.Object);
+                _marketMakerStateService.Object,
+                EmptyLogFactory.Instance);
         }
 
         /// <remarks>https://lykkex.atlassian.net/browse/LIQ-1028</remarks>

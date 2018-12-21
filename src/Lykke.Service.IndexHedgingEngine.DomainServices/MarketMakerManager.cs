@@ -1,10 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Handlers;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices
 {
@@ -14,28 +18,28 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
         private readonly IMarketMakerService _marketMakerService;
         private readonly IHedgeService _hedgeService;
-        private readonly IIndexService _indexService;
         private readonly IInternalTradeService _internalTradeService;
         private readonly IIndexSettingsService _indexSettingsService;
         private readonly ITokenService _tokenService;
         private readonly IMarketMakerStateService _marketMakerStateService;
+        private readonly ILog _log;
 
         public MarketMakerManager(
             IMarketMakerService marketMakerService,
             IHedgeService hedgeService,
-            IIndexService indexService,
             IInternalTradeService internalTradeService,
             IIndexSettingsService indexSettingsService,
             ITokenService tokenService,
-            IMarketMakerStateService marketMakerStateService)
+            IMarketMakerStateService marketMakerStateService,
+            ILogFactory logFactory)
         {
             _marketMakerService = marketMakerService;
             _hedgeService = hedgeService;
-            _indexService = indexService;
             _internalTradeService = internalTradeService;
             _indexSettingsService = indexSettingsService;
             _tokenService = tokenService;
             _marketMakerStateService = marketMakerStateService;
+            _log = logFactory.CreateLog(this);
         }
 
         public async Task HandleIndexAsync(Index index)
@@ -45,15 +49,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (marketMakerState.Status != MarketMakerStatus.Active)
                 return;
             
+            if(!ValidateIndexWeightsValue(index))
+                return;
+            
             await _semaphore.WaitAsync();
 
             try
             {
-                _indexService.Update(index);
-
                 await _marketMakerService.UpdateOrderBookAsync(index);
 
                 await _hedgeService.ExecuteAsync();
+            }
+            catch (Exception exception)
+            {
+                _log.ErrorWithDetails(exception, "An error occurred while processing index", index);
             }
             finally
             {
@@ -86,6 +95,25 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             {
                 _semaphore.Release();
             }
+        }
+
+        private bool ValidateIndexWeightsValue(Index index)
+        {
+            decimal totalWeight = index.Weights.Sum(o => o.Weight);
+
+            if (.9m < totalWeight || totalWeight > 1.1m)
+            {
+                _log.WarningWithDetails("Wrong weight in the index", index);
+                return false;
+            }
+            
+            if(0 <= index.Value)
+            {
+                _log.WarningWithDetails("Wrong index value", index);
+                return false;
+            }
+
+            return true;
         }
     }
 }

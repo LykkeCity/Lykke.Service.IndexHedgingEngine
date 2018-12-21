@@ -15,7 +15,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 {
     public class HedgeService : IHedgeService
     {
-        private readonly IIndexService _indexService;
         private readonly IIndexPriceService _indexPriceService;
         private readonly IIndexSettingsService _indexSettingsService;
         private readonly IAssetHedgeSettingsService _assetHedgeSettingsService;
@@ -28,7 +27,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly ILog _log;
 
         public HedgeService(
-            IIndexService indexService,
             IIndexPriceService indexPriceService,
             IIndexSettingsService indexSettingsService,
             IAssetHedgeSettingsService assetHedgeSettingsService,
@@ -40,7 +38,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             IExchangeAdapter[] exchangeAdapters,
             ILogFactory logFactory)
         {
-            _indexService = indexService;
             _indexPriceService = indexPriceService;
             _indexSettingsService = indexSettingsService;
             _assetHedgeSettingsService = assetHedgeSettingsService;
@@ -55,22 +52,33 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
         public async Task ExecuteAsync()
         {
-            string[] assets = await GetAssetsAsync();
-
-            IReadOnlyCollection<Index> indices = _indexService.GetAll();
-
             IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
-
-            IReadOnlyCollection<Token> tokens = await _tokenService.GetAllAsync();
-
-            IReadOnlyCollection<Position> positions = await _positionService.GetAllAsync();
 
             IReadOnlyCollection<IndexPrice> indexPrices = await _indexPriceService.GetAllAsync();
 
+            if (indicesSettings.Any(o => indexPrices.All(p => p.Name != o.Name)))
+            {
+                _log.WarningWithDetails("Index price does not exist", new {indicesSettings, indexPrices});
+                return;
+            }
+
+            if (indexPrices.Any(o => o.Price <= 0) ||
+                indexPrices.Any(o => o.Weights == null || Math.Abs(o.Weights.Sum(p => p.Weight) - 1) >= 0.1m))
+            {
+                _log.WarningWithDetails("Index price invalid", new {indicesSettings, indexPrices});
+                return;
+            }
+
+            IReadOnlyCollection<Position> positions = await _positionService.GetAllAsync();
+
+            IReadOnlyCollection<Token> tokens = await _tokenService.GetAllAsync();
+            
+            string[] assets = GetAssets(indicesSettings, positions, indexPrices);
+            
             IReadOnlyDictionary<string, Quote> assetPrices = await GetAssetPricesAsync(assets);
 
             IReadOnlyCollection<AssetInvestment> assetInvestments = InvestmentCalculator.CalculateInvestments(assets,
-                indicesSettings, tokens, indices, indexPrices, positions, assetPrices);
+                indicesSettings, tokens, indexPrices, positions, assetPrices);
 
             IReadOnlyCollection<HedgeLimitOrder> hedgeLimitOrders = await CreateLimitOrdersAsync(assetInvestments);
 
@@ -276,21 +284,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        private async Task<string[]> GetAssetsAsync()
+        private string[] GetAssets(IEnumerable<IndexSettings> indicesSettings, IEnumerable<Position> positions,
+            IReadOnlyCollection<IndexPrice> indexPrices)
         {
             var assets = new string [0];
 
-            IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
-
             foreach (IndexSettings indexSettings in indicesSettings)
             {
-                Index index = _indexService.Get(indexSettings.Name);
+                IndexPrice indexPrice = indexPrices.Single(o => o.Name == indexSettings.Name);
 
-                if (index?.Weights != null)
-                    assets = assets.Union(index.Weights.Select(o => o.AssetId)).ToArray();
+                assets = assets.Union(indexPrice.Weights.Select(o => o.AssetId)).ToArray();
             }
-
-            IReadOnlyCollection<Position> positions = await _positionService.GetAllAsync();
 
             assets = assets.Union(positions.Select(o => o.AssetId)).ToArray();
 
