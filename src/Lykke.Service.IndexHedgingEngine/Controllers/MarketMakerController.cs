@@ -7,6 +7,7 @@ using Lykke.Common.ApiLibrary.Exceptions;
 using Lykke.Service.IndexHedgingEngine.Client.Api;
 using Lykke.Service.IndexHedgingEngine.Client.Models.MarketMaker;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Handlers;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,10 +17,14 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
     public class MarketMakerController : Controller, IMarketMakerApi
     {
         private readonly IMarketMakerStateService _marketMakerStateService;
+        private readonly IMarketMakerStateHandler _marketMakerStateHandler;
 
-        public MarketMakerController(IMarketMakerStateService marketMakerStateService)
+        public MarketMakerController(
+            IMarketMakerStateService marketMakerStateService,
+            IMarketMakerStateHandler marketMakerStateHandler)
         {
             _marketMakerStateService = marketMakerStateService;
+            _marketMakerStateHandler = marketMakerStateHandler;
         }
 
         /// <inheritdoc/>
@@ -43,8 +48,8 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         {
             try
             {
-                await _marketMakerStateService.UpdateAsync((Domain.MarketMakerStatus) model.Status, model.Comment,
-                    model.UserId);
+                await _marketMakerStateHandler.HandleMarketMakerStateAsync((Domain.MarketMakerStatus) model.Status,
+                    model.Comment, model.UserId);
             }
             catch (InvalidOperationException exception)
             {

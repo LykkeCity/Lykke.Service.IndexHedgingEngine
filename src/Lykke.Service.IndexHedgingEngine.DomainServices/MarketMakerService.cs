@@ -56,12 +56,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             if (indexPrice == null)
                 throw new InvalidOperationException("Index price not found");
-            
+
             IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
 
             if (indexSettings == null)
                 throw new InvalidOperationException("Index settings not found");
-            
+
             // TODO: Replace to instrument settings
             Asset asset = _assetsReadModelRepository.TryGet(indexSettings.AssetId);
             AssetPair assetPair = _assetPairsReadModelRepository.TryGet(indexSettings.AssetPairId);
@@ -92,6 +92,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _limitOrderService.Update(indexSettings.AssetPairId, limitOrders);
 
             await _lykkeExchangeService.ApplyAsync(indexSettings.AssetPairId, allowedLimitOrders);
+        }
+
+        public async Task CancelLimitOrdersAsync(string indexName)
+        {
+            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
+
+            if (indexSettings == null)
+                throw new InvalidOperationException("Index settings not found");
+
+            await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
+
+            _log.InfoWithDetails("Limit orders canceled", new {IndexName = indexName, indexSettings.AssetPairId});
         }
 
         private async Task ValidateBalanceAsync(IReadOnlyCollection<LimitOrder> limitOrders, AssetPair assetPair)

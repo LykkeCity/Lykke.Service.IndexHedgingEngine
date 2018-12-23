@@ -82,7 +82,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             catch (Exception exception)
             {
                 _log.ErrorWithDetails(exception, "An error occurred during creating limit orders", multiLimitOrder);
-
                 throw;
             }
 
@@ -123,6 +122,44 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             _log.InfoWithDetails("ME place multi limit order response", response);
         }
 
+        public async Task CancelAsync(string assetPairId)
+        {
+            string walletId = _settingsService.GetWalletId();
+
+            if (string.IsNullOrEmpty(walletId))
+                throw new Exception("WalletId is not set");
+            
+            var multiLimitOrder = new MultiLimitOrderModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                ClientId = walletId,
+                AssetPairId = assetPairId,
+                CancelPreviousOrders = true,
+                Orders = new List<MultiOrderItemModel>(),
+                CancelMode = CancelMode.BothSides
+            };
+
+            _log.InfoWithDetails("ME cancel multi limit order request", multiLimitOrder);
+
+            MultiLimitOrderResponse response;
+
+            try
+            {
+                response = await _matchingEngineClient.PlaceMultiLimitOrderAsync(multiLimitOrder);
+            }
+            catch (Exception exception)
+            {
+                _log.ErrorWithDetails(exception, "An error occurred during cancelling limit orders",
+                    multiLimitOrder);
+                throw;
+            }
+
+            if (response == null)
+                throw new Exception("ME response is null");
+
+            _log.InfoWithDetails("ME cancel multi limit order response", response);
+        }
+        
         public async Task<string> CashInAsync(string walletId, string assetId, decimal amount, string userId,
             string comment)
         {

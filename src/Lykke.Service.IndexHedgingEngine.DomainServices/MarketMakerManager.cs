@@ -12,7 +12,7 @@ using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices
 {
-    public class MarketMakerManager : IIndexHandler, IInternalTradeHandler
+    public class MarketMakerManager : IIndexHandler, IInternalTradeHandler, IMarketMakerStateHandler
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
@@ -59,7 +59,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 await _indexPriceService.UpdateAsync(index);
 
                 await _hedgeService.UpdateLimitOrdersAsync();
-                
+
                 await _marketMakerService.UpdateLimitOrdersAsync(index.Name);
             }
             catch (InvalidOperationException exception)
@@ -101,6 +101,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             finally
             {
                 _semaphore.Release();
+            }
+        }
+
+        public async Task HandleMarketMakerStateAsync(MarketMakerStatus marketMakerStatus, string comment,
+            string userId)
+        {
+            await _marketMakerStateService.UpdateAsync(marketMakerStatus, comment, userId);
+
+            if (marketMakerStatus != MarketMakerStatus.Active)
+            {
+                IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
+
+                foreach (IndexSettings indexSettings in indicesSettings)
+                    await _marketMakerService.CancelLimitOrdersAsync(indexSettings.Name);
             }
         }
     }

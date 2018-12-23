@@ -5,5 +5,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
     public interface IMarketMakerService
     {
         Task UpdateLimitOrdersAsync(string indexName);
+
+        Task CancelLimitOrdersAsync(string indexName);
     }
 }

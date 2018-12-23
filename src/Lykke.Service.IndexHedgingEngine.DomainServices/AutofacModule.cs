@@ -159,6 +159,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             builder.RegisterType<MarketMakerManager>()
                 .As<IIndexHandler>()
                 .As<IInternalTradeHandler>()
+                .As<IMarketMakerStateHandler>()
                 .SingleInstance();
 
             builder.RegisterType<MarketMakerService>()
