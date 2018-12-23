@@ -41,9 +41,13 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
             CreateMap<AssetPairSettingsEntity, AssetPairSettings>(MemberList.Destination);
 
             CreateMap<HedgeLimitOrder, HedgeLimitOrderEntity>(MemberList.Source)
-                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp));
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp))
+                .ForSourceMember(src => src.Error, opt => opt.DoNotValidate())
+                .ForSourceMember(src => src.ErrorMessage, opt => opt.DoNotValidate());
             CreateMap<HedgeLimitOrderEntity, HedgeLimitOrder>(MemberList.Destination)
-                .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Date));
+                .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Date))
+                .ForMember(dest => dest.Error, opt => opt.Ignore())
+                .ForMember(dest => dest.ErrorMessage, opt => opt.Ignore());
 
             CreateMap<IndexPrice, IndexPriceEntity>(MemberList.Source)
                 .ForMember(dest => dest.Time, opt => opt.MapFrom(src => src.Timestamp));

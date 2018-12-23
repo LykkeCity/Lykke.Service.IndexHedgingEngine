@@ -105,16 +105,16 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                     {
                         // The limit order fully executed. The remaining volume is zero.
                         if (order.Status == OrderStatus.Matched)
-                            internalTrades.AddRange(Map(order));
+                            internalTrades.AddRange(Map(order, true));
 
                         // The limit order partially executed.
                         if (order.Status == OrderStatus.PartiallyMatched)
-                            internalTrades.AddRange(Map(order));
+                            internalTrades.AddRange(Map(order, false));
 
                         // The limit order was cancelled by matching engine after processing trades.
                         // In this case order partially executed and remaining volume is less than min volume allowed by asset pair.
                         if (order.Status == OrderStatus.Cancelled)
-                            internalTrades.AddRange(Map(order));
+                            internalTrades.AddRange(Map(order, true));
                     }
 
                     await Task.WhenAll(_internalTradeHandlers.Select(o => o.HandleInternalTradesAsync(internalTrades)));
@@ -129,7 +129,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
             }
         }
 
-        private static IReadOnlyCollection<InternalTrade> Map(Order order)
+        private static IReadOnlyCollection<InternalTrade> Map(Order order, bool completed)
         {
             var reports = new List<InternalTrade>();
 
@@ -141,12 +141,17 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                     ? TradeType.Sell
                     : TradeType.Buy;
 
+                TradeStatus executionStatus = i == order.Trades.Count - 1 && completed
+                    ? TradeStatus.Fill
+                    : TradeStatus.PartialFill;
+
                 reports.Add(new InternalTrade
                 {
                     Id = trade.TradeId,
                     AssetPairId = order.AssetPairId,
                     ExchangeOrderId = order.Id,
                     LimitOrderId = order.ExternalId,
+                    Status = executionStatus,
                     Type = tradeType,
                     Timestamp = trade.Timestamp,
                     Price = decimal.Parse(trade.Price),

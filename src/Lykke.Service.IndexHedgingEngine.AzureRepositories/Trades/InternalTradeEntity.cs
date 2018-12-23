@@ -15,6 +15,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades
         private DateTime _date;
         private decimal _price;
         private decimal _volume;
+        private TradeStatus _status;
         private decimal _oppositeVolume;
 
         public InternalTradeEntity()
@@ -82,6 +83,19 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades
                 if (_volume != value)
                 {
                     _volume = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        public TradeStatus Status
+        {
+            get => _status;
+            set
+            {
+                if (_status != value)
+                {
+                    _status = value;
                     MarkValueTypePropertyAsDirty();
                 }
             }

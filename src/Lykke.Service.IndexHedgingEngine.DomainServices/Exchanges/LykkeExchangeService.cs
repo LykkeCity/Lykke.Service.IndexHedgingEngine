@@ -39,12 +39,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             _log = logFactory.CreateLog(this);
         }
 
+        public Task ApplyAsync(string assetPairId, LimitOrder limitOrder)
+        {
+            return ApplyAsync(assetPairId, new[] {limitOrder});
+        }
+
         public async Task ApplyAsync(string assetPairId, IReadOnlyCollection<LimitOrder> limitOrders)
         {
             string walletId = _settingsService.GetWalletId();
 
             if (string.IsNullOrEmpty(walletId))
-                throw new Exception("WalletId is not set");
+                throw new ExchangeException("The wallet not set");
 
             var multiOrderItems = new List<MultiOrderItemModel>();
 
@@ -71,7 +76,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
                 CancelMode = CancelMode.BothSides
             };
 
-            _log.InfoWithDetails("ME place multi limit order request", multiLimitOrder);
+            _log.InfoWithDetails("Matching engine place multi limit order request", multiLimitOrder);
 
             MultiLimitOrderResponse response;
 
@@ -82,11 +87,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             catch (Exception exception)
             {
                 _log.ErrorWithDetails(exception, "An error occurred during creating limit orders", multiLimitOrder);
-                throw;
+                
+                throw new ExchangeException("Cannot create limit orders an unexpected error occurred", exception);
             }
 
             if (response == null)
-                throw new Exception("ME response is null");
+                throw new ExchangeException("Matching engine returned an empty response");
 
             foreach (LimitOrderStatusModel orderStatus in response.Statuses)
             {
@@ -103,7 +109,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
                 }
                 else
                 {
-                    _log.WarningWithDetails("ME returned status for order which is not in the request",
+                    _log.WarningWithDetails("Matching engine returned status for unknown limit order",
                         new {LimitOrderId = orderStatus.Id});
                 }
             }
@@ -115,11 +121,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
 
             if (ignoredLimitOrders.Any())
             {
-                _log.WarningWithDetails("ME didn't return status for orders",
+                _log.WarningWithDetails("Matching engine response not contains status of limit order",
                     new {AssetPairId = assetPairId, LimitOrders = ignoredLimitOrders});
             }
 
-            _log.InfoWithDetails("ME place multi limit order response", response);
+            _log.InfoWithDetails("Matching engine place multi limit order response", response);
         }
 
         public async Task CancelAsync(string assetPairId)
@@ -127,7 +133,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             string walletId = _settingsService.GetWalletId();
 
             if (string.IsNullOrEmpty(walletId))
-                throw new Exception("WalletId is not set");
+                throw new ExchangeException("The wallet not set");
             
             var multiLimitOrder = new MultiLimitOrderModel
             {
@@ -139,7 +145,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
                 CancelMode = CancelMode.BothSides
             };
 
-            _log.InfoWithDetails("ME cancel multi limit order request", multiLimitOrder);
+            _log.InfoWithDetails("Matching engine cancel multi limit order request", multiLimitOrder);
 
             MultiLimitOrderResponse response;
 
@@ -151,13 +157,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             {
                 _log.ErrorWithDetails(exception, "An error occurred during cancelling limit orders",
                     multiLimitOrder);
-                throw;
+                
+                throw new ExchangeException("Cannot cancel limit orders an unexpected error occurred", exception);
             }
 
             if (response == null)
-                throw new Exception("ME response is null");
+                throw new ExchangeException("Matching engine returned an empty response");
 
-            _log.InfoWithDetails("ME cancel multi limit order response", response);
+            _log.InfoWithDetails("Matching engine cancel multi limit order response", response);
         }
         
         public async Task<string> CashInAsync(string walletId, string assetId, decimal amount, string userId,
@@ -176,7 +183,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             {
                 _log.ErrorWithDetails(exception, new {walletId, assetId, amount, userId, comment});
 
-                throw new Exception("An error occurred while processing cash in request", exception);
+                throw new ExchangeException("An error occurred while processing cash in request", exception);
             }
 
             _log.InfoWithDetails("Cash in response", result);
@@ -203,7 +210,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             {
                 _log.ErrorWithDetails(exception, new {walletId, assetId, amount, userId, comment});
 
-                throw new Exception("An error occurred while processing cash out request", exception);
+                throw new ExchangeException("An error occurred while processing cash out request", exception);
             }
 
             _log.InfoWithDetails("Cash out response", result);

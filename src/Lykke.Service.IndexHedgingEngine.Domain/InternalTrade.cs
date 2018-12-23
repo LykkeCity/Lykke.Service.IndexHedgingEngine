@@ -48,6 +48,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         public decimal Volume { get; set; }
 
         /// <summary>
+        /// The status of the trade.
+        /// </summary>
+        public TradeStatus Status { get; set; }
+        
+        /// <summary>
         /// The opposite volume of the trade.
         /// </summary>
         public decimal OppositeVolume { get; set; }

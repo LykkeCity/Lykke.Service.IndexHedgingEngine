@@ -43,11 +43,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.Algorithm
 
             // assert
 
-            Assert.IsTrue(AreEqual(expectedIndexSettlementPrice, actualIndexSettlementPrice),
+            Assert.IsTrue(AreEqual(expectedIndexSettlementPrice, actualIndexSettlementPrice, 10),
                 "Wrong index settlement price");
         }
 
-        private static bool AreEqual(IndexSettlementPrice left, IndexSettlementPrice right)
-            => left.Delta == right.Delta && left.K == right.K && left.R == right.R && left.Price == right.Price;
+        private static bool AreEqual(IndexSettlementPrice left, IndexSettlementPrice right, int accuracy)
+            => Math.Round(left.Delta, accuracy) == Math.Round(right.Delta, accuracy) &&
+               Math.Round(left.K, accuracy) == Math.Round(right.K, accuracy) &&
+               Math.Round(left.R, accuracy) == Math.Round(right.R, accuracy) &&
+               Math.Round(left.Price, accuracy) == Math.Round(right.Price, accuracy);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using JetBrains.Annotations;
+using Lykke.Service.IndexHedgingEngine.Client.Models.OrderBooks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -59,8 +60,14 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.HedgeLimitOrders
         public decimal Volume { get; set; }
 
         /// <summary>
+        /// The code of the error which occurred while processing on ME.
+        /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
+        public LimitOrderError Error { get; set; }
+
+        /// <summary>
         /// The error details.
         /// </summary>
-        public string Error { get; set; }
+        public string ErrorMessage { get; set; }
     }
 }
