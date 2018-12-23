@@ -1,4 +1,3 @@
-using System;
 using JetBrains.Annotations;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
@@ -32,48 +31,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
         public string Exchange { get; set; }
 
         public string AssetPairId { get; set; }
-
-        [Obsolete]
-        public decimal MinVolume
-        {
-            get => _minVolume;
-            set
-            {
-                if (_minVolume != value)
-                {
-                    _minVolume = value;
-                    MarkValueTypePropertyAsDirty();
-                }
-            }
-        }
-
-        [Obsolete]
-        public int VolumeAccuracy
-        {
-            get => _volumeAccuracy;
-            set
-            {
-                if (_volumeAccuracy != value)
-                {
-                    _volumeAccuracy = value;
-                    MarkValueTypePropertyAsDirty();
-                }
-            }
-        }
-
-        [Obsolete]
-        public int PriceAccuracy
-        {
-            get => _priceAccuracy;
-            set
-            {
-                if (_priceAccuracy != value)
-                {
-                    _priceAccuracy = value;
-                    MarkValueTypePropertyAsDirty();
-                }
-            }
-        }
 
         public bool Approved
         {

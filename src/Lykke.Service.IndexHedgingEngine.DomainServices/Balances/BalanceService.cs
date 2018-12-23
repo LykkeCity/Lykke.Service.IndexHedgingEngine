@@ -33,21 +33,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
             _log = logFactory.CreateLog(this);
         }
 
-        public Task<IReadOnlyCollection<Balance>> GetAsync(string exchange)
+        public IReadOnlyCollection<Balance> GetByExchange(string exchange)
         {
-            IReadOnlyCollection<Balance> balances = _cache.GetAll()
+            return _cache.GetAll()
                 .Where(o => o.Exchange == exchange)
                 .ToArray();
-
-            return Task.FromResult(balances);
         }
 
-        public Task<Balance> GetByAssetIdAsync(string exchange, string assetId)
+        public Balance GetByAssetId(string exchange, string assetId)
         {
-            Balance balance = _cache.Get(GetKey(exchange, assetId)) ??
-                              new Balance(exchange, assetId, decimal.Zero, decimal.Zero);
-
-            return Task.FromResult(balance);
+            return _cache.Get(GetKey(exchange, assetId)) ?? new Balance(exchange, assetId, decimal.Zero, decimal.Zero);
         }
 
         public async Task UpdateAsync()

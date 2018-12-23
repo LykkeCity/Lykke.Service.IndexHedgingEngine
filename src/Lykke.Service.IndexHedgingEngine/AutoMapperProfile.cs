@@ -2,7 +2,6 @@ using AutoMapper;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Client.Models;
 using Lykke.Service.IndexHedgingEngine.Client.Models.AssetHedgeSettings;
-using Lykke.Service.IndexHedgingEngine.Client.Models.AssetLinks;
 using Lykke.Service.IndexHedgingEngine.Client.Models.AssetPairs;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Assets;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Audit;
@@ -29,9 +28,6 @@ namespace Lykke.Service.IndexHedgingEngine
             CreateMap<AssetHedgeSettings, AssetHedgeSettingsModel>(MemberList.Source);
             CreateMap<AssetHedgeSettingsEditModel, AssetHedgeSettings>(MemberList.Destination)
                 .ForMember(dest => dest.Approved, opt => opt.Ignore());
-
-            CreateMap<AssetLink, AssetLinkModel>(MemberList.Source);
-            CreateMap<AssetLinkModel, AssetLink>(MemberList.Destination);
 
             CreateMap<AssetPairSettings, AssetPairSettingsModel>(MemberList.Source);
             CreateMap<AssetPairSettingsModel, AssetPairSettings>(MemberList.Destination);

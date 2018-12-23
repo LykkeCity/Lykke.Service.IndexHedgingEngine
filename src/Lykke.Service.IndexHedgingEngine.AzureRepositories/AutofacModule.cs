@@ -94,12 +94,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                 .As<IPositionRepository>()
                 .SingleInstance();
 
-            builder.Register(container => new AssetLinkRepository(
-                    AzureTableStorage<AssetLinkEntity>.Create(_connectionString,
-                        "AssetLinks", container.Resolve<ILogFactory>())))
-                .As<IAssetLinkRepository>()
-                .SingleInstance();
-
             builder.Register(container => new HedgeSettingsRepository(
                     AzureTableStorage<HedgeSettingsEntity>.Create(_connectionString,
                         "Settings", container.Resolve<ILogFactory>())))

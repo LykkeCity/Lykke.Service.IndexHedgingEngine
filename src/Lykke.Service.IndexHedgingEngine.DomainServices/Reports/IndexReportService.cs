@@ -37,7 +37,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
 
                 Token token = await _tokenService.GetAsync(indexSettings.AssetId);
 
-                Balance balance = await _balanceService.GetByAssetIdAsync(ExchangeNames.Lykke, indexSettings.AssetId);
+                Balance balance = _balanceService.GetByAssetId(ExchangeNames.Lykke, indexSettings.AssetId);
 
                 indexReports.Add(new IndexReport
                 {

@@ -57,9 +57,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
             CreateMap<Position, PositionEntity>(MemberList.Source);
             CreateMap<PositionEntity, Position>(MemberList.Destination);
 
-            CreateMap<AssetLink, AssetLinkEntity>(MemberList.Source);
-            CreateMap<AssetLinkEntity, AssetLink>(MemberList.Destination);
-
             CreateMap<HedgeSettings, HedgeSettingsEntity>(MemberList.Source);
             CreateMap<HedgeSettingsEntity, HedgeSettings>(MemberList.Destination);
 

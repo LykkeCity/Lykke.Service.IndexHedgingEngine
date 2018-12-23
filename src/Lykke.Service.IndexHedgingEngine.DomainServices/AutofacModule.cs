@@ -113,10 +113,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<IPositionReportService>()
                 .SingleInstance();
 
-            builder.RegisterType<AssetLinkService>()
-                .As<IAssetLinkService>()
-                .SingleInstance();
-
             builder.RegisterType<HedgeSettingsService>()
                 .As<IHedgeSettingsService>()
                 .SingleInstance();

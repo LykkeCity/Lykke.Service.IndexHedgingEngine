@@ -27,24 +27,6 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.AssetHedgeSettings
         public string AssetPairId { get; set; }
 
         /// <summary>
-        /// The min volume that can be used to create external limit order.
-        /// </summary>
-        [Obsolete]
-        public decimal MinVolume { get; set; }
-
-        /// <summary>
-        /// The accuracy of the hedge limit order volume.
-        /// </summary>
-        [Obsolete]
-        public int VolumeAccuracy { get; set; }
-
-        /// <summary>
-        /// The accuracy of the hedge limit order price.
-        /// </summary>
-        [Obsolete]
-        public int PriceAccuracy { get; set; }
-
-        /// <summary>
         /// Returns <c>false</c> if asset hedge settings created automatically and indicates that the user should update default settings.
         /// </summary>
         public bool Approved { get; set; }
