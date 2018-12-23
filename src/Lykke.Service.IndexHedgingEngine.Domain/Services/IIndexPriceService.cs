@@ -9,10 +9,6 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task<IndexPrice> GetByIndexAsync(string indexName);
 
-        Task AddAsync(IndexPrice indexPrice);
-        
-        Task UpdateAsync(IndexPrice indexPrice);
-
-        Task DeleteAsync(string indexName);
+        Task UpdateAsync(Index index);
     }
 }

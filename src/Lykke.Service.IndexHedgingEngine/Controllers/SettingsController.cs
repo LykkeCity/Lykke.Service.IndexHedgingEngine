@@ -32,22 +32,24 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         /// <response code="200">The model that represents account settings.</response>
         [HttpGet("account")]
         [ProducesResponseType(typeof(AccountSettingsModel), (int) HttpStatusCode.OK)]
-        public async Task<AccountSettingsModel> GetAccountSettingsAsync()
+        public Task<AccountSettingsModel> GetAccountSettingsAsync()
         {
-            string walletId = await _settingsService.GetWalletIdAsync();
+            string walletId = _settingsService.GetWalletId();
 
-            return new AccountSettingsModel {WalletId = walletId};
+            return Task.FromResult(new AccountSettingsModel {WalletId = walletId});
         }
 
         /// <inheritdoc/>
         /// <response code="200">A collection of exchange settings.</response>
         [HttpGet("exchanges")]
         [ProducesResponseType(typeof(ExchangeSettingsModel), (int) HttpStatusCode.OK)]
-        public async Task<IReadOnlyCollection<ExchangeSettingsModel>> GetExchangesAsync()
+        public Task<IReadOnlyCollection<ExchangeSettingsModel>> GetExchangesAsync()
         {
-            IReadOnlyCollection<ExchangeSettings> exchangeSettings = await _settingsService.GetExchangesAsync();
+            IReadOnlyCollection<ExchangeSettings> exchangeSettings = _settingsService.GetExchanges();
 
-            return Mapper.Map<ExchangeSettingsModel[]>(exchangeSettings);
+            var model = Mapper.Map<ExchangeSettingsModel[]>(exchangeSettings);
+
+            return Task.FromResult<IReadOnlyCollection<ExchangeSettingsModel>>(model);
         }
 
         /// <inheritdoc/>
@@ -72,7 +74,7 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
 
             await _hedgeSettingsService.UpdateAsync(hedgeSettings);
         }
-        
+
         /// <inheritdoc/>
         /// <response code="200">The model that represents timers settings.</response>
         [HttpGet("timers")]

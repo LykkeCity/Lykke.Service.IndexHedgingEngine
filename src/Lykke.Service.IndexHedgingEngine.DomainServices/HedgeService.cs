@@ -50,35 +50,27 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _log = logFactory.CreateLog(this);
         }
 
-        public async Task ExecuteAsync()
+        public async Task UpdateLimitOrdersAsync()
         {
-            IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
-
             IReadOnlyCollection<IndexPrice> indexPrices = await _indexPriceService.GetAllAsync();
 
-            if (indicesSettings.Any(o => indexPrices.All(p => p.Name != o.Name)))
-            {
-                _log.WarningWithDetails("Index price does not exist", new {indicesSettings, indexPrices});
-                return;
-            }
+            IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
 
-            if (indexPrices.Any(o => o.Price <= 0) ||
-                indexPrices.Any(o => o.Weights == null || Math.Abs(o.Weights.Sum(p => p.Weight) - 1) >= 0.1m))
-            {
-                _log.WarningWithDetails("Index price invalid", new {indicesSettings, indexPrices});
+            if (!ValidateIndexPrices(indicesSettings, indexPrices))
                 return;
-            }
+
+            IReadOnlyCollection<Token> tokens = await _tokenService.GetAllAsync();
 
             IReadOnlyCollection<Position> positions = await _positionService.GetAllAsync();
 
-            IReadOnlyCollection<Token> tokens = await _tokenService.GetAllAsync();
-            
             string[] assets = GetAssets(indicesSettings, positions, indexPrices);
-            
+
             IReadOnlyDictionary<string, Quote> assetPrices = await GetAssetPricesAsync(assets);
 
-            IReadOnlyCollection<AssetInvestment> assetInvestments = InvestmentCalculator.CalculateInvestments(assets,
+            IReadOnlyCollection<AssetInvestment> assetInvestments = InvestmentCalculator.Calculate(assets,
                 indicesSettings, tokens, indexPrices, positions, assetPrices);
+
+            _log.InfoWithDetails("Investments calculated", assetInvestments);
 
             IReadOnlyCollection<HedgeLimitOrder> hedgeLimitOrders = await CreateLimitOrdersAsync(assetInvestments);
 
@@ -195,7 +187,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         }
 
         private async Task<IReadOnlyCollection<HedgeLimitOrder>> CreateLimitOrdersAsync(
-            IReadOnlyCollection<AssetInvestment> assetInvestments)
+            IEnumerable<AssetInvestment> assetInvestments)
         {
             HedgeSettings hedgeSettings = await _hedgeSettingsService.GetAsync();
 
@@ -206,7 +198,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 if (assetInvestment.IsDisabled)
                     continue;
 
-                if (Math.Abs(assetInvestment.RemainingAmount) <= hedgeSettings.ThresholdDown)
+                if (!LimitOrderPriceCalculator.CanCalculate(Math.Abs(assetInvestment.RemainingAmount), hedgeSettings))
                     continue;
 
                 AssetHedgeSettings assetHedgeSettings =
@@ -216,31 +208,24 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     continue;
 
                 if (assetInvestment.Quote == null)
-                {
-                    _log.WarningWithDetails("No quote to create hedge limit order",
-                        new {assetHedgeSettings.Exchange, assetHedgeSettings.AssetPairId, assetInvestment});
-
-                    // TODO: send health issue
-
                     continue;
-                }
-
-                decimal volume = Math.Round(Math.Abs(assetInvestment.RemainingAmount / assetInvestment.Quote.Mid),
-                    assetHedgeSettings.VolumeAccuracy);
 
                 LimitOrderType limitOrderType = assetInvestment.RemainingAmount > 0
                     ? LimitOrderType.Sell
                     : LimitOrderType.Buy;
 
-                PriceType priceType;
+                LimitOrderPrice limitOrderPrice = LimitOrderPriceCalculator.Calculate(assetInvestment.Quote,
+                    Math.Abs(assetInvestment.RemainingAmount), limitOrderType, hedgeSettings);
 
-                decimal price = InvestmentCalculator.CalculateHedgeLimitOrderPrice(assetInvestment.Quote,
-                        assetInvestment.RemainingAmount, hedgeSettings, out priceType)
-                    .TruncateDecimalPlaces(assetHedgeSettings.PriceAccuracy, limitOrderType == LimitOrderType.Sell);
+                decimal price = limitOrderPrice.Price.TruncateDecimalPlaces(assetHedgeSettings.PriceAccuracy,
+                    limitOrderType == LimitOrderType.Sell);
+
+                decimal volume = Math.Round(Math.Abs(assetInvestment.RemainingAmount / assetInvestment.Quote.Mid),
+                    assetHedgeSettings.VolumeAccuracy);
 
                 HedgeLimitOrder hedgeLimitOrder = HedgeLimitOrder.Create(assetHedgeSettings.Exchange,
-                    assetHedgeSettings.AssetId, assetHedgeSettings.AssetPairId, limitOrderType, priceType, price,
-                    volume);
+                    assetHedgeSettings.AssetId, assetHedgeSettings.AssetPairId, limitOrderType, limitOrderPrice.Type,
+                    price, volume);
 
                 hedgeLimitOrder.Context = assetInvestment.ToJson();
 
@@ -284,21 +269,33 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        private string[] GetAssets(IEnumerable<IndexSettings> indicesSettings, IEnumerable<Position> positions,
+        private bool ValidateIndexPrices(IEnumerable<IndexSettings> indicesSettings,
             IReadOnlyCollection<IndexPrice> indexPrices)
         {
-            var assets = new string [0];
+            bool valid = true;
 
             foreach (IndexSettings indexSettings in indicesSettings)
             {
-                IndexPrice indexPrice = indexPrices.Single(o => o.Name == indexSettings.Name);
+                IndexPrice indexPrice = indexPrices.SingleOrDefault(o => o.Name == indexSettings.Name);
 
-                assets = assets.Union(indexPrice.Weights.Select(o => o.AssetId)).ToArray();
+                if (indexPrice == null)
+                {
+                    _log.WarningWithDetails("Index price does not exist", indexSettings.Name);
+                    valid = false;
+                }
+                else if (!indexPrice.ValidateValue())
+                {
+                    _log.WarningWithDetails("Invalid index price", indexPrice);
+                    valid = false;
+                }
+                else if (!indexPrice.ValidateWeights())
+                {
+                    _log.WarningWithDetails("Invalid index price weights", indexPrice);
+                    valid = false;
+                }
             }
 
-            assets = assets.Union(positions.Select(o => o.AssetId)).ToArray();
-
-            return assets;
+            return valid;
         }
 
         private async Task<IReadOnlyDictionary<string, Quote>> GetAssetPricesAsync(IEnumerable<string> assets)
@@ -317,6 +314,21 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
 
             return assetPrices;
+        }
+
+        private static string[] GetAssets(IEnumerable<IndexSettings> indicesSettings, IEnumerable<Position> positions,
+            IReadOnlyCollection<IndexPrice> indexPrices)
+        {
+            var assets = new string [0];
+
+            foreach (IndexSettings indexSettings in indicesSettings)
+            {
+                IndexPrice indexPrice = indexPrices.Single(o => o.Name == indexSettings.Name);
+
+                assets = assets.Union(indexPrice.Weights.Select(o => o.AssetId)).ToArray();
+            }
+
+            return assets.Union(positions.Select(o => o.AssetId)).ToArray();
         }
     }
 }

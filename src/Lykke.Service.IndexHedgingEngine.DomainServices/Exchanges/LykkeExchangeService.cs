@@ -41,7 +41,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
 
         public async Task ApplyAsync(string assetPairId, IReadOnlyCollection<LimitOrder> limitOrders)
         {
-            string walletId = await _settingsService.GetWalletIdAsync();
+            string walletId = _settingsService.GetWalletId();
 
             if (string.IsNullOrEmpty(walletId))
                 throw new Exception("WalletId is not set");

@@ -59,8 +59,8 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                 .SetMessageDeserializer(new ProtobufMessageDeserializer<ExecutionEvent>())
                 .Subscribe(ProcessMessageAsync)
                 .CreateDefaultBinding()
-                .SetAlternativeExchange(_settings.AlternateConnectionString)
-                .SetDeduplicator(_deduplicator)
+                //.SetAlternativeExchange(_settings.AlternateConnectionString)
+                //.SetDeduplicator(_deduplicator)
                 .Start();
         }
 
@@ -81,7 +81,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
             if (message.Header.MessageType != MessageType.Order)
                 return;
 
-            string walletId = await _settingsService.GetWalletIdAsync();
+            string walletId = _settingsService.GetWalletId();
 
             Order[] orders = message.Orders
                 .Where(o => o.WalletId == walletId)

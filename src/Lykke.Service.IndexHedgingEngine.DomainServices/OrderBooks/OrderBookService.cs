@@ -38,7 +38,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
 
         public async Task<IReadOnlyCollection<OrderBook>> GetAsync(int limit)
         {
-            string walletId = await _settingsService.GetWalletIdAsync();
+            string walletId = _settingsService.GetWalletId();
 
             var orderBooks = new List<OrderBook>();
 

@@ -11,7 +11,6 @@ using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
-using Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices
@@ -27,7 +26,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly ILimitOrderService _limitOrderService;
         private readonly IAssetsReadModelRepository _assetsReadModelRepository;
         private readonly IAssetPairsReadModelRepository _assetPairsReadModelRepository;
-
         private readonly ILog _log;
 
         public MarketMakerService(
@@ -52,53 +50,33 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _log = logFactory.CreateLog(this);
         }
 
-        public async Task UpdateOrderBookAsync(Index index)
+        public async Task UpdateLimitOrdersAsync(string indexName)
         {
-            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(index.Name);
-
-            if (indexSettings == null)
-                return;
-
-            IndexPrice indexPrice = await _indexPriceService.GetByIndexAsync(index.Name);
+            IndexPrice indexPrice = await _indexPriceService.GetByIndexAsync(indexName);
 
             if (indexPrice == null)
-            {
-                indexPrice = IndexPrice.Init(index.Name, index.Value, index.Timestamp, index.Weights);
+                throw new InvalidOperationException("Index price not found");
+            
+            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
 
-                await _indexPriceService.AddAsync(indexPrice);
-
-                _log.InfoWithDetails("The index state initialized", indexPrice);
-
-                return;
-            }
-
-            LimitOrderPrice limitOrderPrice = LimitOrderPriceCalculator.CalculatePrice(
-                index.Value, indexPrice.Value, indexSettings.Alpha, indexPrice.K, indexPrice.Price,
-                index.Timestamp, indexPrice.Timestamp, indexSettings.TrackingFee, indexSettings.PerformanceFee);
-
-            indexPrice.Update(index.Value, index.Timestamp, limitOrderPrice.Price, limitOrderPrice.K, limitOrderPrice.R,
-                limitOrderPrice.Delta, index.Weights);
-
-            await _indexPriceService.UpdateAsync(indexPrice);
-
-            _log.InfoWithDetails("The index price calculated", new
-            {
-                indexPrice,
-                indexSettings
-            });
-
+            if (indexSettings == null)
+                throw new InvalidOperationException("Index settings not found");
+            
+            // TODO: Replace to instrument settings
             Asset asset = _assetsReadModelRepository.TryGet(indexSettings.AssetId);
             AssetPair assetPair = _assetPairsReadModelRepository.TryGet(indexSettings.AssetPairId);
 
-            string walletId = await _settingsService.GetWalletIdAsync();
+            string walletId = _settingsService.GetWalletId();
+
+            decimal sellPrice = (indexPrice.Price + indexSettings.SellMarkup)
+                .TruncateDecimalPlaces(assetPair.Accuracy, true);
+
+            decimal buyPrice = indexPrice.Price.TruncateDecimalPlaces(assetPair.Accuracy);
 
             var limitOrders = new[]
             {
-                LimitOrder.CreateSell(walletId,
-                    (limitOrderPrice.Price + indexSettings.SellMarkup).TruncateDecimalPlaces(assetPair.Accuracy, true),
-                    Math.Round(indexSettings.SellVolume, asset.Accuracy)),
-                LimitOrder.CreateBuy(walletId, limitOrderPrice.Price.TruncateDecimalPlaces(assetPair.Accuracy),
-                    Math.Round(indexSettings.BuyVolume, asset.Accuracy))
+                LimitOrder.CreateSell(walletId, sellPrice, Math.Round(indexSettings.SellVolume, asset.Accuracy)),
+                LimitOrder.CreateBuy(walletId, buyPrice, Math.Round(indexSettings.BuyVolume, asset.Accuracy))
             };
 
             ValidateMinVolume(limitOrders, assetPair.MinVolume);

@@ -5,32 +5,31 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 {
     public static class LimitOrderPriceCalculator
     {
-        public static LimitOrderPrice CalculatePrice(
-            decimal currentIndexValue,
-            decimal previousIndexValue,
-            decimal alpha,
-            decimal previousK,
-            decimal previousPrice,
-            DateTime currentIndexTimestamp,
-            DateTime previousIndexTimestamp,
-            decimal trackingFee,
-            decimal performanceFee)
+        public static LimitOrderPrice Calculate(Quote quote, decimal volume, LimitOrderType limitOrderType,
+            HedgeSettings hedgeSettings)
         {
-            decimal r = currentIndexValue / previousIndexValue - 1;
+            if (hedgeSettings.ThresholdDown < volume && volume < hedgeSettings.ThresholdUp)
+            {
+                decimal price = limitOrderType == LimitOrderType.Sell
+                    ? quote.Ask
+                    : quote.Bid;
 
-            decimal k = alpha * previousK + (1 - alpha) * r * previousPrice;
+                return new LimitOrderPrice(price, PriceType.Limit);
+            }
 
-            int currentYear = DateTime.UtcNow.Year;
+            if (hedgeSettings.ThresholdUp <= volume)
+            {
+                decimal price = limitOrderType == LimitOrderType.Sell
+                    ? quote.Bid * (1 - hedgeSettings.MarketOrderMarkup)
+                    : quote.Ask * (1 + hedgeSettings.MarketOrderMarkup);
 
-            int daysInCurrentYear = (new DateTime(currentYear + 1, 1, 1) - new DateTime(currentYear, 1, 1)).Days;
+                return new LimitOrderPrice(price, PriceType.Market);
+            }
 
-            decimal secondsSinceLastIndex = (decimal) (currentIndexTimestamp - previousIndexTimestamp).TotalSeconds;
-
-            decimal delta = secondsSinceLastIndex / (daysInCurrentYear * 24 * 60 * 60);
-
-            decimal price = previousPrice * (1 + r - trackingFee * delta) - performanceFee * delta * Math.Max(0, k);
-
-            return new LimitOrderPrice(price, k, r, delta);
+            throw new InvalidOperationException("The volume is out of the range");
         }
+
+        public static bool CanCalculate(decimal volume, HedgeSettings hedgeSettings)
+            => volume > hedgeSettings.ThresholdDown;
     }
 }

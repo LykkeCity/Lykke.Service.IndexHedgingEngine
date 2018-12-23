@@ -4,7 +4,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {
     public interface IHedgeService
     {
-        Task ExecuteAsync();
+        Task UpdateLimitOrdersAsync();
 
         Task CreateLimitOrderAsync(string assetId, string exchange, LimitOrderType limitOrderType, decimal price,
             decimal volume, string userId);

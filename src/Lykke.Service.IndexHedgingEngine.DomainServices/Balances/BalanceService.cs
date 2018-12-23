@@ -52,7 +52,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
 
         public async Task UpdateAsync()
         {
-            string walletId = await _settingsService.GetWalletIdAsync();
+            string walletId = _settingsService.GetWalletId();
 
             if (string.IsNullOrEmpty(walletId))
                 return;

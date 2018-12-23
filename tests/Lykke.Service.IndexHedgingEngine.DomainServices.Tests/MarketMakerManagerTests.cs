@@ -11,6 +11,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
     [TestClass]
     public class MarketMakerManagerTests
     {
+        private readonly Mock<IIndexPriceService> _indexPriceServiceMock =
+            new Mock<IIndexPriceService>();
+        
         private readonly Mock<IMarketMakerService> _marketMakerServiceMock =
             new Mock<IMarketMakerService>();
         
@@ -51,6 +54,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
                 .Returns(() => Task.CompletedTask);
             
             _marketMakerManager = new MarketMakerManager(
+                _indexPriceServiceMock.Object,
                 _marketMakerServiceMock.Object,
                 _hedgeServiceMock.Object,
                 _internalTradeServiceMock.Object,
@@ -76,7 +80,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
             }};
 
             _hedgeServiceMock
-                .Setup(o => o.ExecuteAsync())
+                .Setup(o => o.UpdateLimitOrdersAsync())
                 .Returns(() => Task.CompletedTask);
 
             // act
@@ -93,7 +97,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
 
             Assert.IsTrue(_internalTrades.Count > 0);
             
-            _hedgeServiceMock.Verify(o => o.ExecuteAsync(), Times.Never);
+            _hedgeServiceMock.Verify(o => o.UpdateLimitOrdersAsync(), Times.Never);
         }
     }
 }
