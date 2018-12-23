@@ -1,3 +1,4 @@
+using System;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -28,16 +29,19 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.AssetHedgeSettings
         /// <summary>
         /// The min volume that can be used to create external limit order.
         /// </summary>
+        [Obsolete]
         public decimal MinVolume { get; set; }
 
         /// <summary>
         /// The accuracy of the hedge limit order volume.
         /// </summary>
+        [Obsolete]
         public int VolumeAccuracy { get; set; }
 
         /// <summary>
         /// The accuracy of the hedge limit order price.
         /// </summary>
+        [Obsolete]
         public int PriceAccuracy { get; set; }
 
         /// <summary>

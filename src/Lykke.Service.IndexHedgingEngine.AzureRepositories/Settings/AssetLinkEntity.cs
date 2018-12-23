@@ -1,3 +1,4 @@
+using System;
 using JetBrains.Annotations;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
@@ -7,6 +8,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     [ValueTypeMergingStrategy(ValueTypeMergingStrategy.UpdateIfDirty)]
+    [Obsolete]
     public class AssetLinkEntity : AzureTableEntity
     {
         public AssetLinkEntity()

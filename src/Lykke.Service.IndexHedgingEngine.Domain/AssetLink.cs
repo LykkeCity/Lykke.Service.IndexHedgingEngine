@@ -1,8 +1,11 @@
+using System;
+
 namespace Lykke.Service.IndexHedgingEngine.Domain
 {
     /// <summary>
     /// Represents a mapping between external and Lykke asset.
     /// </summary>
+    [Obsolete]
     public class AssetLink
     {
         /// <summary>

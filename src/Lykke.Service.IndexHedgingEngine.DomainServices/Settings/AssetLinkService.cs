@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 {
+    [Obsolete]
     public class AssetLinkService : IAssetLinkService
     {
         private readonly IAssetLinkRepository _assetLinkRepository;

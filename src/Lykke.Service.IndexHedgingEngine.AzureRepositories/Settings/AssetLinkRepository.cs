@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -7,6 +8,7 @@ using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
 {
+    [Obsolete]
     public class AssetLinkRepository : IAssetLinkRepository
     {
         private readonly INoSQLTableStorage<AssetLinkEntity> _storage;

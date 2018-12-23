@@ -1,3 +1,4 @@
+using System;
 using JetBrains.Annotations;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
@@ -32,6 +33,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
 
         public string AssetPairId { get; set; }
 
+        [Obsolete]
         public decimal MinVolume
         {
             get => _minVolume;
@@ -45,6 +47,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
             }
         }
 
+        [Obsolete]
         public int VolumeAccuracy
         {
             get => _volumeAccuracy;
@@ -58,6 +61,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
             }
         }
 
+        [Obsolete]
         public int PriceAccuracy
         {
             get => _priceAccuracy;

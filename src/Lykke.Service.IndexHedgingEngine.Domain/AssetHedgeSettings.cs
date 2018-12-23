@@ -1,3 +1,4 @@
+using System;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain
@@ -25,16 +26,19 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// <summary>
         /// The min volume that can be used to create external limit order.
         /// </summary>
+        [Obsolete]
         public decimal MinVolume { get; set; }
 
         /// <summary>
         /// The accuracy of the hedge limit order volume.
         /// </summary>
+        [Obsolete]
         public int VolumeAccuracy { get; set; }
 
         /// <summary>
         /// The accuracy of the hedge limit order price.
         /// </summary>
+        [Obsolete]
         public int PriceAccuracy { get; set; }
 
         /// <summary>

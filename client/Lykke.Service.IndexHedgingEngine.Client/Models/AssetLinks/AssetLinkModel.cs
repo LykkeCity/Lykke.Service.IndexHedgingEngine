@@ -1,3 +1,4 @@
+using System;
 using JetBrains.Annotations;
 
 namespace Lykke.Service.IndexHedgingEngine.Client.Models.AssetLinks
@@ -5,6 +6,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.AssetLinks
     /// <summary>
     /// Represents a mapping between external and Lykke asset.
     /// </summary>
+    [Obsolete]
     [PublicAPI]
     public class AssetLinkModel
     {

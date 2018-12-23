@@ -96,14 +96,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (!_exchangeAdapters.TryGetValue(assetHedgeSettings.Exchange, out IExchangeAdapter exchangeAdapter))
                 throw new InvalidOperationException("There is no exchange provider");
 
-            volume = Math.Round(volume, assetHedgeSettings.VolumeAccuracy);
-
-            if (volume < assetHedgeSettings.MinVolume)
-                throw new InvalidOperationException("The limit order volume is less than allowed min volume.");
-
-            price = price.TruncateDecimalPlaces(assetHedgeSettings.PriceAccuracy,
-                limitOrderType == LimitOrderType.Sell);
-
             HedgeLimitOrder hedgeLimitOrder = HedgeLimitOrder.Create(assetHedgeSettings.Exchange,
                 assetHedgeSettings.AssetId, assetHedgeSettings.AssetPairId, limitOrderType, PriceType.Limit, price,
                 volume);
@@ -155,25 +147,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             if (quote == null)
                 throw new InvalidOperationException("No quote");
+            
+            LimitOrderType limitOrderType = position.Volume > 0
+                ? LimitOrderType.Sell
+                : LimitOrderType.Buy;
+            
+            decimal price = limitOrderType == LimitOrderType.Sell
+                ? quote.Ask
+                : quote.Bid;
 
-            decimal volume = Math.Round(position.Volume, assetHedgeSettings.VolumeAccuracy);
-
-            if (Math.Abs(volume) < assetHedgeSettings.MinVolume)
-                throw new InvalidOperationException("The limit order volume is less than allowed min volume.");
-
-            LimitOrderType limitOrderType;
-            decimal price;
-
-            if (volume > 0)
-            {
-                limitOrderType = LimitOrderType.Sell;
-                price = quote.Ask.TruncateDecimalPlaces(assetHedgeSettings.PriceAccuracy, true);
-            }
-            else
-            {
-                limitOrderType = LimitOrderType.Buy;
-                price = quote.Bid.TruncateDecimalPlaces(assetHedgeSettings.PriceAccuracy);
-            }
+            decimal volume = Math.Abs(position.Volume);
 
             HedgeLimitOrder hedgeLimitOrder = HedgeLimitOrder.Create(assetHedgeSettings.Exchange,
                 assetHedgeSettings.AssetId, assetHedgeSettings.AssetPairId, limitOrderType, PriceType.Limit, price,
@@ -217,11 +200,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 LimitOrderPrice limitOrderPrice = LimitOrderPriceCalculator.Calculate(assetInvestment.Quote,
                     Math.Abs(assetInvestment.RemainingAmount), limitOrderType, hedgeSettings);
 
-                decimal price = limitOrderPrice.Price.TruncateDecimalPlaces(assetHedgeSettings.PriceAccuracy,
-                    limitOrderType == LimitOrderType.Sell);
+                decimal price = limitOrderPrice.Price;
 
-                decimal volume = Math.Round(Math.Abs(assetInvestment.RemainingAmount / assetInvestment.Quote.Mid),
-                    assetHedgeSettings.VolumeAccuracy);
+                decimal volume = Math.Abs(assetInvestment.RemainingAmount / assetInvestment.Quote.Mid);
 
                 HedgeLimitOrder hedgeLimitOrder = HedgeLimitOrder.Create(assetHedgeSettings.Exchange,
                     assetHedgeSettings.AssetId, assetHedgeSettings.AssetPairId, limitOrderType, limitOrderPrice.Type,
