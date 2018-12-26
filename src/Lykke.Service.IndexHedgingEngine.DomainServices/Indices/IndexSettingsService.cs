@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -5,6 +6,7 @@ using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Exceptions;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
@@ -16,14 +18,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
     public class IndexSettingsService : IIndexSettingsService
     {
         private readonly IIndexSettingsRepository _indexSettingsRepository;
+        private readonly IInstrumentService _instrumentService;
         private readonly ILog _log;
         private readonly InMemoryCache<IndexSettings> _cache;
 
         public IndexSettingsService(
             IIndexSettingsRepository indexSettingsRepository,
+            IInstrumentService instrumentService,
             ILogFactory logFactory)
         {
             _indexSettingsRepository = indexSettingsRepository;
+            _instrumentService = instrumentService;
 
             _cache = new InMemoryCache<IndexSettings>(GetKey, false);
             _log = logFactory.CreateLog(this);
@@ -57,6 +62,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
             if (currentIndexSettings != null)
                 throw new EntityAlreadyExistsException();
 
+            await ValidateAsync(indexSettings);
+
             await _indexSettingsRepository.InsertAsync(indexSettings);
 
             _cache.Set(indexSettings);
@@ -70,6 +77,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
 
             if (currentIndexSettings == null)
                 throw new EntityNotFoundException();
+
+            await ValidateAsync(indexSettings);
 
             currentIndexSettings.Update(indexSettings);
 
@@ -92,6 +101,27 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
             _cache.Remove(GetKey(indexName));
 
             _log.InfoWithDetails("Index settings was removed", currentIndexSettings);
+        }
+
+        private async Task ValidateAsync(IndexSettings indexSettings)
+        {
+            AssetSettings assetSettings =
+                await _instrumentService.GetAssetAsync(indexSettings.AssetId, ExchangeNames.Lykke);
+
+            if (assetSettings == null)
+                throw new InvalidOperationException("Asset settings not found");
+
+            AssetPairSettings assetPairSettings =
+                await _instrumentService.GetAssetPairAsync(indexSettings.AssetPairId, ExchangeNames.Lykke);
+
+            if (assetPairSettings == null)
+                throw new InvalidOperationException("Asset pair settings not found");
+
+            if (indexSettings.SellVolume / indexSettings.SellLimitOrdersCount < assetPairSettings.MinVolume)
+                throw new InvalidOperationException("Sell limit order volume is less than min volume");
+
+            if (indexSettings.BuyVolume / indexSettings.BuyLimitOrdersCount < assetPairSettings.MinVolume)
+                throw new InvalidOperationException("Buy limit order volume is less than min volume");
         }
 
         private static string GetKey(IndexSettings indexSettings)

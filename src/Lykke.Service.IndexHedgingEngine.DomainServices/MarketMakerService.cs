@@ -10,6 +10,7 @@ using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Utils;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices
 {
@@ -25,6 +26,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ILimitOrderService _limitOrderService;
         private readonly IInstrumentService _instrumentService;
+        private readonly TraceWriter _traceWriter;
         private readonly ILog _log;
 
         public MarketMakerService(
@@ -35,6 +37,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             ILykkeExchangeService lykkeExchangeService,
             ILimitOrderService limitOrderService,
             IInstrumentService instrumentService,
+            TraceWriter traceWriter,
             ILogFactory logFactory)
         {
             _indexSettingsService = indexSettingsService;
@@ -44,6 +47,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _lykkeExchangeService = lykkeExchangeService;
             _limitOrderService = limitOrderService;
             _instrumentService = instrumentService;
+            _traceWriter = traceWriter;
             _log = logFactory.CreateLog(this);
         }
 
@@ -98,6 +102,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _limitOrderService.Update(indexSettings.AssetPairId, limitOrders);
 
             await _lykkeExchangeService.ApplyAsync(indexSettings.AssetPairId, allowedLimitOrders);
+
+            _traceWriter.LimitOrders(indexSettings.AssetPairId, limitOrders);
         }
 
         public async Task CancelLimitOrdersAsync(string indexName)

@@ -17,6 +17,7 @@ using Lykke.Service.IndexHedgingEngine.DomainServices.Reports;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Settings;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Timers;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Trades;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Utils;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices
 {
@@ -84,7 +85,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             builder.RegisterType<IndexPriceService>()
                 .As<IIndexPriceService>()
                 .SingleInstance();
-            
+
             builder.RegisterType<InstrumentService>()
                 .As<IInstrumentService>()
                 .SingleInstance();
@@ -148,6 +149,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<IVirtualTradeService>()
                 .SingleInstance();
 
+            builder.RegisterType<TraceWriter>()
+                .AsSelf()
+                .SingleInstance();
+
             builder.RegisterType<HedgeService>()
                 .As<IHedgeService>()
                 .SingleInstance();
@@ -165,7 +170,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             builder.RegisterType<RateService>()
                 .As<IRateService>()
                 .SingleInstance();
-            
+
             builder.RegisterType<RiskExposureReportService>()
                 .As<IRiskExposureReportService>()
                 .SingleInstance();

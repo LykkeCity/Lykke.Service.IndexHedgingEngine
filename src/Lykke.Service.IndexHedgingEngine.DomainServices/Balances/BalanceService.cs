@@ -11,6 +11,7 @@ using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Utils;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
 {
@@ -19,16 +20,19 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
     {
         private readonly ISettingsService _settingsService;
         private readonly IBalancesClient _balancesClient;
+        private readonly TraceWriter _traceWriter;
         private readonly InMemoryCache<Balance> _cache;
         private readonly ILog _log;
 
         public BalanceService(
             ISettingsService settingsService,
             IBalancesClient balancesClient,
+            TraceWriter traceWriter,
             ILogFactory logFactory)
         {
             _settingsService = settingsService;
             _balancesClient = balancesClient;
+            _traceWriter = traceWriter;
             _cache = new InMemoryCache<Balance>(GetKey, true);
             _log = logFactory.CreateLog(this);
         }
@@ -54,11 +58,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
 
             try
             {
-                IEnumerable<ClientBalanceResponseModel> balances =
+                IEnumerable<ClientBalanceResponseModel> response =
                     await _balancesClient.GetClientBalances(walletId);
 
-                _cache.Set(balances.Select(o => new Balance(ExchangeNames.Lykke, o.AssetId, o.Balance, o.Reserved))
-                    .ToArray());
+                Balance[] balances = response
+                    .Select(o => new Balance(ExchangeNames.Lykke, o.AssetId, o.Balance, o.Reserved))
+                    .ToArray();
+
+                _cache.Set(balances);
+
+                _traceWriter.Balances(balances);
             }
             catch (Exception exception)
             {
