@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain
 {
@@ -22,7 +23,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         public decimal Value { get; set; }
 
         /// <summary>
-        /// The current price of index. 
+        /// The current settlement price of index. 
         /// </summary>
         public decimal Price { get; set; }
 
@@ -51,8 +52,14 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// </summary>
         public IReadOnlyCollection<AssetWeight> Weights { get; set; }
 
+        public bool ValidateValue()
+            => Value > 0;
+        
+        public bool ValidateWeights()
+            => Math.Abs(Weights.Sum(o => o.Weight) - 1) < 0.1m;
+        
         public void Update(decimal value, DateTime timestamp, decimal price, decimal k, decimal r, decimal delta,
-            IReadOnlyCollection<AssetWeight> weights)
+            IEnumerable<AssetWeight> weights)
         {
             Value = value;
             Timestamp = timestamp;
@@ -60,23 +67,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
             K = k;
             R = r;
             Delta = delta;
-            Weights = weights;
+            Weights = weights.ToArray();
         }
 
-        // TODO: refactoring
-        public void Update(IndexPrice indexPrice)
-        {
-            Value = indexPrice.Value;
-            Timestamp = indexPrice.Timestamp;
-            Price = indexPrice.Price;
-            K = indexPrice.K;
-            R = indexPrice.R;
-            Delta = indexPrice.Delta;
-            Weights = indexPrice.Weights;
-        }
-
-        public static IndexPrice Init(string name, decimal value, DateTime timestamp,
-            IReadOnlyCollection<AssetWeight> weights)
+        public static IndexPrice Init(string name, decimal value, DateTime timestamp, IEnumerable<AssetWeight> weights)
         {
             return new IndexPrice
             {
@@ -87,7 +81,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
                 K = InitialK,
                 R = decimal.Zero,
                 Delta = decimal.Zero,
-                Weights = weights
+                Weights = weights.ToArray()
             };
         }
     }

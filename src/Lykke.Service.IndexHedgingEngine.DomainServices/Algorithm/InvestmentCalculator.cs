@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lykke.Service.IndexHedgingEngine.Domain;
@@ -7,7 +6,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 {
     public static class InvestmentCalculator
     {
-        public static IReadOnlyCollection<AssetInvestment> CalculateInvestments(
+        public static IReadOnlyCollection<AssetInvestment> Calculate(
             IEnumerable<string> assets,
             IReadOnlyCollection<IndexSettings> indicesSettings,
             IReadOnlyCollection<Token> tokens,
@@ -76,32 +75,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             }
 
             return assetsInvestments;
-        }
-
-        public static decimal CalculateHedgeLimitOrderPrice(Quote quote, decimal investments,
-            HedgeSettings hedgeSettings, out PriceType priceType)
-        {
-            decimal absoluteInvestments = Math.Abs(investments);
-
-            if (hedgeSettings.ThresholdDown < absoluteInvestments && absoluteInvestments < hedgeSettings.ThresholdUp)
-            {
-                priceType = PriceType.Limit;
-
-                return investments > 0
-                    ? quote.Ask
-                    : quote.Bid;
-            }
-
-            if (hedgeSettings.ThresholdUp <= absoluteInvestments)
-            {
-                priceType = PriceType.Market;
-
-                return investments > 0
-                    ? quote.Bid * (1 - hedgeSettings.MarketOrderMarkup)
-                    : quote.Ask * (1 + hedgeSettings.MarketOrderMarkup);
-            }
-
-            throw new InvalidOperationException("The investments are out of the range");
         }
     }
 }

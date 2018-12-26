@@ -1,6 +1,5 @@
 ﻿using JetBrains.Annotations;
 using Lykke.Sdk.Settings;
-using Lykke.Service.Assets.Client;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.ExchangeOperations.Client;
 using Lykke.Service.IndexHedgingEngine.Settings.Clients.MatchingEngine;
@@ -12,8 +11,6 @@ namespace Lykke.Service.IndexHedgingEngine.Settings
     public class AppSettings : BaseAppSettings
     {
         public IndexHedgingEngineSettings IndexHedgingEngineService { get; set; }
-
-        public AssetServiceSettings AssetsServiceClient { get; set; }
 
         public BalancesServiceClientSettings BalancesServiceClient { get; set; }
 

@@ -31,14 +31,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
             _cache = new InMemoryCache<OrderBook>(GetKey, true);
         }
 
-        public Task<IReadOnlyCollection<OrderBook>> GetAllAsync()
+        public IReadOnlyCollection<OrderBook> GetAll()
         {
-            return Task.FromResult(_cache.GetAll());
+            return _cache.GetAll();
         }
 
-        public async Task<IReadOnlyCollection<OrderBook>> GetAsync(int limit)
+        public IReadOnlyCollection<OrderBook> Get(int limit)
         {
-            string walletId = await _settingsService.GetWalletIdAsync();
+            string walletId = _settingsService.GetWalletId();
 
             var orderBooks = new List<OrderBook>();
 
@@ -80,7 +80,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
             {
                 _sellLimitOrders[assetPairId] = limitOrders;
 
-                await UpdateOrderBookAsync(assetPairId, timestamp);
+                UpdateOrderBook(assetPairId, timestamp);
             }
             finally
             {
@@ -100,7 +100,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
             {
                 _buyLimitOrders[assetPairId] = limitOrders;
 
-                await UpdateOrderBookAsync(assetPairId, timestamp);
+                UpdateOrderBook(assetPairId, timestamp);
             }
             finally
             {
@@ -115,13 +115,13 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
             return indexSettings.Any(o => o.AssetPairId == assetPairId);
         }
 
-        private Task UpdateOrderBookAsync(string assetPairId, DateTime timestamp)
+        private void UpdateOrderBook(string assetPairId, DateTime timestamp)
         {
             if (!_sellLimitOrders.TryGetValue(assetPairId, out IReadOnlyCollection<LimitOrder> sellLimitOrders))
-                return Task.CompletedTask;
+                return;
 
             if (!_buyLimitOrders.TryGetValue(assetPairId, out IReadOnlyCollection<LimitOrder> buyLimitOrders))
-                return Task.CompletedTask;
+                return;
 
             bool isValid = true;
 
@@ -129,7 +129,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
                 isValid = sellLimitOrders.Min(o => o.Price) > buyLimitOrders.Max(o => o.Price);
 
             if (!isValid)
-                return Task.CompletedTask;
+                return;
 
             _cache.Set(new OrderBook
             {
@@ -137,8 +137,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
                 Timestamp = timestamp,
                 LimitOrders = sellLimitOrders.Union(buyLimitOrders).ToArray()
             });
-
-            return Task.CompletedTask;
         }
 
         private static string GetKey(OrderBook orderBook)

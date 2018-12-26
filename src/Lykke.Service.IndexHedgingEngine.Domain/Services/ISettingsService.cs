@@ -5,10 +5,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {
     public interface ISettingsService
     {
-        Task<string> GetInstanceNameAsync();
+        string GetInstanceName();
 
-        Task<string> GetWalletIdAsync();
+        string GetWalletId();
 
-        Task<IReadOnlyCollection<ExchangeSettings>> GetExchangesAsync();
+        IReadOnlyCollection<ExchangeSettings> GetExchanges();
     }
 }

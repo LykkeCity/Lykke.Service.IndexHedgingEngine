@@ -5,6 +5,9 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
     /// </summary>
     public class IndexSettings
     {
+        private int _sellLimitOrdersCount;
+        private int _buyLimitOrdersCount;
+
         /// <summary>
         /// The name of the index.
         /// </summary>
@@ -50,6 +53,24 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// </summary>
         public decimal BuyVolume { get; set; }
 
+        /// <summary>
+        /// The number of sell limit orders.
+        /// </summary>
+        public int SellLimitOrdersCount
+        {
+            get => _sellLimitOrdersCount <= 0 ? 1 : _sellLimitOrdersCount;
+            set => _sellLimitOrdersCount = value;
+        }
+
+        /// <summary>
+        /// The number of buy limit orders.
+        /// </summary>
+        public int BuyLimitOrdersCount
+        {
+            get => _buyLimitOrdersCount <= 0 ? 1 : _buyLimitOrdersCount;
+            set => _buyLimitOrdersCount = value;
+        }
+
         public void Update(IndexSettings indexSettings)
         {
             AssetId = indexSettings.AssetId;
@@ -60,6 +81,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
             SellMarkup = indexSettings.SellMarkup;
             SellVolume = indexSettings.SellVolume;
             BuyVolume = indexSettings.BuyVolume;
+            SellLimitOrdersCount = indexSettings.SellLimitOrdersCount;
+            BuyLimitOrdersCount = indexSettings.BuyLimitOrdersCount;
         }
     }
 }

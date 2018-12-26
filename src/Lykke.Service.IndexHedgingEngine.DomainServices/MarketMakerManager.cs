@@ -12,10 +12,11 @@ using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices
 {
-    public class MarketMakerManager : IIndexHandler, IInternalTradeHandler
+    public class MarketMakerManager : IIndexHandler, IInternalTradeHandler, IMarketMakerStateHandler
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
+        private readonly IIndexPriceService _indexPriceService;
         private readonly IMarketMakerService _marketMakerService;
         private readonly IHedgeService _hedgeService;
         private readonly IInternalTradeService _internalTradeService;
@@ -25,6 +26,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly ILog _log;
 
         public MarketMakerManager(
+            IIndexPriceService indexPriceService,
             IMarketMakerService marketMakerService,
             IHedgeService hedgeService,
             IInternalTradeService internalTradeService,
@@ -33,6 +35,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             IMarketMakerStateService marketMakerStateService,
             ILogFactory logFactory)
         {
+            _indexPriceService = indexPriceService;
             _marketMakerService = marketMakerService;
             _hedgeService = hedgeService;
             _internalTradeService = internalTradeService;
@@ -48,21 +51,25 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             if (marketMakerState.Status != MarketMakerStatus.Active)
                 return;
-            
-            if(!ValidateIndexWeightsValue(index))
-                return;
-            
+
             await _semaphore.WaitAsync();
 
             try
             {
-                await _marketMakerService.UpdateOrderBookAsync(index);
+                await _indexPriceService.UpdateAsync(index);
 
-                await _hedgeService.ExecuteAsync();
+                await _hedgeService.UpdateLimitOrdersAsync();
+
+                await _marketMakerService.UpdateLimitOrdersAsync(index.Name);
+            }
+            catch (InvalidOperationException exception)
+            {
+                _log.WarningWithDetails(exception.Message, index);
             }
             catch (Exception exception)
             {
                 _log.ErrorWithDetails(exception, "An error occurred while processing index", index);
+                throw;
             }
             finally
             {
@@ -97,23 +104,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        private bool ValidateIndexWeightsValue(Index index)
+        public async Task HandleMarketMakerStateAsync(MarketMakerStatus marketMakerStatus, string comment,
+            string userId)
         {
-            decimal totalWeight = index.Weights.Sum(o => o.Weight);
+            await _marketMakerStateService.UpdateAsync(marketMakerStatus, comment, userId);
 
-            if (.9m < totalWeight || totalWeight > 1.1m)
+            if (marketMakerStatus != MarketMakerStatus.Active)
             {
-                _log.WarningWithDetails("Wrong weight in the index", index);
-                return false;
-            }
-            
-            if(0 <= index.Value)
-            {
-                _log.WarningWithDetails("Wrong index value", index);
-                return false;
-            }
+                IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
 
-            return true;
+                foreach (IndexSettings indexSettings in indicesSettings)
+                    await _marketMakerService.CancelLimitOrdersAsync(indexSettings.Name);
+            }
         }
     }
 }

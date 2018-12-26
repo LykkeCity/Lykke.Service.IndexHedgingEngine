@@ -113,10 +113,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<IPositionReportService>()
                 .SingleInstance();
 
-            builder.RegisterType<AssetLinkService>()
-                .As<IAssetLinkService>()
-                .SingleInstance();
-
             builder.RegisterType<HedgeSettingsService>()
                 .As<IHedgeSettingsService>()
                 .SingleInstance();
@@ -159,6 +155,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             builder.RegisterType<MarketMakerManager>()
                 .As<IIndexHandler>()
                 .As<IInternalTradeHandler>()
+                .As<IMarketMakerStateHandler>()
                 .SingleInstance();
 
             builder.RegisterType<MarketMakerService>()

@@ -20,18 +20,6 @@ namespace Lykke.Service.IndexHedgingEngine.Validators
             RuleFor(o => o.AssetPairId)
                 .NotEmpty()
                 .WithMessage("Asset pair id required");
-
-            RuleFor(o => o.MinVolume)
-                .GreaterThanOrEqualTo(0)
-                .WithMessage("Min volume should be greater than or equal to zero");
-
-            RuleFor(o => o.VolumeAccuracy)
-                .InclusiveBetween(1, 8)
-                .WithMessage("Volume accuracy should be between 1 and 8");
-
-            RuleFor(o => o.PriceAccuracy)
-                .InclusiveBetween(1, 8)
-                .WithMessage("Price accuracy should be between 1 and 8");
             
             RuleFor(o => o.Mode)
                 .NotEqual(AssetHedgeMode.None)

@@ -87,6 +87,15 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
+        public void Remove(string key, Func<T, bool> func)
+        {
+            lock (_sync)
+            {
+                if (_cache.ContainsKey(key) && func(_cache[key]))
+                    _cache.Remove(key);
+            }
+        }
+        
         public void Clear()
         {
             lock (_sync)

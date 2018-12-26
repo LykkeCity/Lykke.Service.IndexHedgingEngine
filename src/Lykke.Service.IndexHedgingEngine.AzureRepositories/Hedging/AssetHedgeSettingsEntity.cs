@@ -32,45 +32,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
 
         public string AssetPairId { get; set; }
 
-        public decimal MinVolume
-        {
-            get => _minVolume;
-            set
-            {
-                if (_minVolume != value)
-                {
-                    _minVolume = value;
-                    MarkValueTypePropertyAsDirty();
-                }
-            }
-        }
-
-        public int VolumeAccuracy
-        {
-            get => _volumeAccuracy;
-            set
-            {
-                if (_volumeAccuracy != value)
-                {
-                    _volumeAccuracy = value;
-                    MarkValueTypePropertyAsDirty();
-                }
-            }
-        }
-
-        public int PriceAccuracy
-        {
-            get => _priceAccuracy;
-            set
-            {
-                if (_priceAccuracy != value)
-                {
-                    _priceAccuracy = value;
-                    MarkValueTypePropertyAsDirty();
-                }
-            }
-        }
-
         public bool Approved
         {
             get => _approved;

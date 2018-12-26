@@ -5,13 +5,12 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Lykke.Logs" Version="7.2.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="Moq" Version="4.10.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Lykke.Service.IndexHedgingEngine.DomainServices\Lykke.Service.IndexHedgingEngine.DomainServices.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.Service.IndexHedgingEngine.Domain\Lykke.Service.IndexHedgingEngine.Domain.csproj" />
   </ItemGroup>
 </Project>

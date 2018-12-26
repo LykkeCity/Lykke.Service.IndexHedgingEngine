@@ -34,7 +34,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Hedging
 
             if (hedgeLimitOrder != null)
                 return hedgeLimitOrder;
-            
+
             hedgeLimitOrder = await _hedgeLimitOrderRepository.GetByIdAsync(hedgeLimitOrderId);
 
             if (hedgeLimitOrder != null)
@@ -45,20 +45,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Hedging
 
             return hedgeLimitOrder;
         }
-        
+
         public async Task AddAsync(HedgeLimitOrder hedgeLimitOrder)
         {
             _cache.Set(hedgeLimitOrder);
 
             _memoryCache.Set(hedgeLimitOrder.Id, hedgeLimitOrder,
                 new MemoryCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)});
-            
+
             await _hedgeLimitOrderRepository.InsertAsync(hedgeLimitOrder);
         }
 
-        public void Close(string assetId)
+        public void Close(HedgeLimitOrder hedgeLimitOrder)
         {
-            _cache.Remove(GetKey(assetId));
+            _cache.Remove(GetKey(hedgeLimitOrder), o => o.Id == hedgeLimitOrder.Id);
         }
 
         private static string GetKey(HedgeLimitOrder hedgeLimitOrder)

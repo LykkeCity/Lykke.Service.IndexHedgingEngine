@@ -25,11 +25,13 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         /// <response code="200">A collection of balances.</response>
         [HttpGet("lykke")]
         [ProducesResponseType(typeof(IReadOnlyCollection<BalanceModel>), (int) HttpStatusCode.OK)]
-        public async Task<IReadOnlyList<BalanceModel>> GetLykkeAsync()
+        public Task<IReadOnlyList<BalanceModel>> GetLykkeAsync()
         {
-            IReadOnlyCollection<Balance> balances = await _balanceService.GetAsync(ExchangeNames.Lykke);
+            IReadOnlyCollection<Balance> balances = _balanceService.GetByExchange(ExchangeNames.Lykke);
 
-            return Mapper.Map<BalanceModel[]>(balances);
+            var model = Mapper.Map<BalanceModel[]>(balances);
+
+            return Task.FromResult<IReadOnlyList<BalanceModel>>(model);
         }
     }
 }

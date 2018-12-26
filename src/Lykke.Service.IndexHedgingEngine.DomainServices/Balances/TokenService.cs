@@ -75,7 +75,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
                 Token previousToken = await GetAsync(assetId);
                 Token currentToken = previousToken.Copy();
 
-                string walletId = await _settingsService.GetWalletIdAsync();
+                string walletId = _settingsService.GetWalletId();
 
                 string transactionId;
 

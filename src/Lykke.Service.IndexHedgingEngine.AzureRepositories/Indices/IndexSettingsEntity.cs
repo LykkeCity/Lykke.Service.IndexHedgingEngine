@@ -15,6 +15,8 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices
         private decimal _sellMarkup;
         private decimal _sellVolume;
         private decimal _buyVolume;
+        private int _sellLimitOrdersCount;
+        private int _buyLimitOrdersCount;
 
         public IndexSettingsEntity()
         {
@@ -105,6 +107,32 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices
                 if (_buyVolume != value)
                 {
                     _buyVolume = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        public int SellLimitOrdersCount
+        {
+            get => _sellLimitOrdersCount;
+            set
+            {
+                if (_sellLimitOrdersCount != value)
+                {
+                    _sellLimitOrdersCount = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        public int BuyLimitOrdersCount
+        {
+            get => _buyLimitOrdersCount;
+            set
+            {
+                if (_buyLimitOrdersCount != value)
+                {
+                    _buyLimitOrdersCount = value;
                     MarkValueTypePropertyAsDirty();
                 }
             }

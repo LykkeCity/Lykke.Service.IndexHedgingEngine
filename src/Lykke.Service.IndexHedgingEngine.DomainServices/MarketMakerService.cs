@@ -6,12 +6,9 @@ using Common;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
-using Lykke.Service.Assets.Client.Models.v3;
-using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
-using Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices
@@ -19,15 +16,15 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
     [UsedImplicitly]
     public class MarketMakerService : IMarketMakerService
     {
+        private const string Exchange = ExchangeNames.Lykke;
+
         private readonly IIndexSettingsService _indexSettingsService;
         private readonly IIndexPriceService _indexPriceService;
         private readonly IBalanceService _balanceService;
         private readonly ISettingsService _settingsService;
         private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ILimitOrderService _limitOrderService;
-        private readonly IAssetsReadModelRepository _assetsReadModelRepository;
-        private readonly IAssetPairsReadModelRepository _assetPairsReadModelRepository;
-
+        private readonly IInstrumentService _instrumentService;
         private readonly ILog _log;
 
         public MarketMakerService(
@@ -37,8 +34,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             ISettingsService settingsService,
             ILykkeExchangeService lykkeExchangeService,
             ILimitOrderService limitOrderService,
-            IAssetsReadModelRepository assetsReadModelRepository,
-            IAssetPairsReadModelRepository assetPairsReadModelRepository,
+            IInstrumentService instrumentService,
             ILogFactory logFactory)
         {
             _indexSettingsService = indexSettingsService;
@@ -47,63 +43,51 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _settingsService = settingsService;
             _lykkeExchangeService = lykkeExchangeService;
             _limitOrderService = limitOrderService;
-            _assetsReadModelRepository = assetsReadModelRepository;
-            _assetPairsReadModelRepository = assetPairsReadModelRepository;
+            _instrumentService = instrumentService;
             _log = logFactory.CreateLog(this);
         }
 
-        public async Task UpdateOrderBookAsync(Index index)
+        public async Task UpdateLimitOrdersAsync(string indexName)
         {
-            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(index.Name);
-
-            if (indexSettings == null)
-                return;
-
-            IndexPrice indexPrice = await _indexPriceService.GetByIndexAsync(index.Name);
+            IndexPrice indexPrice = await _indexPriceService.GetByIndexAsync(indexName);
 
             if (indexPrice == null)
-            {
-                indexPrice = IndexPrice.Init(index.Name, index.Value, index.Timestamp, index.Weights);
+                throw new InvalidOperationException("Index price not found");
 
-                await _indexPriceService.AddAsync(indexPrice);
+            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
 
-                _log.InfoWithDetails("The index state initialized", indexPrice);
+            if (indexSettings == null)
+                throw new InvalidOperationException("Index settings not found");
 
-                return;
-            }
+            AssetPairSettings assetPairSettings =
+                await _instrumentService.GetAssetPairAsync(indexSettings.AssetPairId, Exchange);
 
-            LimitOrderPrice limitOrderPrice = LimitOrderPriceCalculator.CalculatePrice(
-                index.Value, indexPrice.Value, indexSettings.Alpha, indexPrice.K, indexPrice.Price,
-                index.Timestamp, indexPrice.Timestamp, indexSettings.TrackingFee, indexSettings.PerformanceFee);
+            if (assetPairSettings == null)
+                throw new InvalidOperationException("Asset pair settings not found");
 
-            indexPrice.Update(index.Value, index.Timestamp, limitOrderPrice.Price, limitOrderPrice.K, limitOrderPrice.R,
-                limitOrderPrice.Delta, index.Weights);
+            AssetSettings baseAssetSettings =
+                await _instrumentService.GetAssetAsync(assetPairSettings.BaseAsset, ExchangeNames.Lykke);
 
-            await _indexPriceService.UpdateAsync(indexPrice);
+            if (baseAssetSettings == null)
+                throw new InvalidOperationException("Base asset settings not found");
 
-            _log.InfoWithDetails("The index price calculated", new
-            {
-                indexPrice,
-                indexSettings
-            });
+            AssetSettings quoteAssetSettings =
+                await _instrumentService.GetAssetAsync(assetPairSettings.QuoteAsset, ExchangeNames.Lykke);
 
-            Asset asset = _assetsReadModelRepository.TryGet(indexSettings.AssetId);
-            AssetPair assetPair = _assetPairsReadModelRepository.TryGet(indexSettings.AssetPairId);
+            if (quoteAssetSettings == null)
+                throw new InvalidOperationException("Quote asset settings not found");
 
-            string walletId = await _settingsService.GetWalletIdAsync();
+            decimal sellPrice = (indexPrice.Price + indexSettings.SellMarkup)
+                .TruncateDecimalPlaces(assetPairSettings.PriceAccuracy, true);
 
-            var limitOrders = new[]
-            {
-                LimitOrder.CreateSell(walletId,
-                    (limitOrderPrice.Price + indexSettings.SellMarkup).TruncateDecimalPlaces(assetPair.Accuracy, true),
-                    Math.Round(indexSettings.SellVolume, asset.Accuracy)),
-                LimitOrder.CreateBuy(walletId, limitOrderPrice.Price.TruncateDecimalPlaces(assetPair.Accuracy),
-                    Math.Round(indexSettings.BuyVolume, asset.Accuracy))
-            };
+            decimal buyPrice = indexPrice.Price.TruncateDecimalPlaces(assetPairSettings.PriceAccuracy);
 
-            ValidateMinVolume(limitOrders, assetPair.MinVolume);
+            IReadOnlyCollection<LimitOrder> limitOrders =
+                CreateLimitOrders(indexSettings, assetPairSettings, sellPrice, buyPrice);
 
-            await ValidateBalanceAsync(limitOrders, assetPair);
+            ValidateBalance(limitOrders, baseAssetSettings, quoteAssetSettings);
+
+            ValidateMinVolume(limitOrders, assetPairSettings.MinVolume);
 
             LimitOrder[] allowedLimitOrders = limitOrders
                 .Where(o => o.Error == LimitOrderError.None)
@@ -116,11 +100,59 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             await _lykkeExchangeService.ApplyAsync(indexSettings.AssetPairId, allowedLimitOrders);
         }
 
-        private async Task ValidateBalanceAsync(IReadOnlyCollection<LimitOrder> limitOrders, AssetPair assetPair)
+        public async Task CancelLimitOrdersAsync(string indexName)
         {
-            Asset baseAsset = _assetsReadModelRepository.TryGet(assetPair.BaseAssetId);
-            Asset quoteAsset = _assetsReadModelRepository.TryGet(assetPair.QuotingAssetId);
+            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
 
+            if (indexSettings == null)
+                throw new InvalidOperationException("Index settings not found");
+
+            await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
+
+            _log.InfoWithDetails("Limit orders canceled", new {IndexName = indexName, indexSettings.AssetPairId});
+        }
+
+        private IReadOnlyCollection<LimitOrder> CreateLimitOrders(IndexSettings indexSettings,
+            AssetPairSettings assetPairSettings, decimal sellPrice, decimal buyPrice)
+        {
+            var limitOrders = new List<LimitOrder>();
+
+            string walletId = _settingsService.GetWalletId();
+
+            decimal sellVolume = Math.Round(indexSettings.SellVolume / indexSettings.SellLimitOrdersCount,
+                assetPairSettings.VolumeAccuracy);
+
+            if (sellVolume >= assetPairSettings.MinVolume)
+            {
+                for (int i = 0; i < indexSettings.SellLimitOrdersCount; i++)
+                    limitOrders.Add(LimitOrder.CreateSell(walletId, sellPrice, sellVolume));
+            }
+            else
+            {
+                limitOrders.Add(LimitOrder.CreateSell(walletId, sellPrice,
+                    Math.Round(indexSettings.SellVolume, assetPairSettings.VolumeAccuracy)));
+            }
+
+            decimal buyVolume = Math.Round(indexSettings.BuyVolume / indexSettings.BuyLimitOrdersCount,
+                assetPairSettings.VolumeAccuracy);
+
+            if (buyVolume >= assetPairSettings.MinVolume)
+            {
+                for (int i = 0; i < indexSettings.BuyLimitOrdersCount; i++)
+                    limitOrders.Add(LimitOrder.CreateBuy(walletId, buyPrice, buyVolume));
+            }
+            else
+            {
+                limitOrders.Add(LimitOrder.CreateBuy(walletId, buyPrice,
+                    Math.Round(indexSettings.BuyVolume, assetPairSettings.VolumeAccuracy)));
+            }
+
+            return limitOrders;
+        }
+
+        private void ValidateBalance(IReadOnlyCollection<LimitOrder> limitOrders, AssetSettings baseAssetSettings,
+            AssetSettings quoteAssetSettings)
+        {
             List<LimitOrder> sellLimitOrders = limitOrders
                 .Where(o => o.Error == LimitOrderError.None)
                 .Where(o => o.Type == LimitOrderType.Sell)
@@ -135,20 +167,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             if (sellLimitOrders.Any())
             {
-                decimal balance = (await _balanceService.GetByAssetIdAsync(ExchangeNames.Lykke, baseAsset.Id)).Amount;
+                decimal balance = _balanceService.GetByAssetId(ExchangeNames.Lykke, baseAssetSettings.AssetId).Amount;
 
                 foreach (LimitOrder limitOrder in sellLimitOrders)
                 {
-                    decimal amount = limitOrder.Volume.TruncateDecimalPlaces(baseAsset.Accuracy, true);
+                    decimal amount = limitOrder.Volume.TruncateDecimalPlaces(baseAssetSettings.Accuracy, true);
 
                     if (balance - amount < 0)
                     {
-                        decimal volume = balance.TruncateDecimalPlaces(baseAsset.Accuracy);
+                        decimal volume = balance.TruncateDecimalPlaces(baseAssetSettings.Accuracy);
 
-                        if (volume < assetPair.MinVolume)
-                            limitOrder.Error = LimitOrderError.NotEnoughFunds;
-                        else
-                            limitOrder.UpdateVolume(volume);
+                        limitOrder.UpdateVolume(volume);
                     }
 
                     balance -= amount;
@@ -157,21 +186,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             if (buyLimitOrders.Any())
             {
-                decimal balance = (await _balanceService.GetByAssetIdAsync(ExchangeNames.Lykke, quoteAsset.Id)).Amount;
+                decimal balance = _balanceService.GetByAssetId(ExchangeNames.Lykke, quoteAssetSettings.AssetId).Amount;
 
                 foreach (LimitOrder limitOrder in buyLimitOrders)
                 {
                     decimal amount = (limitOrder.Price * limitOrder.Volume)
-                        .TruncateDecimalPlaces(quoteAsset.Accuracy, true);
+                        .TruncateDecimalPlaces(quoteAssetSettings.Accuracy, true);
 
                     if (balance - amount < 0)
                     {
-                        decimal volume = (balance / limitOrder.Price).TruncateDecimalPlaces(baseAsset.Accuracy);
+                        decimal volume = (balance / limitOrder.Price).TruncateDecimalPlaces(baseAssetSettings.Accuracy);
 
-                        if (volume < assetPair.MinVolume)
-                            limitOrder.Error = LimitOrderError.NotEnoughFunds;
-                        else
-                            limitOrder.UpdateVolume(volume);
+                        limitOrder.UpdateVolume(volume);
                     }
 
                     balance -= amount;
@@ -183,7 +209,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         {
             foreach (LimitOrder limitOrder in limitOrders.Where(o => o.Error == LimitOrderError.None))
             {
-                if (limitOrder.Volume < minVolume)
+                if (limitOrder.Volume < minVolume || limitOrder.Volume <= 0)
                     limitOrder.Error = LimitOrderError.TooSmallVolume;
             }
         }

@@ -5,9 +5,9 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {
     public interface IBalanceService
     {
-        Task<IReadOnlyCollection<Balance>> GetAsync(string exchange);
+        IReadOnlyCollection<Balance> GetByExchange(string exchange);
 
-        Task<Balance> GetByAssetIdAsync(string exchange, string assetId);
+        Balance GetByAssetId(string exchange, string assetId);
 
         Task UpdateAsync();
     }

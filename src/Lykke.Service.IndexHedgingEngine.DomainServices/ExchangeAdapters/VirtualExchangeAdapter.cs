@@ -1,40 +1,39 @@
 using System.Threading.Tasks;
+using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Infrastructure;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
 {
     public class VirtualExchangeAdapter : IExchangeAdapter
     {
         private readonly IPositionService _positionService;
-        private readonly IHedgeLimitOrderService _hedgeLimitOrderService;
         private readonly IVirtualTradeService _virtualTradeService;
+        private readonly ILog _log;
 
         public VirtualExchangeAdapter(
             IPositionService positionService,
-            IHedgeLimitOrderService hedgeLimitOrderService,
-            IVirtualTradeService virtualTradeService)
+            IVirtualTradeService virtualTradeService,
+            ILogFactory logFactory)
         {
             _positionService = positionService;
-            _hedgeLimitOrderService = hedgeLimitOrderService;
             _virtualTradeService = virtualTradeService;
+            _log = logFactory.CreateLog(this);
         }
 
         public string Name => ExchangeNames.Virtual;
 
         public Task CancelLimitOrderAsync(string assetId)
         {
-            _hedgeLimitOrderService.Close(assetId);
-            
             return Task.CompletedTask;
         }
 
         public async Task ExecuteLimitOrderAsync(HedgeLimitOrder hedgeLimitOrder)
         {
-            await _hedgeLimitOrderService.AddAsync(hedgeLimitOrder);
-            
             VirtualTrade virtualTrade = VirtualTrade.Create(
                 hedgeLimitOrder.Id,
                 hedgeLimitOrder.AssetId,
@@ -50,8 +49,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
                 virtualTrade.OppositeVolume);
 
             await _virtualTradeService.AddAsync(virtualTrade);
-            
-            _hedgeLimitOrderService.Close(hedgeLimitOrder.AssetId);
+
+            _log.InfoWithDetails("Virtual trade executed", virtualTrade);
         }
     }
 }

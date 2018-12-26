@@ -69,7 +69,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
             {
                 Funding funding = (await GetAsync()).Copy();
 
-                string walletId = await _settingsService.GetWalletIdAsync();
+                string walletId = _settingsService.GetWalletId();
 
                 string transactionId;
 

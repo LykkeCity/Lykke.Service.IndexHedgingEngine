@@ -1,21 +1,17 @@
+using Lykke.Service.IndexHedgingEngine.Domain;
+
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 {
     public struct LimitOrderPrice
     {
-        public LimitOrderPrice(decimal price, decimal k, decimal r, decimal delta)
+        public LimitOrderPrice(decimal price, PriceType type)
         {
             Price = price;
-            K = k;
-            R = r;
-            Delta = delta;
+            Type = type;
         }
 
         public decimal Price { get; }
 
-        public decimal K { get; }
-
-        public decimal R { get; }
-
-        public decimal Delta { get; }
+        public PriceType Type { get; }
     }
 }

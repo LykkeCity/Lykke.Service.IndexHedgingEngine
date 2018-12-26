@@ -52,5 +52,15 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.IndexSettings
         /// The volume of buy limit order.
         /// </summary>
         public decimal BuyVolume { get; set; }
+        
+        /// <summary>
+        /// The number of sell limit orders.
+        /// </summary>
+        public int SellLimitOrdersCount { get; set; }
+
+        /// <summary>
+        /// The number of buy limit orders.
+        /// </summary>
+        public int BuyLimitOrdersCount { get; set; }
     }
 }

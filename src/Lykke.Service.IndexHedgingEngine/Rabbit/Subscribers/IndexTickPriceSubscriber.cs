@@ -58,7 +58,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
             _subscriber?.Dispose();
         }
 
-        private Task ProcessMessageAsync(IndexTickPrice message)
+        private async Task ProcessMessageAsync(IndexTickPrice message)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                         .Select(o => new AssetWeight(o.AssetId, o.Weight, o.Price, o.IsDisabled))
                         .ToArray());
 
-                _indexHandler.HandleIndexAsync(index);
+                await _indexHandler.HandleIndexAsync(index);
 
                 _log.InfoWithDetails("Index price handled", message);
             }
@@ -76,8 +76,6 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                 _log.ErrorWithDetails(exception, "An error occurred while processing index tick price", message);
                 throw;
             }
-
-            return Task.CompletedTask;
         }
     }
 }

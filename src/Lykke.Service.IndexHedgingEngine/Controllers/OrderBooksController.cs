@@ -39,13 +39,15 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         /// <response code="200">A collection of order books.</response>
         [HttpGet("lykke")]
         [ProducesResponseType(typeof(IReadOnlyCollection<OrderBookModel>), (int) HttpStatusCode.OK)]
-        public async Task<IReadOnlyCollection<OrderBookModel>> GetLykkeAsync(int limit)
+        public Task<IReadOnlyCollection<OrderBookModel>> GetLykkeAsync(int limit)
         {
             limit = limit <= 0 ? int.MaxValue : limit;
 
-            IReadOnlyCollection<OrderBook> orderBooks = await _orderBookService.GetAsync(limit);
+            IReadOnlyCollection<OrderBook> orderBooks = _orderBookService.Get(limit);
 
-            return Mapper.Map<OrderBookModel[]>(orderBooks);
+            var model = Mapper.Map<OrderBookModel[]>(orderBooks);
+            
+            return Task.FromResult<IReadOnlyCollection<OrderBookModel>>(model);
         }
 
         /// <inheritdoc/>

@@ -11,29 +11,32 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
     [TestClass]
     public class MarketMakerManagerTests
     {
+        private readonly Mock<IIndexPriceService> _indexPriceServiceMock =
+            new Mock<IIndexPriceService>();
+
         private readonly Mock<IMarketMakerService> _marketMakerServiceMock =
             new Mock<IMarketMakerService>();
-        
+
         private readonly Mock<IHedgeService> _hedgeServiceMock =
             new Mock<IHedgeService>();
-        
+
         private readonly Mock<IInternalTradeService> _internalTradeServiceMock =
             new Mock<IInternalTradeService>();
-        
+
         private readonly Mock<IIndexSettingsService> _indexSettingsServiceMock =
             new Mock<IIndexSettingsService>();
-        
+
         private readonly Mock<ITokenService> _tokenServiceMock =
             new Mock<ITokenService>();
-        
+
         private readonly Mock<IMarketMakerStateService> _marketMakerStateService =
             new Mock<IMarketMakerStateService>();
-        
+
         private MarketMakerManager _marketMakerManager;
 
-        private List<IndexSettings> _indexSettings = new List<IndexSettings>();        
-        private List<InternalTrade> _internalTrades = new List<InternalTrade>();        
-        
+        private List<IndexSettings> _indexSettings = new List<IndexSettings>();
+        private List<InternalTrade> _internalTrades = new List<InternalTrade>();
+
         [TestInitialize]
         public void TestInitialize()
         {
@@ -49,8 +52,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
 
             _tokenServiceMock.Setup(o => o.UpdateVolumeAsync(It.IsAny<string>(), It.IsAny<InternalTrade>()))
                 .Returns(() => Task.CompletedTask);
-            
+
             _marketMakerManager = new MarketMakerManager(
+                _indexPriceServiceMock.Object,
                 _marketMakerServiceMock.Object,
                 _hedgeServiceMock.Object,
                 _internalTradeServiceMock.Object,
@@ -66,17 +70,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
         {
             // arrange
 
-            _indexSettings = new List<IndexSettings> { new IndexSettings
+            _indexSettings = new List<IndexSettings>
             {
-                Name = "LCI",
-                AssetId = "TLYCI",
-                AssetPairId = "TLYCIUSD",
-                BuyVolume = 1,
-                SellVolume = 1
-            }};
+                new IndexSettings
+                {
+                    Name = "LCI",
+                    AssetId = "TLYCI",
+                    AssetPairId = "TLYCIUSD",
+                    BuyVolume = 1,
+                    SellVolume = 1
+                }
+            };
 
             _hedgeServiceMock
-                .Setup(o => o.ExecuteAsync())
+                .Setup(o => o.UpdateLimitOrdersAsync())
                 .Returns(() => Task.CompletedTask);
 
             // act
@@ -92,8 +99,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
             // assert
 
             Assert.IsTrue(_internalTrades.Count > 0);
-            
-            _hedgeServiceMock.Verify(o => o.ExecuteAsync(), Times.Never);
+
+            _hedgeServiceMock.Verify(o => o.UpdateLimitOrdersAsync(), Times.Never);
         }
     }
 }

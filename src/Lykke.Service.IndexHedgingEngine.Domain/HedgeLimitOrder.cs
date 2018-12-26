@@ -56,6 +56,16 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// Contains information of hedge limit order creation.
         /// </summary>
         public string Context { get; set; }
+        
+        /// <summary>
+        /// The code of the error which occurred while processing on ME.
+        /// </summary>
+        public LimitOrderError Error { get; set; }
+
+        /// <summary>
+        /// The error details.
+        /// </summary>
+        public string ErrorMessage { get; set; }
 
         public void ExecuteVolume(decimal volume)
         {

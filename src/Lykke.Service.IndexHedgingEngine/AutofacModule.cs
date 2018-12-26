@@ -3,7 +3,6 @@ using System.Net;
 using Autofac;
 using JetBrains.Annotations;
 using Lykke.Sdk;
-using Lykke.Service.Assets.Client;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.ExchangeOperations.Client;
 using Lykke.Service.IndexHedgingEngine.Domain;
@@ -96,8 +95,6 @@ namespace Lykke.Service.IndexHedgingEngine
 
         private void RegisterClients(ContainerBuilder builder)
         {
-            builder.RegisterAssetsClient(_settings.CurrentValue.AssetsServiceClient);
-
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient);
 
             builder.Register(container =>

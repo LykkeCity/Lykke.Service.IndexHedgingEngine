@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain
 {
@@ -50,5 +51,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// A collection of weights of assets in the current index.
         /// </summary>
         public IReadOnlyCollection<AssetWeight> Weights { get; }
+
+        public bool ValidateValue()
+            => Value > 0;
+        
+        public bool ValidateWeights()
+            => Math.Abs(Weights.Sum(o => o.Weight) - 1) < 0.1m;
     }
 }

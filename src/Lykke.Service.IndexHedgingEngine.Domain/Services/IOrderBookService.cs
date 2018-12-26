@@ -6,9 +6,9 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {
     public interface IOrderBookService
     {
-        Task<IReadOnlyCollection<OrderBook>> GetAllAsync();
+        IReadOnlyCollection<OrderBook> GetAll();
 
-        Task<IReadOnlyCollection<OrderBook>> GetAsync(int limit);
+        IReadOnlyCollection<OrderBook> Get(int limit);
         
         Task UpdateSellLimitOrdersAsync(string assetPairId, DateTime timestamp,
             IReadOnlyCollection<LimitOrder> limitOrders);
