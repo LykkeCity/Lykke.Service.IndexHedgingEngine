@@ -186,7 +186,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                         limitOrder.UpdateVolume(volume);
                     }
 
-                    balance -= amount;
+                    balance = Math.Max(balance - amount, 0);
                 }
             }
 
@@ -206,7 +206,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                         limitOrder.UpdateVolume(volume);
                     }
 
-                    balance -= amount;
+                    balance = Math.Max(balance - amount, 0);
                 }
             }
         }
