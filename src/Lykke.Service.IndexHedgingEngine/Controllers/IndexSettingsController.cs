@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -68,6 +69,10 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             {
                 throw new ValidationApiException(HttpStatusCode.Conflict, "The index settings already exists");
             }
+            catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
+            }
         }
 
         /// <inheritdoc/>
@@ -87,6 +92,10 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             catch (EntityNotFoundException)
             {
                 throw new ValidationApiException(HttpStatusCode.NotFound, "The index settings does not exist");
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
             }
         }
 
