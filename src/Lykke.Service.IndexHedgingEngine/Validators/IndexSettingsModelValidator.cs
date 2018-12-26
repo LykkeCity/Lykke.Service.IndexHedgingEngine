@@ -44,6 +44,14 @@ namespace Lykke.Service.IndexHedgingEngine.Validators
             RuleFor(o => o.BuyVolume)
                 .GreaterThan(0)
                 .WithMessage("Buy volume should greater than 0");
+
+            RuleFor(o => o.SellLimitOrdersCount)
+                .GreaterThan(0)
+                .WithMessage("Sell limit orders count should greater than 0");
+
+            RuleFor(o => o.BuyLimitOrdersCount)
+                .GreaterThan(0)
+                .WithMessage("Buy limit orders count should greater than 0");
         }
     }
 }

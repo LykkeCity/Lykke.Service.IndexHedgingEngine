@@ -77,20 +77,13 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (quoteAssetSettings == null)
                 throw new InvalidOperationException("Quote asset settings not found");
 
-            string walletId = _settingsService.GetWalletId();
-
             decimal sellPrice = (indexPrice.Price + indexSettings.SellMarkup)
                 .TruncateDecimalPlaces(assetPairSettings.PriceAccuracy, true);
 
             decimal buyPrice = indexPrice.Price.TruncateDecimalPlaces(assetPairSettings.PriceAccuracy);
 
-            var limitOrders = new[]
-            {
-                LimitOrder.CreateSell(walletId, sellPrice,
-                    Math.Round(indexSettings.SellVolume, assetPairSettings.VolumeAccuracy)),
-                LimitOrder.CreateBuy(walletId, buyPrice,
-                    Math.Round(indexSettings.BuyVolume, assetPairSettings.VolumeAccuracy))
-            };
+            IReadOnlyCollection<LimitOrder> limitOrders =
+                CreateLimitOrders(indexSettings, assetPairSettings, sellPrice, buyPrice);
 
             ValidateBalance(limitOrders, baseAssetSettings, quoteAssetSettings);
 
@@ -117,6 +110,44 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
 
             _log.InfoWithDetails("Limit orders canceled", new {IndexName = indexName, indexSettings.AssetPairId});
+        }
+
+        private IReadOnlyCollection<LimitOrder> CreateLimitOrders(IndexSettings indexSettings,
+            AssetPairSettings assetPairSettings, decimal sellPrice, decimal buyPrice)
+        {
+            var limitOrders = new List<LimitOrder>();
+
+            string walletId = _settingsService.GetWalletId();
+
+            decimal sellVolume = Math.Round(indexSettings.SellVolume / indexSettings.SellLimitOrdersCount,
+                assetPairSettings.VolumeAccuracy);
+
+            if (sellVolume >= assetPairSettings.MinVolume)
+            {
+                for (int i = 0; i < indexSettings.SellLimitOrdersCount; i++)
+                    limitOrders.Add(LimitOrder.CreateSell(walletId, sellPrice, sellVolume));
+            }
+            else
+            {
+                limitOrders.Add(LimitOrder.CreateSell(walletId, sellPrice,
+                    Math.Round(indexSettings.SellVolume, assetPairSettings.VolumeAccuracy)));
+            }
+
+            decimal buyVolume = Math.Round(indexSettings.BuyVolume / indexSettings.BuyLimitOrdersCount,
+                assetPairSettings.VolumeAccuracy);
+
+            if (buyVolume >= assetPairSettings.MinVolume)
+            {
+                for (int i = 0; i < indexSettings.BuyLimitOrdersCount; i++)
+                    limitOrders.Add(LimitOrder.CreateBuy(walletId, buyPrice, buyVolume));
+            }
+            else
+            {
+                limitOrders.Add(LimitOrder.CreateBuy(walletId, buyPrice,
+                    Math.Round(indexSettings.BuyVolume, assetPairSettings.VolumeAccuracy)));
+            }
+
+            return limitOrders;
         }
 
         private void ValidateBalance(IReadOnlyCollection<LimitOrder> limitOrders, AssetSettings baseAssetSettings,
