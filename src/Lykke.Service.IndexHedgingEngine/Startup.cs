@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using AutoMapper;
+using Lykke.Logs.Loggers.LykkeSlack;
+using Microsoft.Extensions.Logging;
 
 namespace Lykke.Service.IndexHedgingEngine
 {
@@ -32,7 +34,7 @@ namespace Lykke.Service.IndexHedgingEngine
 
                     Mapper.AssertConfigurationIsValid();
                 };
-                
+
                 options.SwaggerOptions = _swaggerOptions;
 
                 options.Logs = logs =>
@@ -40,6 +42,12 @@ namespace Lykke.Service.IndexHedgingEngine
                     logs.AzureTableName = "IndexHedgingEngineLog";
                     logs.AzureTableConnectionStringResolver = settings =>
                         settings.IndexHedgingEngineService.Db.LogsConnectionString;
+
+                    logs.Extended = extendedLogs =>
+                    {
+                        extendedLogs.AddAdditionalSlackChannel("liquidity-market-maker-errors",
+                            channelOptions => { channelOptions.MinLogLevel = LogLevel.Warning; });
+                    };
                 };
             });
         }
