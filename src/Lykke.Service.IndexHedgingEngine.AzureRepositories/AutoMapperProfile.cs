@@ -7,6 +7,7 @@ using Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Instruments;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Positions;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings;
+using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades;
 using Lykke.Service.IndexHedgingEngine.Domain;
 
@@ -67,6 +68,14 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
 
             CreateMap<TimersSettings, TimersSettingsEntity>(MemberList.Source);
             CreateMap<TimersSettingsEntity, TimersSettings>(MemberList.Destination);
+
+            CreateMap<AssetSettlement, AssetSettlementEntity>(MemberList.Source);
+            CreateMap<AssetSettlementEntity, AssetSettlement>(MemberList.Destination);
+
+            CreateMap<Settlement, SettlementEntity>(MemberList.Source)
+                .ForSourceMember(src => src.Assets, opt => opt.DoNotValidate());
+            CreateMap<SettlementEntity, Settlement>(MemberList.Destination)
+                .ForMember(dest => dest.Assets, opt => opt.Ignore());
 
             CreateMap<InternalTrade, InternalTradeEntity>(MemberList.Source)
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp));

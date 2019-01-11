@@ -14,6 +14,7 @@ using Lykke.Service.IndexHedgingEngine.Client.Models.OrderBooks;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Positions;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Reports;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Settings;
+using Lykke.Service.IndexHedgingEngine.Client.Models.Settlements;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Tokens;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Trades;
 using Lykke.Service.IndexHedgingEngine.Domain;
@@ -68,6 +69,9 @@ namespace Lykke.Service.IndexHedgingEngine
 
             CreateMap<TimersSettings, TimersSettingsModel>(MemberList.Source);
             CreateMap<TimersSettingsModel, TimersSettings>(MemberList.Destination);
+
+            CreateMap<AssetSettlement, AssetSettlementModel>(MemberList.Source);
+            CreateMap<Settlement, SettlementModel>(MemberList.Source);
 
             CreateMap<Token, TokenModel>(MemberList.Source);
 

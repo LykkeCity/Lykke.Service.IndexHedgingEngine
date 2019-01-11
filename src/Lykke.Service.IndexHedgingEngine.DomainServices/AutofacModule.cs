@@ -15,6 +15,7 @@ using Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Positions;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Reports;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Settings;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Settlements;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Timers;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Trades;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Utils;
@@ -131,6 +132,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             builder.RegisterType<TimersSettingsService>()
                 .As<ITimersSettingsService>()
+                .SingleInstance();
+
+            builder.RegisterType<SettlementService>()
+                .As<ISettlementService>()
                 .SingleInstance();
 
             builder.RegisterType<LykkeBalancesTimer>()

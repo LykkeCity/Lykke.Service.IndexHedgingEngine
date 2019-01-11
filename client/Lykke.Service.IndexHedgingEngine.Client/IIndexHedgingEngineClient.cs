@@ -80,6 +80,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client
         ISettingsApi Settings { get; }
 
         /// <summary>
+        /// Settlements API.
+        /// </summary>
+        ISettlementsApi Settlements { get; }
+
+        /// <summary>
         /// Tokens API.
         /// </summary>
         ITokensApi Tokens { get; }
