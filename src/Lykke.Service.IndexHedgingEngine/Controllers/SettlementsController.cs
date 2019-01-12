@@ -245,5 +245,33 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
                 throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
             }
         }
+
+        /// <inheritdoc/>
+        /// <response code="204">The asset settlement successfully executed.</response>
+        /// <response code="400">An error occurred while executing settlement.</response>
+        /// <response code="404">The settlement not found.</response>
+        [HttpPost("{settlementId}/assets/{assetId}/execute")]
+        [ProducesResponseType((int) HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.NotFound)]
+        public async Task ExecuteAssetAsync(string settlementId, string assetId, decimal actualAmount,
+            decimal actualPrice, string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                throw new ValidationApiException(HttpStatusCode.BadRequest, "User id required");
+
+            try
+            {
+                await _settlementService.ExecuteAssetAsync(settlementId, assetId, actualAmount, actualPrice, userId);
+            }
+            catch (EntityNotFoundException)
+            {
+                throw new ValidationApiException(HttpStatusCode.NotFound, "Settlement not found");
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
+            }
+        }
     }
 }

@@ -85,5 +85,17 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// <param name="userId">The identifier of the user who recalculated the settlement.</param>
         [Post("/api/Settlements/{settlementId}/assets/{assetId}/retry")]
         Task RetryAssetAsync(string settlementId, string assetId, string userId);
+
+        /// <summary>
+        /// Execute manual asset settlement.
+        /// </summary>
+        /// <param name="settlementId">The identifier fo the settlement.</param>
+        /// <param name="assetId">The identifier fo the asset.</param>
+        /// <param name="actualAmount">The actual amount of asset that was transferred to the client.</param>
+        /// <param name="actualPrice">The actual price of asset that was transferred to the client.</param>
+        /// <param name="userId">The identifier of the user who executed manual settlement.</param>
+        [Post("/api/Settlements/{settlementId}/assets/{assetId}/execute")]
+        Task ExecuteAssetAsync(string settlementId, string assetId, decimal actualAmount, decimal actualPrice,
+            string userId);
     }
 }

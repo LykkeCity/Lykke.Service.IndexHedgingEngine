@@ -216,6 +216,36 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             _log.InfoWithDetails("Settlement validated", new {settlement.Id, userId});
         }
 
+        public async Task ExecuteAssetAsync(string settlementId, string assetId, decimal actualAmount,
+            decimal actualPrice, string userId)
+        {
+            Settlement settlement = await GetByIdAsync(settlementId);
+
+            AssetSettlement assetSettlement = settlement.GetAsset(assetId);
+
+            if (assetSettlement == null)
+                throw new InvalidOperationException("Asset not found");
+
+            if(!assetSettlement.IsDirect || !assetSettlement.IsExternal)
+                throw new InvalidOperationException("Only direct external assets can be manually executed");
+                
+            switch (settlement.Status)
+            {
+                case SettlementStatus.Approved:
+                case SettlementStatus.Reserved:
+                    assetSettlement.ActualAmount = actualAmount;
+                    assetSettlement.ActualPrice = actualPrice;
+                    assetSettlement.Status = AssetSettlementStatus.Transferred;
+                    break;
+                default:
+                    throw new InvalidOperationException("Can not execute asset.");
+            }
+
+            await _settlementRepository.UpdateAsync(assetSettlement);
+
+            _log.InfoWithDetails("Asset updated", new {assetSettlement, userId});
+        }
+
         private async Task UpdateAssetsAsync(Settlement settlement, IReadOnlyCollection<AssetWeight> assetWeights)
         {
             IReadOnlyDictionary<string, Quote> assetPrices =
@@ -243,8 +273,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
                     Price = assetSettlementAmount.Price,
                     Fee = decimal.Zero,
                     Weight = assetSettlementAmount.Weight,
-                    IsDirect = settlement.IsDirect || assetSettlementAmount.Weight <= AssetMinWeightToDirectTransfer,
-                    IsExternal = assetHedgeSettings.Exchange == ExchangeNames.Lykke,
+                    IsDirect = settlement.IsDirect && assetSettlementAmount.Weight > AssetMinWeightToDirectTransfer,
+                    IsExternal = assetHedgeSettings.Exchange != ExchangeNames.Lykke,
                     Status = AssetSettlementStatus.New,
                     ActualAmount = assetSettlementAmount.Amount,
                     ActualPrice = assetSettlementAmount.Price

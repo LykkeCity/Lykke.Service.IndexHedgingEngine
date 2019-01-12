@@ -12,7 +12,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
         Task<Settlement> GetByIdAsync(string settlementId);
 
         Task ExecuteAsync();
-        
+
         Task CreateAsync(string indexName, decimal amount, string comment, string walletId, string clientId,
             string userId, bool isDirect);
 
@@ -28,5 +28,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
         Task RetryAssetAsync(string settlementId, string assetId, string userId);
 
         Task ValidateAsync(string settlementId, string userId);
+
+        Task ExecuteAssetAsync(string settlementId, string assetId, decimal actualAmount, decimal actualPrice,
+            string userId);
     }
 }
