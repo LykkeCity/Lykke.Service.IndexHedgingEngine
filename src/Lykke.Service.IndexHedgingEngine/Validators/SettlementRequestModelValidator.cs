@@ -9,9 +9,9 @@ namespace Lykke.Service.IndexHedgingEngine.Validators
     {
         public SettlementRequestModelValidator()
         {
-            RuleFor(o => o.Token)
+            RuleFor(o => o.IndexName)
                 .NotEmpty()
-                .WithMessage("Token required");
+                .WithMessage("Index name required");
             
             RuleFor(o => o.Amount)
                 .GreaterThan(0)

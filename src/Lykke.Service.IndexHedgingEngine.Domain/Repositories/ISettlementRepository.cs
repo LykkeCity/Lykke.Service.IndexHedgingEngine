@@ -7,6 +7,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Repositories
     {
         Task<IReadOnlyCollection<Settlement>> GetAllAsync();
 
+        Task<IReadOnlyCollection<Settlement>> GetActiveAsync();
+
         Task<IReadOnlyCollection<Settlement>> GetByClientIdAsync(string clientId);
 
         Task<Settlement> GetByIdAsync(string settlementId);
@@ -14,6 +16,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Repositories
         Task InsertAsync(Settlement settlement);
 
         Task UpdateAsync(Settlement settlement);
+
+        Task UpdateAsync(AssetSettlement assetSettlement);
 
         Task UpdateStatusAsync(string settlementId, SettlementStatus status);
     }

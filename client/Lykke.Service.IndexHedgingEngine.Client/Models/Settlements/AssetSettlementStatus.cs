@@ -19,8 +19,23 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
         New,
 
         /// <summary>
-        /// Indicates that an error occurred during calculation or processing asset settlement.
+        /// The asset amount transferred to the transit wallet.
         /// </summary>
-        Error
+        Reserved,
+        
+        /// <summary>
+        /// The asset amount transferred to the client.
+        /// </summary>
+        Transferred,
+        
+        /// <summary>
+        /// The reserved asset amount transferred back to the market maker wallet.
+        /// </summary>
+        Cancelled,
+        
+        /// <summary>
+        /// The asset settlement is completed.
+        /// </summary>
+        Completed
     }
 }

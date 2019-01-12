@@ -56,9 +56,9 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
         public SettlementStatus Status { get; set; }
 
         /// <summary>
-        /// The details of the error that occurred while processing the settlement.  
+        /// The error that occurred while processing the settlement.  
         /// </summary>
-        public string Error { get; set; }
+        public SettlementError Error { get; set; }
 
         /// <summary>
         /// The creation date of the settlement.

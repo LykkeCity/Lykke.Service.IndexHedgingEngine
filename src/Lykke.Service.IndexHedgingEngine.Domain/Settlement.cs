@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain
 {
@@ -56,7 +57,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// <summary>
         /// The details of the error that occurred while processing the settlement.  
         /// </summary>
-        public string Error { get; set; }
+        public SettlementError Error { get; set; }
 
         /// <summary>
         /// The creation date of the settlement.
@@ -67,5 +68,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The collection of asset to settle.
         /// </summary>
         public IReadOnlyCollection<AssetSettlement> Assets { get; set; }
+
+        public AssetSettlement GetAsset(string assetId)
+            => Assets.FirstOrDefault(o => o.AssetId == assetId);
     }
 }

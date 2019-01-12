@@ -70,7 +70,8 @@ namespace Lykke.Service.IndexHedgingEngine
             CreateMap<TimersSettings, TimersSettingsModel>(MemberList.Source);
             CreateMap<TimersSettingsModel, TimersSettings>(MemberList.Destination);
 
-            CreateMap<AssetSettlement, AssetSettlementModel>(MemberList.Source);
+            CreateMap<AssetSettlement, AssetSettlementModel>(MemberList.Source)
+                .ForSourceMember(src => src.SettlementId, opt => opt.DoNotValidate());
             CreateMap<Settlement, SettlementModel>(MemberList.Source);
 
             CreateMap<Token, TokenModel>(MemberList.Source);

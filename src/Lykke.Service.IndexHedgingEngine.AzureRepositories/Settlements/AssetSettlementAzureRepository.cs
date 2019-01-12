@@ -39,13 +39,13 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements
                     GetRowKey(assetSettlement.AssetId));
 
                 Mapper.Map(assetSettlement, entity);
-                
+
                 entities.Add(entity);
             }
-            
+
             await _storage.InsertAsync(entities);
         }
-        
+
         public async Task ReplaceAsync(string settlementId, IEnumerable<AssetSettlement> assetSettlements)
         {
             IEnumerable<AssetSettlementEntity> entities = await _storage.GetDataAsync(GetPartitionKey(settlementId));
@@ -53,6 +53,18 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements
             await _storage.DeleteAsync(entities);
 
             await InsertAsync(assetSettlements);
+        }
+
+        public Task UpdateAsync(AssetSettlement assetSettlement)
+        {
+            return _storage.MergeAsync(
+                GetPartitionKey(assetSettlement.SettlementId),
+                GetRowKey(assetSettlement.AssetId),
+                entity =>
+                {
+                    Mapper.Map(assetSettlement, entity);
+                    return entity;
+                });
         }
 
         private static string GetPartitionKey(string settlementId)

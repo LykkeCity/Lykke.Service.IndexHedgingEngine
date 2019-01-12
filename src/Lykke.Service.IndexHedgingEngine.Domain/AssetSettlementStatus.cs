@@ -9,15 +9,30 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// Unspecified status.
         /// </summary>
         None,
-        
+
         /// <summary>
         /// The asset settlement created and waiting for process.
         /// </summary>
         New,
+
+        /// <summary>
+        /// The asset amount transferred to the transit wallet.
+        /// </summary>
+        Reserved,
         
         /// <summary>
-        /// Indicates that an error occurred during calculation or processing asset settlement.
+        /// The asset amount transferred to the client.
         /// </summary>
-        Error
+        Transferred,
+        
+        /// <summary>
+        /// The reserved asset amount transferred back to the market maker wallet.
+        /// </summary>
+        Cancelled,
+        
+        /// <summary>
+        /// The asset settlement is completed.
+        /// </summary>
+        Completed
     }
 }

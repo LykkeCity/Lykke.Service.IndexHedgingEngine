@@ -53,7 +53,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// <summary>
         /// The details of the error that occurred while processing the asset settlement.
         /// </summary>
-        public string Error { get; set; }
+        public SettlementError Error { get; set; }
 
         /// <summary>
         /// The actual amount of the asset. Can be different for external asset.
@@ -64,5 +64,12 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The actual price of the asset. Can be different for external asset.
         /// </summary>
         public decimal ActualPrice { get; set; }
+
+        public void Update(decimal amount, bool isDirect, bool isExternal)
+        {
+            Amount = amount;
+            IsDirect = isDirect;
+            IsExternal = isExternal;
+        }
     }
 }

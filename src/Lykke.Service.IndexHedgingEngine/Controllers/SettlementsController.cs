@@ -56,7 +56,7 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             {
                 throw new ValidationApiException(HttpStatusCode.NotFound, "Settlement not found");
             }
-            
+
             return Mapper.Map<SettlementModel>(settlement);
         }
 
@@ -73,7 +73,7 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
 
             try
             {
-                await _settlementService.CreateAsync(model.Token, model.Amount, model.Comment, model.WalletId,
+                await _settlementService.CreateAsync(model.IndexName, model.Amount, model.Comment, model.WalletId,
                     model.ClientId, userId, model.IsDirect);
             }
             catch (InvalidOperationException exception)
@@ -152,6 +152,89 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             try
             {
                 await _settlementService.RecalculateAsync(settlementId, userId);
+            }
+            catch (EntityNotFoundException)
+            {
+                throw new ValidationApiException(HttpStatusCode.NotFound, "Settlement not found");
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
+            }
+        }
+
+        /// <inheritdoc/>
+        /// <response code="204">The settlement successfully validated.</response>
+        /// <response code="400">An error occurred while validating settlement.</response>
+        /// <response code="404">The settlement not found.</response>
+        [HttpPost("{settlementId}/validate")]
+        [ProducesResponseType((int) HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.NotFound)]
+        public async Task ValidateAsync(string settlementId, string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                throw new ValidationApiException(HttpStatusCode.BadRequest, "User id required");
+
+            try
+            {
+                await _settlementService.ValidateAsync(settlementId, userId);
+            }
+            catch (EntityNotFoundException)
+            {
+                throw new ValidationApiException(HttpStatusCode.NotFound, "Settlement not found");
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
+            }
+        }
+
+        /// <inheritdoc/>
+        /// <response code="204">The asset settlement successfully updated.</response>
+        /// <response code="400">An error occurred while updating settlement.</response>
+        /// <response code="404">The settlement not found.</response>
+        [HttpPut("{settlementId}/assets")]
+        [ProducesResponseType((int) HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.NotFound)]
+        public async Task UpdateAssetAsync([FromBody] AssetSettlementEditModel model, string settlementId,
+            string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                throw new ValidationApiException(HttpStatusCode.BadRequest, "User id required");
+
+            try
+            {
+                await _settlementService.UpdateAssetAsync(settlementId, model.AssetId, model.Amount, model.IsDirect,
+                    model.IsExternal, userId);
+            }
+            catch (EntityNotFoundException)
+            {
+                throw new ValidationApiException(HttpStatusCode.NotFound, "Settlement not found");
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
+            }
+        }
+
+        /// <inheritdoc/>
+        /// <response code="204">The asset settlement successfully retried.</response>
+        /// <response code="400">An error occurred while retrying settlement.</response>
+        /// <response code="404">The settlement not found.</response>
+        [HttpPost("{settlementId}/assets/{assetId}/retry")]
+        [ProducesResponseType((int) HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.NotFound)]
+        public async Task RetryAssetAsync(string settlementId, string assetId, string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                throw new ValidationApiException(HttpStatusCode.BadRequest, "User id required");
+
+            try
+            {
+                await _settlementService.RetryAssetAsync(settlementId, assetId, userId);
             }
             catch (EntityNotFoundException)
             {

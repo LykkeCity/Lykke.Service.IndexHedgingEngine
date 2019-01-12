@@ -9,9 +9,9 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
     public class SettlementRequestModel
     {
         /// <summary>
-        /// The name of the token to settlement.
+        /// The name of the index to settlement.
         /// </summary>
-        public string Token { get; set; }
+        public string IndexName { get; set; }
 
         /// <summary>
         /// The amount of tokens requested to settle.

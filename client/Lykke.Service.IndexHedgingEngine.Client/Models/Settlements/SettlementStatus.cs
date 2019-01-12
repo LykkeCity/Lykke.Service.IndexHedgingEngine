@@ -29,6 +29,16 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
         Rejected,
 
         /// <summary>
+        /// The assets are transferred to the transit wallet.
+        /// </summary>
+        Reserved,
+        
+        /// <summary>
+        /// The assets are transferred to the client.
+        /// </summary>
+        Transferred,
+        
+        /// <summary>
         /// The settlement is completed.
         /// </summary>
         Completed

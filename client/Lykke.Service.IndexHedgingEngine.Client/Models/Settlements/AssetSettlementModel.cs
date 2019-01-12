@@ -9,11 +9,6 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
     public class AssetSettlementModel
     {
         /// <summary>
-        /// The identifier of the settlement.
-        /// </summary>
-        public string SettlementId { get; set; }
-
-        /// <summary>
         /// The identifier of the asset to settle.
         /// </summary>
         public string AssetId { get; set; }
@@ -39,12 +34,12 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
         public decimal Weight { get; set; }
 
         /// <summary>
-        /// If <c>true</c> the asset should be settle direct, otherwise in USD. 
+        /// If <c>true</c> the asset should be settle direct, otherwise in USD.
         /// </summary>
         public bool IsDirect { get; set; }
         
         /// <summary>
-        /// If <c>true</c> the asset is on an external exchange, otherwise on Lykke exchange. 
+        /// If <c>true</c> the asset is on an external exchange, otherwise on Lykke exchange.
         /// </summary>
         public bool IsExternal { get; set; }
         
@@ -54,9 +49,9 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
         public AssetSettlementStatus Status { get; set; }
 
         /// <summary>
-        /// The details of the error that occurred while processing the asset settlement.  
+        /// The error that occurred while processing the asset settlement.
         /// </summary>
-        public string Error { get; set; }
+        public SettlementError Error { get; set; }
 
         /// <summary>
         /// The actual amount of the asset. Can be different for external asset.

@@ -59,5 +59,31 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// <param name="userId">The identifier of the user who recalculated the settlement.</param>
         [Post("/api/Settlements/{settlementId}/recalculate")]
         Task RecalculateAsync(string settlementId, string userId);
+
+        /// <summary>
+        /// Validate the settlement.
+        /// </summary>
+        /// <param name="settlementId">The identifier fo the settlement.</param>
+        /// <param name="userId">The identifier of the user who validated the settlement.</param>
+        [Post("/api/Settlements/{settlementId}/validate")]
+        Task ValidateAsync(string settlementId, string userId);
+        
+        /// <summary>
+        /// Updates the asset settlement.
+        /// </summary>
+        /// <param name="model">The model that describes an asset settlement.</param>
+        /// <param name="settlementId">The identifier fo the settlement.</param>
+        /// <param name="userId">The identifier of the user who recalculated the settlement.</param>
+        [Put("/api/Settlements/{settlementId}/assets")]
+        Task UpdateAssetAsync([Body] AssetSettlementEditModel model, string settlementId, string userId);
+        
+        /// <summary>
+        /// Updates the asset settlement.
+        /// </summary>
+        /// <param name="settlementId">The identifier fo the settlement.</param>
+        /// <param name="assetId">The identifier fo the asset.</param>
+        /// <param name="userId">The identifier of the user who recalculated the settlement.</param>
+        [Post("/api/Settlements/{settlementId}/assets/{assetId}/retry")]
+        Task RetryAssetAsync(string settlementId, string assetId, string userId);
     }
 }

@@ -31,6 +31,15 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements
             return settlements;
         }
 
+        public async Task<IReadOnlyCollection<Settlement>> GetActiveAsync()
+        {
+            IReadOnlyCollection<Settlement> settlements = await GetAllAsync();
+
+            var statuses = new[] {SettlementStatus.Approved, SettlementStatus.Reserved, SettlementStatus.Transferred};
+
+            return settlements.Where(o => statuses.Contains(o.Status)).ToArray();
+        }
+        
         public async Task<IReadOnlyCollection<Settlement>> GetByClientIdAsync(string clientId)
         {
             IReadOnlyCollection<Settlement> settlements = await GetAllAsync();
@@ -62,6 +71,11 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements
             return Task.WhenAll(
                 _settlementAzureRepository.UpdateAsync(settlement),
                 _assetSettlementAzureRepository.ReplaceAsync(settlement.Id, settlement.Assets));
+        }
+
+        public Task UpdateAsync(AssetSettlement assetSettlement)
+        {
+            return _assetSettlementAzureRepository.UpdateAsync(assetSettlement);
         }
 
         public Task UpdateStatusAsync(string settlementId, SettlementStatus status)
