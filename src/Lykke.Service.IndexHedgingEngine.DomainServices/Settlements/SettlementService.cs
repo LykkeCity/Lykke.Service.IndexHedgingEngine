@@ -97,7 +97,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
                         foreach (AssetSettlement assetSettlement in assetSettlements)
                             await ReserveAssetAsync(assetSettlement, settlement.ClientId);
 
-                        if (settlement.Assets.All(o => !o.IsManual() && o.Status == AssetSettlementStatus.Reserved))
+                        bool reserved = settlement.Assets
+                            .Where(o => !o.IsManual())
+                            .All(o => o.Status == AssetSettlementStatus.Reserved);
+                        
+                        if (reserved)
                             await ReserveTokenAsync(settlement);
                     }
 
@@ -111,7 +115,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
                         foreach (AssetSettlement assetSettlement in assetSettlements)
                             await TransferAssetAsync(assetSettlement, settlement.ClientId, settlement.WalletId);
 
-                        if (settlement.Assets.All(o => !o.IsManual() && o.Status == AssetSettlementStatus.Transferred))
+                        bool transferred = settlement.Assets
+                            .Where(o => !o.IsManual())
+                            .All(o => o.Status == AssetSettlementStatus.Transferred);
+                        
+                        if (transferred)
                             await TransferTokenAsync(settlement);
                     }
 
@@ -124,7 +132,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
                         foreach (AssetSettlement assetSettlement in assetSettlements)
                             await CompleteAssetAsync(assetSettlement);
 
-                        if (settlement.Assets.All(o => o.Status == AssetSettlementStatus.Completed))
+                        bool completed = settlement.Assets.All(o => o.Status == AssetSettlementStatus.Completed);
+                        
+                        if (completed)
                             await CompleteTokenAsync(settlement);
                     }
                 }
@@ -592,9 +602,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             foreach (AssetSettlement assetSettlement in assetSettlementsDirect)
             {
                 AssetSettings assetSettings =
-                    await _instrumentService.GetAssetAsync(ExchangeNames.Lykke, assetSettlement.AssetId);
+                    await _instrumentService.GetAssetAsync(assetSettlement.AssetId, ExchangeNames.Lykke);
                 
-                Balance balance = _balanceService.GetByAssetId(assetSettings.AssetId, ExchangeNames.Lykke);
+                Balance balance = _balanceService.GetByAssetId(ExchangeNames.Lykke, assetSettings.AssetId);
 
                 if (balance.Amount - balance.Reserved < assetSettlement.Amount)
                     assetSettlement.Error = SettlementError.NotEnoughFunds;
@@ -603,9 +613,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             decimal amountInUsd = assetSettlementsInUsd.Sum(o => o.Amount * o.Price);
 
             AssetSettings usdAssetSettings =
-                await _instrumentService.GetAssetAsync(ExchangeNames.Lykke, "USD");
+                await _instrumentService.GetAssetAsync("USD", ExchangeNames.Lykke);
             
-            Balance usdBalance = _balanceService.GetByAssetId(usdAssetSettings.AssetId, ExchangeNames.Lykke);
+            Balance usdBalance = _balanceService.GetByAssetId(ExchangeNames.Lykke, usdAssetSettings.AssetId);
 
             if (usdBalance.Amount - usdBalance.Reserved < amountInUsd)
             {
