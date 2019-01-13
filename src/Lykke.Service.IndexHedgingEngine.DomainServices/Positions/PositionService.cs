@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -77,6 +78,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Positions
 
                 _log.InfoWithDetails("Position updated", position);
             }
+        }
+
+        public async Task CloseAsync(string assetId, string exchange, decimal volume, decimal price)
+        {
+            Position position = await GetByAssetIdAsync(assetId, exchange);
+            
+            if(position == null)
+                throw new InvalidOperationException("Position not found");
+            
+            position.Close(volume, price);
+            
+            await _positionRepository.UpdateAsync(position);
+            
+            _log.InfoWithDetails("Position closed", position);
         }
 
         public async Task DeleteAsync(string assetId, string exchange)

@@ -48,7 +48,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// If <c>true</c> the assets should be settle direct, otherwise in USD. 
         /// </summary>
         public bool IsDirect { get; set; }
-        
+
         /// <summary>
         /// The status of the settlement.
         /// </summary>
@@ -58,6 +58,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The details of the error that occurred while processing the settlement.  
         /// </summary>
         public SettlementError Error { get; set; }
+
+        /// <summary>
+        /// The identifier of the user who requested settlement.
+        /// </summary>
+        public string CreatedBy { get; set; }
 
         /// <summary>
         /// The creation date of the settlement.

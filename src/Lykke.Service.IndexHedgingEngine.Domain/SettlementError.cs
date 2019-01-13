@@ -13,6 +13,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// <summary>
         /// Indicates that there are no funds to reserve.
         /// </summary>
-        NotEnoughFunds
+        NotEnoughFunds,
+        
+        /// <summary>
+        /// Indicates that unknown error occurred while processing settlement.
+        /// </summary>
+        Unknown
     }
 }

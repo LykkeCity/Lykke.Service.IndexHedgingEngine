@@ -61,6 +61,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
         public SettlementError Error { get; set; }
 
         /// <summary>
+        /// The identifier of the user who requested settlement.
+        /// </summary>
+        public string CreatedBy { get; set; }
+        
+        /// <summary>
         /// The creation date of the settlement.
         /// </summary>
         public DateTime CreatedDate { get; set; }

@@ -65,6 +65,9 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// </summary>
         public decimal ActualPrice { get; set; }
 
+        public bool IsManual()
+            => IsDirect && IsExternal;
+        
         public void Update(decimal amount, bool isDirect, bool isExternal)
         {
             Amount = amount;

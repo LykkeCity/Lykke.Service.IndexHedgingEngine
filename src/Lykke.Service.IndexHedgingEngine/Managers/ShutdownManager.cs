@@ -13,6 +13,7 @@ namespace Lykke.Service.IndexHedgingEngine.Managers
         private readonly LykkeOrderBookSubscriber _lykkeOrderBookSubscriber;
         private readonly IndexTickPriceSubscriber _indexTickPriceSubscriber;
         private readonly LykkeBalancesTimer _lykkeBalancesTimer;
+        private readonly SettlementsTimer _settlementsTimer;
         private readonly QuoteSubscriber[] _quoteSubscribers;
 
         public ShutdownManager(
@@ -20,17 +21,21 @@ namespace Lykke.Service.IndexHedgingEngine.Managers
             LykkeOrderBookSubscriber lykkeOrderBookSubscriber,
             IndexTickPriceSubscriber indexTickPriceSubscriber,
             LykkeBalancesTimer lykkeBalancesTimer,
+            SettlementsTimer settlementsTimer,
             QuoteSubscriber[] quoteSubscribers)
         {
             _lykkeTradeSubscriber = lykkeTradeSubscriber;
             _lykkeOrderBookSubscriber = lykkeOrderBookSubscriber;
             _indexTickPriceSubscriber = indexTickPriceSubscriber;
             _lykkeBalancesTimer = lykkeBalancesTimer;
+            _settlementsTimer = settlementsTimer;
             _quoteSubscribers = quoteSubscribers;
         }
 
         public Task StopAsync()
         {
+            _settlementsTimer.Stop();
+            
             _indexTickPriceSubscriber.Stop();
 
             _lykkeOrderBookSubscriber.Stop();

@@ -11,6 +11,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task UpdateAsync(string assetId, string exchange, TradeType tradeType, decimal volume, decimal oppositeVolume);
 
+        Task CloseAsync(string assetId, string exchange, decimal volume, decimal price);
+
         Task DeleteAsync(string assetId, string exchange);
     }
 }

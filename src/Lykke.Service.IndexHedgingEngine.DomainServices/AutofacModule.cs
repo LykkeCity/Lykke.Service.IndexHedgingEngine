@@ -27,12 +27,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
     {
         private readonly string _instanceName;
         private readonly string _walletId;
+        private readonly string _transitWalletId;
         private readonly IReadOnlyCollection<ExchangeSettings> _exchanges;
 
-        public AutofacModule(string instanceName, string walletId, IReadOnlyCollection<ExchangeSettings> exchanges)
+        public AutofacModule(
+            string instanceName,
+            string walletId,
+            string transitWalletId,
+            IReadOnlyCollection<ExchangeSettings> exchanges)
         {
             _instanceName = instanceName;
             _walletId = walletId;
+            _transitWalletId = transitWalletId;
             _exchanges = exchanges;
         }
 
@@ -127,6 +133,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<ISettingsService>()
                 .WithParameter(new NamedParameter("instanceName", _instanceName))
                 .WithParameter(new NamedParameter("walletId", _walletId))
+                .WithParameter(new NamedParameter("transitWalletId", _transitWalletId))
                 .WithParameter(TypedParameter.From(_exchanges))
                 .SingleInstance();
 
@@ -139,6 +146,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .SingleInstance();
 
             builder.RegisterType<LykkeBalancesTimer>()
+                .AsSelf()
+                .SingleInstance();
+
+            builder.RegisterType<SettlementsTimer>()
                 .AsSelf()
                 .SingleInstance();
 
@@ -166,6 +177,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<IIndexHandler>()
                 .As<IInternalTradeHandler>()
                 .As<IMarketMakerStateHandler>()
+                .As<ISettlementHandler>()
                 .SingleInstance();
 
             builder.RegisterType<MarketMakerService>()

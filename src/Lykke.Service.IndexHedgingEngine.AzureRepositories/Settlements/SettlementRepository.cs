@@ -68,9 +68,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements
 
         public Task UpdateAsync(Settlement settlement)
         {
-            return Task.WhenAll(
-                _settlementAzureRepository.UpdateAsync(settlement),
-                _assetSettlementAzureRepository.ReplaceAsync(settlement.Id, settlement.Assets));
+            return _settlementAzureRepository.UpdateAsync(settlement);
         }
 
         public Task UpdateAsync(AssetSettlement assetSettlement)
@@ -78,9 +76,11 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements
             return _assetSettlementAzureRepository.UpdateAsync(assetSettlement);
         }
 
-        public Task UpdateStatusAsync(string settlementId, SettlementStatus status)
+        public Task ReplaceAsync(Settlement settlement)
         {
-            return _settlementAzureRepository.UpdateAsync(settlementId, status);
+            return Task.WhenAll(
+                _settlementAzureRepository.UpdateAsync(settlement),
+                _assetSettlementAzureRepository.ReplaceAsync(settlement.Id, settlement.Assets));
         }
     }
 }

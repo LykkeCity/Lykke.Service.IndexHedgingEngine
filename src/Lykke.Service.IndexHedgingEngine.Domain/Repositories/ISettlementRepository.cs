@@ -19,6 +19,6 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Repositories
 
         Task UpdateAsync(AssetSettlement assetSettlement);
 
-        Task UpdateStatusAsync(string settlementId, SettlementStatus status);
+        Task ReplaceAsync(Settlement settlement);
     }
 }

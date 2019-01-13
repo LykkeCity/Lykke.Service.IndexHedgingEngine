@@ -91,6 +91,8 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements
 
         public string Error { get; set; }
 
+        public string CreatedBy { get; set; }
+
         public DateTime CreatedDate
         {
             get => _createdDate;

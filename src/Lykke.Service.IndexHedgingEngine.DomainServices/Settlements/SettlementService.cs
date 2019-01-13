@@ -19,25 +19,43 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
         private const decimal AssetMinWeightToDirectTransfer = 0.02m;
 
         private readonly IIndexPriceService _indexPriceService;
+        private readonly IIndexSettingsService _indexSettingsService;
         private readonly IAssetHedgeSettingsService _assetHedgeSettingsService;
         private readonly ISettlementRepository _settlementRepository;
         private readonly IQuoteService _quoteService;
         private readonly IBalanceService _balanceService;
+        private readonly ISettingsService _settingsService;
+        private readonly ILykkeExchangeService _lykkeExchangeService;
+        private readonly IInstrumentService _instrumentService;
+        private readonly IPositionService _positionService;
+        private readonly ITokenService _tokenService;
         private readonly ILog _log;
 
         public SettlementService(
             IIndexPriceService indexPriceService,
+            IIndexSettingsService indexSettingsService,
             IAssetHedgeSettingsService assetHedgeSettingsService,
             ISettlementRepository settlementRepository,
             IQuoteService quoteService,
             IBalanceService balanceService,
+            ISettingsService settingsService,
+            ILykkeExchangeService lykkeExchangeService,
+            IInstrumentService instrumentService,
+            IPositionService positionService,
+            ITokenService tokenService,
             ILogFactory logFactory)
         {
             _indexPriceService = indexPriceService;
+            _indexSettingsService = indexSettingsService;
             _assetHedgeSettingsService = assetHedgeSettingsService;
             _settlementRepository = settlementRepository;
             _quoteService = quoteService;
             _balanceService = balanceService;
+            _settingsService = settingsService;
+            _lykkeExchangeService = lykkeExchangeService;
+            _instrumentService = instrumentService;
+            _positionService = positionService;
+            _tokenService = tokenService;
             _log = logFactory.CreateLog(this);
         }
 
@@ -65,9 +83,55 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
         {
             IReadOnlyCollection<Settlement> settlements = await _settlementRepository.GetActiveAsync();
 
-            foreach (Settlement settlement in settlements)
+            foreach (Settlement settlement in settlements.Where(o => o.Error == SettlementError.None))
             {
-                // TODO: execute settlement operations
+                try
+                {
+                    if (settlement.Status == SettlementStatus.Approved)
+                    {
+                        IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
+                            .Where(o => !o.IsManual())
+                            .Where(o => o.Status == AssetSettlementStatus.New)
+                            .Where(o => o.Error == SettlementError.None);
+
+                        foreach (AssetSettlement assetSettlement in assetSettlements)
+                            await ReserveAssetAsync(assetSettlement, settlement.ClientId);
+
+                        if (settlement.Assets.All(o => !o.IsManual() && o.Status == AssetSettlementStatus.Reserved))
+                            await ReserveTokenAsync(settlement);
+                    }
+
+                    if (settlement.Status == SettlementStatus.Reserved)
+                    {
+                        IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
+                            .Where(o => !o.IsManual())
+                            .Where(o => o.Status == AssetSettlementStatus.Reserved)
+                            .Where(o => o.Error == SettlementError.None);
+
+                        foreach (AssetSettlement assetSettlement in assetSettlements)
+                            await TransferAssetAsync(assetSettlement, settlement.ClientId, settlement.WalletId);
+
+                        if (settlement.Assets.All(o => !o.IsManual() && o.Status == AssetSettlementStatus.Transferred))
+                            await TransferTokenAsync(settlement);
+                    }
+
+                    if (settlement.Status == SettlementStatus.Transferred)
+                    {
+                        IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
+                            .Where(o => o.Status == AssetSettlementStatus.Transferred)
+                            .Where(o => o.Error == SettlementError.None);
+                        
+                        foreach (AssetSettlement assetSettlement in assetSettlements)
+                            await CompleteAssetAsync(assetSettlement);
+
+                        if (settlement.Assets.All(o => o.Status == AssetSettlementStatus.Completed))
+                            await CompleteTokenAsync(settlement);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    _log.WarningWithDetails("An error occurred while processing settlement", exception, settlement);
+                }
             }
         }
 
@@ -90,16 +154,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
                 Comment = comment,
                 IsDirect = isDirect,
                 Status = SettlementStatus.New,
+                CreatedBy = userId,
                 CreatedDate = DateTime.UtcNow
             };
 
             await UpdateAssetsAsync(settlement, indexPrice.Weights);
 
-            Validate(settlement);
+            await ValidateBalanceAsync(settlement);
 
             await _settlementRepository.InsertAsync(settlement);
 
-            _log.InfoWithDetails("Settlement registered", new {settlement, userId});
+            _log.InfoWithDetails("Settlement registered", settlement);
         }
 
         public async Task RecalculateAsync(string settlementId, string userId)
@@ -118,9 +183,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
 
             await UpdateAssetsAsync(settlement, indexPrice.Weights);
 
-            Validate(settlement);
+            await ValidateBalanceAsync(settlement);
 
-            await _settlementRepository.UpdateAsync(settlement);
+            await _settlementRepository.ReplaceAsync(settlement);
 
             _log.InfoWithDetails("Settlement recalculated", new {settlement, userId});
         }
@@ -132,7 +197,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             if (settlement.Status != SettlementStatus.New)
                 throw new InvalidOperationException("Only new settlement can be approved");
 
-            await _settlementRepository.UpdateStatusAsync(settlement.Id, SettlementStatus.Approved);
+            settlement.Status = SettlementStatus.Approved;
+
+            await _settlementRepository.UpdateAsync(settlement);
 
             _log.InfoWithDetails("Settlement approved", new {settlement.Id, userId});
         }
@@ -141,16 +208,41 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
         {
             Settlement settlement = await GetByIdAsync(settlementId);
 
-            switch (settlement.Status)
+            var allowedStatuses = new[] {SettlementStatus.New, SettlementStatus.Approved, SettlementStatus.Reserved};
+
+            bool hasTransferredAssets = settlement.Assets
+                .Any(o => o.Status == AssetSettlementStatus.Reserved || o.Status == AssetSettlementStatus.Completed);
+
+            if (!allowedStatuses.Contains(settlement.Status) || hasTransferredAssets)
+                throw new InvalidOperationException("Settlement can not be rejected");
+
+            IEnumerable<AssetSettlement> reservedAssets = settlement.Assets
+                .Where(o => o.Status == AssetSettlementStatus.Reserved);
+
+            foreach (AssetSettlement assetSettlement in reservedAssets)
             {
-                case SettlementStatus.New:
-                case SettlementStatus.Approved:
-                case SettlementStatus.Reserved:
-                    // TODO: transfer reserved amount back and cancel processed asset settlements
-                    await _settlementRepository.UpdateStatusAsync(settlement.Id, SettlementStatus.Rejected);
-                    break;
-                default:
-                    throw new InvalidOperationException("The settlement can not be rejected");
+                assetSettlement.Error = await TransferAsync(assetSettlement, _settingsService.GetTransitWalletId(),
+                    _settingsService.GetWalletId(),
+                    $"Rollback reserved for client. ClientId: {settlement.ClientId}; SettlementId: {assetSettlement.SettlementId}");
+                
+                if (assetSettlement.Error == SettlementError.None)
+                    assetSettlement.Status = AssetSettlementStatus.Cancelled;
+
+                await _settlementRepository.UpdateAsync(assetSettlement);
+            }
+
+            if (settlement.Status == SettlementStatus.Reserved)
+            {
+                IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(settlement.IndexName);
+
+                settlement.Error = await TransferAsync(_settingsService.GetTransitWalletId(), settlement.WalletId,
+                    indexSettings.AssetId, settlement.Amount,
+                    $"Rollback reserved for market maker. ClientId: {settlement.ClientId}; SettlementId: {settlement.Id}");
+
+                if (settlement.Error == SettlementError.None)
+                    settlement.Status = SettlementStatus.Rejected;
+
+                await _settlementRepository.UpdateAsync(settlement);
             }
 
             _log.InfoWithDetails("Settlement rejected", new {settlement.Id, userId});
@@ -171,9 +263,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
 
             assetSettlement.Update(amount, isDirect, isExternal);
 
-            Validate(settlement);
+            await ValidateBalanceAsync(settlement);
 
-            await _settlementRepository.UpdateAsync(settlement);
+            await _settlementRepository.ReplaceAsync(settlement);
 
             _log.InfoWithDetails("Asset updated", new {assetSettlement, userId});
         }
@@ -209,9 +301,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             if (settlement.Status != SettlementStatus.New)
                 throw new InvalidOperationException("Only new settlement can be validated");
 
-            Validate(settlement);
+            await ValidateBalanceAsync(settlement);
 
-            await _settlementRepository.UpdateAsync(settlement);
+            await _settlementRepository.ReplaceAsync(settlement);
 
             _log.InfoWithDetails("Settlement validated", new {settlement.Id, userId});
         }
@@ -226,9 +318,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             if (assetSettlement == null)
                 throw new InvalidOperationException("Asset not found");
 
-            if(!assetSettlement.IsDirect || !assetSettlement.IsExternal)
+            if (!assetSettlement.IsDirect || !assetSettlement.IsExternal)
                 throw new InvalidOperationException("Only direct external assets can be manually executed");
-                
+
             switch (settlement.Status)
             {
                 case SettlementStatus.Approved:
@@ -244,6 +336,201 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             await _settlementRepository.UpdateAsync(assetSettlement);
 
             _log.InfoWithDetails("Asset updated", new {assetSettlement, userId});
+        }
+
+        private async Task ReserveAssetAsync(AssetSettlement assetSettlement, string clientId)
+        {
+            assetSettlement.Error = await TransferAsync(assetSettlement, _settingsService.GetWalletId(),
+                _settingsService.GetTransitWalletId(),
+                $"Reserve for client. ClientId: {clientId}; SettlementId: {assetSettlement.SettlementId}");
+
+            if (assetSettlement.Error == SettlementError.None)
+                assetSettlement.Status = AssetSettlementStatus.Reserved;
+
+            await _settlementRepository.UpdateAsync(assetSettlement);
+        }
+
+        private async Task ReserveTokenAsync(Settlement settlement)
+        {
+            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(settlement.IndexName);
+
+            settlement.Error = await TransferAsync(settlement.WalletId, _settingsService.GetTransitWalletId(),
+                indexSettings.AssetId, settlement.Amount,
+                $"Reserve for market maker. ClientId: {settlement.ClientId}; SettlementId: {settlement.Id}");
+
+            if (settlement.Error == SettlementError.None)
+                settlement.Status = SettlementStatus.Reserved;
+
+            await _settlementRepository.UpdateAsync(settlement);
+        }
+
+        private async Task TransferAssetAsync(AssetSettlement assetSettlement, string clientId, string walletId)
+        {
+            assetSettlement.Error = await TransferAsync(assetSettlement,
+                _settingsService.GetTransitWalletId(), walletId,
+                $"Transfer to client. ClientId: {clientId}; SettlementId: {assetSettlement.SettlementId}");
+
+            if (assetSettlement.Error == SettlementError.None)
+                assetSettlement.Status = AssetSettlementStatus.Transferred;
+
+            await _settlementRepository.UpdateAsync(assetSettlement);
+        }
+
+        private async Task TransferTokenAsync(Settlement settlement)
+        {
+            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(settlement.IndexName);
+
+            settlement.Error = await TransferAsync(_settingsService.GetTransitWalletId(),
+                _settingsService.GetWalletId(), indexSettings.AssetId, settlement.Amount,
+                $"Transfer to market maker. ClientId: {settlement.ClientId}; SettlementId: {settlement.Id}");
+
+            if (settlement.Error == SettlementError.None)
+                settlement.Status = SettlementStatus.Transferred;
+
+            await _settlementRepository.UpdateAsync(settlement);
+        }
+
+        private async Task CompleteAssetAsync(AssetSettlement assetSettlement)
+        {
+            try
+            {
+                AssetHedgeSettings assetHedgeSettings =
+                    await _assetHedgeSettingsService.GetByAssetIdAsync(assetSettlement.AssetId);
+
+                await _positionService.CloseAsync(assetSettlement.AssetId, assetHedgeSettings.Exchange,
+                    assetSettlement.ActualAmount, assetSettlement.ActualPrice);
+
+                assetSettlement.Status = AssetSettlementStatus.Completed;
+            }
+            catch (Exception exception)
+            {
+                _log.ErrorWithDetails(exception, "An error occurred while completing asset settlement",
+                    assetSettlement);
+
+                assetSettlement.Error = SettlementError.Unknown;
+            }
+
+            await _settlementRepository.UpdateAsync(assetSettlement);
+        }
+
+        private async Task CompleteTokenAsync(Settlement settlement)
+        {
+            try
+            {
+                IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(settlement.IndexName);
+
+                await _tokenService.CloseAsync(indexSettings.AssetId, settlement.Amount, settlement.Price);
+
+                settlement.Status = SettlementStatus.Completed;
+            }
+            catch (Exception exception)
+            {
+                _log.ErrorWithDetails(exception, "An error occurred while completing settlement", settlement);
+
+                settlement.Error = SettlementError.Unknown;
+            }
+
+            await _settlementRepository.UpdateAsync(settlement);
+        }
+
+        private async Task<SettlementError> TransferAsync(AssetSettlement assetSettlement, string sourceWalletId,
+            string targetWalletId, string comment)
+        {
+            string assetId;
+            decimal amount;
+
+            if (assetSettlement.IsDirect)
+            {
+                assetId = assetSettlement.AssetId;
+                amount = assetSettlement.Amount;
+            }
+            else
+            {
+                assetId = "USD";
+                amount = assetSettlement.Amount * assetSettlement.Price;
+            }
+
+            return await TransferAsync(sourceWalletId, targetWalletId, assetId, amount, comment);
+        }
+
+        private async Task<SettlementError> TransferAsync(string sourceWalletId, string targetWalletId, string assetId,
+            decimal amount, string comment)
+        {
+            AssetSettings assetSettings = await _instrumentService.GetAssetAsync(assetId, ExchangeNames.Lykke);
+
+            if (assetSettings == null)
+            {
+                _log.WarningWithDetails("No asset setting", assetId);
+                return SettlementError.Unknown;
+            }
+
+            try
+            {
+                string cashOutTransactionId = await _lykkeExchangeService.CashOutAsync(sourceWalletId,
+                    assetSettings.AssetId, amount, "settlement", comment);
+
+                _log.InfoWithDetails("Cash out", new
+                {
+                    Comment = comment,
+                    Asset = assetId,
+                    Amount = amount,
+                    WalletId = sourceWalletId,
+                    TransactionId = cashOutTransactionId
+                });
+            }
+            catch (BalanceOperationException exception) when (exception.Code == 401)
+            {
+                _log.WarningWithDetails("No enough funds to cash out", new
+                {
+                    Comment = comment,
+                    Asset = assetId,
+                    Amount = amount,
+                    WalletId = sourceWalletId
+                });
+
+                return SettlementError.NotEnoughFunds;
+            }
+            catch (Exception exception)
+            {
+                _log.ErrorWithDetails(exception, "An error occurred while cash out", new
+                {
+                    Comment = comment,
+                    Asset = assetId,
+                    Amount = amount,
+                    WalletId = sourceWalletId
+                });
+
+                return SettlementError.Unknown;
+            }
+
+            try
+            {
+                string cashInTransactionId = await _lykkeExchangeService.CashInAsync(targetWalletId,
+                    assetSettings.AssetId, amount, "settlement", comment);
+
+                _log.InfoWithDetails("Cash in", new
+                {
+                    Comment = comment,
+                    Asset = assetId,
+                    Amount = amount,
+                    WalletId = targetWalletId,
+                    TransactionId = cashInTransactionId
+                });
+            }
+            catch (Exception exception)
+            {
+                _log.ErrorWithDetails(exception, "An error occurred while cash in", new
+                {
+                    Comment = comment,
+                    Asset = assetId,
+                    Amount = amount,
+                    WalletId = targetWalletId
+                });
+
+                return SettlementError.Unknown;
+            }
+
+            return SettlementError.None;
         }
 
         private async Task UpdateAssetsAsync(Settlement settlement, IReadOnlyCollection<AssetWeight> assetWeights)
@@ -284,22 +571,30 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             settlement.Assets = assetSettlements;
         }
 
-        private void Validate(Settlement settlement)
+        private async Task ValidateBalanceAsync(Settlement settlement)
         {
-            foreach (AssetSettlement assetSettlement in settlement.Assets)
+            IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
+                .Where(o=>o.Error == SettlementError.NotEnoughFunds);
+            
+            foreach (AssetSettlement assetSettlement in assetSettlements)
                 assetSettlement.Error = SettlementError.None;
 
             AssetSettlement[] assetSettlementsDirect = settlement.Assets
+                .Where(o => o.Error == SettlementError.None)
                 .Where(o => o.IsDirect && !o.IsExternal)
                 .ToArray();
 
             AssetSettlement[] assetSettlementsInUsd = settlement.Assets
+                .Where(o => o.Error == SettlementError.None)
                 .Where(o => !o.IsDirect)
                 .ToArray();
 
             foreach (AssetSettlement assetSettlement in assetSettlementsDirect)
             {
-                Balance balance = _balanceService.GetByAssetId(assetSettlement.AssetId, ExchangeNames.Lykke);
+                AssetSettings assetSettings =
+                    await _instrumentService.GetAssetAsync(ExchangeNames.Lykke, assetSettlement.AssetId);
+                
+                Balance balance = _balanceService.GetByAssetId(assetSettings.AssetId, ExchangeNames.Lykke);
 
                 if (balance.Amount - balance.Reserved < assetSettlement.Amount)
                     assetSettlement.Error = SettlementError.NotEnoughFunds;
@@ -307,11 +602,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
 
             decimal amountInUsd = assetSettlementsInUsd.Sum(o => o.Amount * o.Price);
 
-            Balance usdBalance = _balanceService.GetByAssetId("USD", ExchangeNames.Lykke);
+            AssetSettings usdAssetSettings =
+                await _instrumentService.GetAssetAsync(ExchangeNames.Lykke, "USD");
+            
+            Balance usdBalance = _balanceService.GetByAssetId(usdAssetSettings.AssetId, ExchangeNames.Lykke);
 
             if (usdBalance.Amount - usdBalance.Reserved < amountInUsd)
             {
-                foreach (AssetSettlement assetSettlement in assetSettlementsDirect)
+                foreach (AssetSettlement assetSettlement in assetSettlementsInUsd)
                     assetSettlement.Error = SettlementError.NotEnoughFunds;
             }
         }

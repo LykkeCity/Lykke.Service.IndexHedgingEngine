@@ -4,6 +4,9 @@ IndexHedgingEngineService:
   WalletId:
     settings-key: IndexHedgingEngineService-WalletId
 
+  TransitWalletId:
+    settings-key: IndexHedgingEngineService-TransitWalletId
+
   Db:
     DataConnectionString:
       settings-key: IndexHedgingEngineService-DataConnectionString

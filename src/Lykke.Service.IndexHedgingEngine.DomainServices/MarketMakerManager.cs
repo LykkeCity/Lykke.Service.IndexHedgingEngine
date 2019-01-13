@@ -12,7 +12,7 @@ using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices
 {
-    public class MarketMakerManager : IIndexHandler, IInternalTradeHandler, IMarketMakerStateHandler
+    public class MarketMakerManager : IIndexHandler, IInternalTradeHandler, IMarketMakerStateHandler, ISettlementHandler
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
@@ -23,6 +23,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly IIndexSettingsService _indexSettingsService;
         private readonly ITokenService _tokenService;
         private readonly IMarketMakerStateService _marketMakerStateService;
+        private readonly ISettlementService _settlementService;
         private readonly ILog _log;
 
         public MarketMakerManager(
@@ -33,6 +34,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             IIndexSettingsService indexSettingsService,
             ITokenService tokenService,
             IMarketMakerStateService marketMakerStateService,
+            ISettlementService settlementService,
             ILogFactory logFactory)
         {
             _indexPriceService = indexPriceService;
@@ -42,6 +44,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _indexSettingsService = indexSettingsService;
             _tokenService = tokenService;
             _marketMakerStateService = marketMakerStateService;
+            _settlementService = settlementService;
             _log = logFactory.CreateLog(this);
         }
 
@@ -115,6 +118,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
                 foreach (IndexSettings indexSettings in indicesSettings)
                     await _marketMakerService.CancelLimitOrdersAsync(indexSettings.Name);
+            }
+        }
+
+        public async Task ExecuteAsync()
+        {
+            await _semaphore.WaitAsync();
+
+            try
+            {
+                await _settlementService.ExecuteAsync();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
     }
