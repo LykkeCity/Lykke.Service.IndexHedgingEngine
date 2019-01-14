@@ -59,8 +59,8 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                 .SetMessageDeserializer(new ProtobufMessageDeserializer<ExecutionEvent>())
                 .Subscribe(ProcessMessageAsync)
                 .CreateDefaultBinding()
-                //.SetAlternativeExchange(_settings.AlternateConnectionString)
-                //.SetDeduplicator(_deduplicator)
+                .SetAlternativeExchange(_settings.AlternateConnectionString)
+                .SetDeduplicator(_deduplicator)
                 .Start();
         }
 
