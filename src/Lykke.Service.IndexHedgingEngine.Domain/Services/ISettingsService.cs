@@ -9,6 +9,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         string GetWalletId();
 
+        string GetTransitWalletId();
+
         IReadOnlyCollection<ExchangeSettings> GetExchanges();
     }
 }

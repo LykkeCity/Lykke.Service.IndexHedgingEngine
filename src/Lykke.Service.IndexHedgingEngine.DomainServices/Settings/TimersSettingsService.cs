@@ -34,7 +34,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
                     timersSettings = new TimersSettings
                     {
                         LykkeBalances = TimeSpan.FromSeconds(10),
-                        ExternalBalances = TimeSpan.FromSeconds(10)
+                        ExternalBalances = TimeSpan.FromSeconds(10),
+                        Settlements = TimeSpan.FromMinutes(5)
                     };
                 }
 

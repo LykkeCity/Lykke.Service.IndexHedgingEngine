@@ -29,9 +29,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
         private readonly Mock<ITokenService> _tokenServiceMock =
             new Mock<ITokenService>();
 
-        private readonly Mock<IMarketMakerStateService> _marketMakerStateService =
+        private readonly Mock<IMarketMakerStateService> _marketMakerStateServiceMock =
             new Mock<IMarketMakerStateService>();
 
+        private readonly Mock<ISettlementService> _settlementServiceMock =
+            new Mock<ISettlementService>();
+        
         private MarketMakerManager _marketMakerManager;
 
         private List<IndexSettings> _indexSettings = new List<IndexSettings>();
@@ -60,7 +63,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
                 _internalTradeServiceMock.Object,
                 _indexSettingsServiceMock.Object,
                 _tokenServiceMock.Object,
-                _marketMakerStateService.Object,
+                _marketMakerStateServiceMock.Object,
+                _settlementServiceMock.Object,
                 EmptyLogFactory.Instance);
         }
 

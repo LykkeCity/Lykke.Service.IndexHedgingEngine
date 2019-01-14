@@ -10,9 +10,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
     [ValueTypeMergingStrategy(ValueTypeMergingStrategy.UpdateIfDirty)]
     public class AssetHedgeSettingsEntity : AzureTableEntity
     {
-        private decimal _minVolume;
-        private int _volumeAccuracy;
-        private int _priceAccuracy;
         private bool _approved;
         private AssetHedgeMode _mode;
 

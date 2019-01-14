@@ -16,5 +16,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The timer interval of external exchange balances.
         /// </summary>
         public TimeSpan ExternalBalances { get; set; }
+        
+        /// <summary>
+        /// The timer interval of settlement operations.
+        /// </summary>
+        public TimeSpan Settlements { get; set; }
     }
 }

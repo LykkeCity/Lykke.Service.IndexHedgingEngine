@@ -54,7 +54,13 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
             OpenVolume -= volume;
             OppositeVolume -= oppositeVolume;
         }
-        
+
+        public void Close(decimal volume, decimal price)
+        {
+            OpenVolume -= volume;
+            OppositeVolume -= volume * price;
+        }
+
         public Token Copy()
         {
             return new Token

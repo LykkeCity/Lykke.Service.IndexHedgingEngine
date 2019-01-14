@@ -32,6 +32,7 @@ namespace Lykke.Service.IndexHedgingEngine
             builder.RegisterModule(new DomainServices.AutofacModule(
                 _settings.CurrentValue.IndexHedgingEngineService.Name,
                 _settings.CurrentValue.IndexHedgingEngineService.WalletId,
+                _settings.CurrentValue.IndexHedgingEngineService.TransitWalletId,
                 _settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers.Quotes.Exchanges
                     .Where(o => o.Name != ExchangeNames.Lykke)
                     .Select(o => new ExchangeSettings

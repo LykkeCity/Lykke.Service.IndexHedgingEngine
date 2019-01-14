@@ -190,6 +190,24 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
             }
         }
 
+        public async Task CloseAsync(string assetId, decimal volume, decimal price)
+        {
+            Token previousToken = await GetAsync(assetId);
+            Token currentToken = previousToken.Copy();
+            
+            currentToken.Close(volume, price);
+            
+            await _tokenRepository.SaveAsync(currentToken);
+
+            _cache.Set(currentToken);
+
+            _log.InfoWithDetails("Token open amount updated", new
+            {
+                PreviuosToken = previousToken,
+                CurrentToken = currentToken
+            });
+        }
+
         private static string GetKey(Token token)
             => GetKey(token.AssetId);
 

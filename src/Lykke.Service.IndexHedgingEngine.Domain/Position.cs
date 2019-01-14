@@ -50,11 +50,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
             };
         }
 
-        public void Close(decimal price)
+        public void Close(decimal volume, decimal price)
         {
-            OppositeVolume += Volume * price;
-            
-            Volume = 0;
+            OppositeVolume -= volume * price;
+            Volume -= volume;
         }
     }
 }
