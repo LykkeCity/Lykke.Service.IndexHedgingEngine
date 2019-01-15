@@ -407,8 +407,15 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
                 AssetHedgeSettings assetHedgeSettings =
                     await _assetHedgeSettingsService.GetByAssetIdAsync(assetSettlement.AssetId);
 
-                await _positionService.CloseAsync(assetSettlement.AssetId, assetHedgeSettings.Exchange,
-                    assetSettlement.ActualAmount, assetSettlement.ActualPrice);
+                if (!assetSettlement.IsDirect && !assetSettlement.IsExternal)
+                {
+                    // In this case position will be closed automatically by hedge limit order.
+                }
+                else
+                {
+                    await _positionService.CloseAsync(assetSettlement.AssetId, assetHedgeSettings.Exchange,
+                        assetSettlement.ActualAmount, assetSettlement.ActualPrice);
+                }
 
                 assetSettlement.Status = AssetSettlementStatus.Completed;
             }
