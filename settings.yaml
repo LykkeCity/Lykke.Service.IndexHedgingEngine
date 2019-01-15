@@ -41,7 +41,7 @@ IndexHedgingEngineService:
 
       LykkeOrderBooks:
         ConnectionString:
-          settings-key: MatchingEngineRabbitMqConnectionString
+          settings-key: RabbitSpotPricesConnString
           types:
           - RabbitMq
         Exchange:
