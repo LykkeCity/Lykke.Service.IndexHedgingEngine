@@ -25,6 +25,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
         Task UpdateAssetAsync(string settlementId, string assetId, decimal amount, bool isDirect, bool isExternal,
             string userId);
 
+        Task RetryAsync(string settlementId, string userId);
+        
         Task RetryAssetAsync(string settlementId, string assetId, string userId);
 
         Task ValidateAsync(string settlementId, string userId);

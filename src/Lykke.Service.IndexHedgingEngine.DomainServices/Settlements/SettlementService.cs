@@ -280,6 +280,19 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             _log.InfoWithDetails("Asset updated", new {assetSettlement, userId});
         }
 
+        public async Task RetryAsync(string settlementId, string userId)
+        {
+            Settlement settlement = await GetByIdAsync(settlementId);
+
+            // TODO: Validate status
+            
+            settlement.Error = SettlementError.None;
+
+            await _settlementRepository.UpdateAsync(settlement);
+            
+            _log.InfoWithDetails("Settlement retry", new {settlement, userId});
+        }
+
         public async Task RetryAssetAsync(string settlementId, string assetId, string userId)
         {
             Settlement settlement = await GetByIdAsync(settlementId);
@@ -364,8 +377,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
         {
             IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(settlement.IndexName);
 
+            AssetSettings assetSettings = (await _instrumentService.GetAssetsAsync())
+                .Single(o => o.Exchange == ExchangeNames.Lykke && o.AssetId == indexSettings.AssetId);
+
             settlement.Error = await TransferAsync(settlement.WalletId, _settingsService.GetTransitWalletId(),
-                indexSettings.AssetId, settlement.Amount,
+                assetSettings.Asset, settlement.Amount,
                 $"Reserve for market maker. ClientId: {settlement.ClientId}; SettlementId: {settlement.Id}");
 
             if (settlement.Error == SettlementError.None)
@@ -390,8 +406,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
         {
             IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(settlement.IndexName);
 
+            AssetSettings assetSettings = (await _instrumentService.GetAssetsAsync())
+                .Single(o => o.Exchange == ExchangeNames.Lykke && o.AssetId == indexSettings.AssetId);
+            
             settlement.Error = await TransferAsync(_settingsService.GetTransitWalletId(),
-                _settingsService.GetWalletId(), indexSettings.AssetId, settlement.Amount,
+                _settingsService.GetWalletId(), assetSettings.Asset, settlement.Amount,
                 $"Transfer to market maker. ClientId: {settlement.ClientId}; SettlementId: {settlement.Id}");
 
             if (settlement.Error == SettlementError.None)

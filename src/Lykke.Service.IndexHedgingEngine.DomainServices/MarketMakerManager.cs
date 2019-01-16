@@ -55,6 +55,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (marketMakerState.Status != MarketMakerStatus.Active)
                 return;
 
+            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(index.Name);
+            
+            if(indexSettings == null)
+                return;
+            
             await _semaphore.WaitAsync();
 
             try
