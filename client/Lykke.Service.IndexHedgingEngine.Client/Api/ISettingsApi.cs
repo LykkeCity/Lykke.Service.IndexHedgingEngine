@@ -53,5 +53,18 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// <param name="model">The model that represents timers settings.</param>
         [Put("/api/Settings/timers")]
         Task UpdateTimersSettingsAsync([Body] TimersSettingsModel model);
+
+        /// <summary>
+        /// Returns settings of quote threshold.
+        /// </summary>
+        [Get("/api/settings/quotes/threshold")]
+        Task<QuoteThresholdSettingsModel> GetQuoteThresholdSettingsAsync();
+
+        /// <summary>
+        /// Saves settings of quote threshold.
+        /// </summary>
+        /// <param name="model">The settings of quote threshold.</param>
+        [Post("/api/settings/quotes/threshold")]
+        Task SaveQuoteThresholdSettingsAsync([Body] QuoteThresholdSettingsModel model);
     }
 }

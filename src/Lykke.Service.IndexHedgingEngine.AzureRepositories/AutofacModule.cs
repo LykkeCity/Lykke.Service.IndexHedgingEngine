@@ -113,6 +113,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                 .As<ITimersSettingsRepository>()
                 .SingleInstance();
 
+            builder.Register(container => new QuoteThresholdSettingsRepository(
+                    AzureTableStorage<QuoteThresholdSettingsEntity>.Create(_connectionString,
+                        "Settings", container.Resolve<ILogFactory>())))
+                .As<IQuoteThresholdSettingsRepository>()
+                .SingleInstance();
+
             builder.Register(container => new SettlementRepository(
                     new SettlementAzureRepository(
                         AzureTableStorage<SettlementEntity>.Create(_connectionString,

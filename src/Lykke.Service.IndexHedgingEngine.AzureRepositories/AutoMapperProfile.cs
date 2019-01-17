@@ -66,6 +66,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
             CreateMap<MarketMakerStateEntity, MarketMakerState>(MemberList.Destination)
                 .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Date));
 
+            CreateMap<QuoteThresholdSettings, QuoteThresholdSettingsEntity>(MemberList.Source);
+            CreateMap<QuoteThresholdSettingsEntity, QuoteThresholdSettings>(MemberList.Destination);
+
             CreateMap<TimersSettings, TimersSettingsEntity>(MemberList.Source);
             CreateMap<TimersSettingsEntity, TimersSettings>(MemberList.Destination);
 
