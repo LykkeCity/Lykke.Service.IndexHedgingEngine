@@ -32,11 +32,23 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// </summary>
         public AssetHedgeMode Mode { get; set; }
 
+        /// <summary>
+        /// The name of the exchange that used to control deviation of hedge limit order price.
+        /// </summary>
+        public string ReferenceExchange { get; set; }
+        
+        /// <summary>
+        /// The allowed deviation of hedge limit order price in comparison with <see cref="ReferenceExchange"/>.
+        /// </summary>
+        public decimal? ReferenceDelta { get; set; }
+        
         public void Update(AssetHedgeSettings assetHedgeSettings)
         {
             Exchange = assetHedgeSettings.Exchange;
             AssetPairId = assetHedgeSettings.AssetPairId;
             Mode = assetHedgeSettings.Mode;
+            ReferenceExchange = assetHedgeSettings.ReferenceExchange;
+            ReferenceDelta = assetHedgeSettings.ReferenceDelta;
         }
 
         public void Approve()

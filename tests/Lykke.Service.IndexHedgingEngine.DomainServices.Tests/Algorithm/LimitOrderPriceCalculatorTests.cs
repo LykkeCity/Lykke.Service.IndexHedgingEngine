@@ -121,51 +121,5 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.Algorithm
             Assert.IsTrue(limitOrderPrice.Price == quote.Ask * (1 + hedgeSettings.MarketOrderMarkup) &&
                           limitOrderPrice.Type == PriceType.Market);
         }
-        
-        [TestMethod]
-        public void Can_Calculate_Price_If_Volume_Greater_Than_Down_Threshold()
-        {
-            // arrange
-
-            decimal volume = 3000;
-
-            var hedgeSettings = new HedgeSettings
-            {
-                ThresholdUp = 5000,
-                ThresholdDown = 1000,
-                MarketOrderMarkup = .1m
-            };
-            
-            // act
-
-            bool result = LimitOrderPriceCalculator.CanCalculate(volume, hedgeSettings);
-
-            // assert
-
-            Assert.IsTrue(result);
-        }
-        
-        [TestMethod]
-        public void Can_Not_Calculate_Price_If_Volume_Less_Than_Down_Threshold()
-        {
-            // arrange
-
-            decimal volume = 500;
-
-            var hedgeSettings = new HedgeSettings
-            {
-                ThresholdUp = 5000,
-                ThresholdDown = 1000,
-                MarketOrderMarkup = .1m
-            };
-            
-            // act
-
-            bool result = LimitOrderPriceCalculator.CanCalculate(volume, hedgeSettings);
-
-            // assert
-
-            Assert.IsFalse(result);
-        }
     }
 }

@@ -30,5 +30,15 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.AssetHedgeSettings
         /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         public AssetHedgeMode Mode { get; set; }
+        
+        /// <summary>
+        /// The name of the exchange that used to control deviation of hedge limit order price.
+        /// </summary>
+        public string ReferenceExchange { get; set; }
+        
+        /// <summary>
+        /// The allowed deviation of hedge limit order price in comparison with <see cref="ReferenceExchange"/>.
+        /// </summary>
+        public decimal? ReferenceDelta { get; set; }
     }
 }

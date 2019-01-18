@@ -28,8 +28,5 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
             throw new InvalidOperationException("The volume is out of the range");
         }
-
-        public static bool CanCalculate(decimal volume, HedgeSettings hedgeSettings)
-            => volume > hedgeSettings.ThresholdDown;
     }
 }

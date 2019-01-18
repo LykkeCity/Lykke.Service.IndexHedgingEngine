@@ -20,10 +20,14 @@ namespace Lykke.Service.IndexHedgingEngine.Validators
             RuleFor(o => o.AssetPairId)
                 .NotEmpty()
                 .WithMessage("Asset pair id required");
-            
+
             RuleFor(o => o.Mode)
                 .NotEqual(AssetHedgeMode.None)
                 .WithMessage("Hedging mode should be specified");
+
+            RuleFor(o => o.ReferenceDelta)
+                .Must((model, value) => value == null || 0 <= value && value <= 1)
+                .WithMessage("The reference delta should be between 0 and 1");
         }
     }
 }

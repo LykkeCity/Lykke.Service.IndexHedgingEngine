@@ -54,5 +54,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
                 }
             }
         }
+        
+        public string ReferenceExchange { get; set; }
+        
+        public decimal? ReferenceDelta { get; set; }
     }
 }
