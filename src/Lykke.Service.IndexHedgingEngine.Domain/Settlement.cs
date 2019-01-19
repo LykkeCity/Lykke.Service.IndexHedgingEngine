@@ -70,6 +70,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         public DateTime CreatedDate { get; set; }
 
         /// <summary>
+        /// The identifier of the main wallet cash-in transaction.
+        /// </summary>
+        public string TransactionId { get; set; }
+        
+        /// <summary>
         /// The collection of asset to settle.
         /// </summary>
         public IReadOnlyCollection<AssetSettlement> Assets { get; set; }

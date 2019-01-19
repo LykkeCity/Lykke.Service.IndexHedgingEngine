@@ -64,6 +64,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The actual price of the asset. Can be different for external asset.
         /// </summary>
         public decimal ActualPrice { get; set; }
+        
+        /// <summary>
+        /// The identifier of the client wallet cash-in transaction.
+        /// </summary>
+        public string TransactionId { get; set; }
 
         public bool IsManual()
             => IsDirect && IsExternal;

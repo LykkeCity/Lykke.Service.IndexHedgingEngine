@@ -49,7 +49,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
         /// If <c>true</c> the assets should be settle direct, otherwise in USD. 
         /// </summary>
         public bool IsDirect { get; set; }
-        
+
         /// <summary>
         /// The status of the settlement.
         /// </summary>
@@ -64,11 +64,16 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settlements
         /// The identifier of the user who requested settlement.
         /// </summary>
         public string CreatedBy { get; set; }
-        
+
         /// <summary>
         /// The creation date of the settlement.
         /// </summary>
         public DateTime CreatedDate { get; set; }
+
+        /// <summary>
+        /// The identifier of the main wallet cash-in transaction.
+        /// </summary>
+        public string TransactionId { get; set; }
 
         /// <summary>
         /// The collection of asset to settle.

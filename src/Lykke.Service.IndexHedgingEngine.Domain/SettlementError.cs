@@ -16,6 +16,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         NotEnoughFunds,
         
         /// <summary>
+        /// Indicates that there are no quote for this asset.
+        /// </summary>
+        NoQuote,
+        
+        /// <summary>
         /// Indicates that unknown error occurred while processing settlement.
         /// </summary>
         Unknown
