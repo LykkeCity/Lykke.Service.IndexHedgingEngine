@@ -148,6 +148,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             builder.RegisterType<SettlementService>()
                 .As<ISettlementService>()
                 .SingleInstance();
+            
+            builder.RegisterType<SettlementTransferService>()
+                .As<ISettlementTransferService>()
+                .SingleInstance();
 
             builder.RegisterType<LykkeBalancesTimer>()
                 .AsSelf()
