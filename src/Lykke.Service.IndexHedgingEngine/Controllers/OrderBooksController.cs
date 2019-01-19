@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -23,16 +22,6 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         {
             _orderBookService = orderBookService;
             _limitOrderService = limitOrderService;
-        }
-
-        /// <inheritdoc/>
-        /// <response code="200">A collection of order books.</response>
-        [Obsolete]
-        [HttpGet]
-        [ProducesResponseType(typeof(IReadOnlyCollection<OrderBookModel>), (int) HttpStatusCode.OK)]
-        public async Task<IReadOnlyCollection<OrderBookModel>> GetAllAsync(int limit)
-        {
-            return await GetLykkeAsync(limit);
         }
 
         /// <inheritdoc/>
