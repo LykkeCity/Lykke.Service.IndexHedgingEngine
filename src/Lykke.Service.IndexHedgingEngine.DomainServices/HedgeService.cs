@@ -184,6 +184,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 if (assetInvestment.IsDisabled)
                     continue;
 
+                if(Math.Abs(assetInvestment.RemainingAmount) <= 0)
+                    continue;
+                
                 AssetHedgeSettings assetHedgeSettings =
                     await _assetHedgeSettingsService.EnsureAsync(assetInvestment.AssetId);
 
