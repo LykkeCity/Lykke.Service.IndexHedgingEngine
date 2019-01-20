@@ -78,6 +78,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
             Amount = amount;
             IsDirect = isDirect;
             IsExternal = isExternal;
+            ActualAmount = amount;
         }
     }
 }
