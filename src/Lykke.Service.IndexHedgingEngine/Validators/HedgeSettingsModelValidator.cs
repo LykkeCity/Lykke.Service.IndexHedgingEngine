@@ -10,8 +10,8 @@ namespace Lykke.Service.IndexHedgingEngine.Validators
         public HedgeSettingsModelValidator()
         {
             RuleFor(o => o.ThresholdDown)
-                .GreaterThan(0)
-                .WithMessage("Threshold down should be greater than zero");
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Threshold down should be greater than or equal to zero");
             
             RuleFor(o => o.ThresholdUp)
                 .Cascade(CascadeMode.StopOnFirstFailure)
