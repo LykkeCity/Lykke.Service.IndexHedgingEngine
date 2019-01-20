@@ -12,6 +12,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         private decimal _thresholdUp;
         private decimal _thresholdDown;
         private decimal _marketOrderMarkup;
+        private decimal _thresholdCritical;
 
         public HedgeSettingsEntity()
         {
@@ -44,6 +45,19 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
                 if (_thresholdDown != value)
                 {
                     _thresholdDown = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        public decimal ThresholdCritical
+        {
+            get => _thresholdCritical;
+            set
+            {
+                if (_thresholdCritical != value)
+                {
+                    _thresholdCritical = value;
                     MarkValueTypePropertyAsDirty();
                 }
             }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
         private readonly IHedgeLimitOrderService _hedgeLimitOrderService;
         private readonly IAssetHedgeSettingsService _assetHedgeSettingsService;
         private readonly IInvestmentService _investmentService;
+        private readonly IHedgeSettingsService _hedgeSettingsService;
         private readonly IRateService _rateService;
 
         public PositionReportService(
@@ -19,12 +21,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
             IHedgeLimitOrderService hedgeLimitOrderService,
             IAssetHedgeSettingsService assetHedgeSettingsService,
             IInvestmentService investmentService,
+            IHedgeSettingsService hedgeSettingsService,
             IRateService rateService)
         {
             _positionService = positionService;
             _hedgeLimitOrderService = hedgeLimitOrderService;
             _assetHedgeSettingsService = assetHedgeSettingsService;
             _investmentService = investmentService;
+            _hedgeSettingsService = hedgeSettingsService;
             _rateService = rateService;
         }
 
@@ -48,6 +52,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
 
             IReadOnlyCollection<HedgeLimitOrder> hedgeLimitOrders = _hedgeLimitOrderService.GetAll();
 
+            HedgeSettings hedgeSettings = await _hedgeSettingsService.GetAsync();
+            
             IReadOnlyCollection<AssetHedgeSettings>
                 assetsHedgeSettings = await _assetHedgeSettingsService.GetAllAsync();
 
@@ -97,6 +103,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                     AssetInvestment = assetInvestment,
                     Error = ValidateAssetHedgeSettings(assetHedgeSettings)
                             ?? ValidateInvestments(assetInvestment)
+                            ?? ValidateThresholdCritical(assetInvestment, hedgeSettings)
                             ?? ValidateQuote(assetQuote)
                 });
 
@@ -165,6 +172,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
             return null;
         }
 
+        private static string ValidateThresholdCritical(AssetInvestment assetInvestment, HedgeSettings hedgeSettings)
+        {
+            if(assetInvestment != null && hedgeSettings.ThresholdCritical <= Math.Abs(assetInvestment.RemainingAmount))
+                return "Critical delta threshold exceeded";
+
+            return null;
+        }
+        
         private static string ValidateQuote(Quote quote)
         {
             if (quote == null)

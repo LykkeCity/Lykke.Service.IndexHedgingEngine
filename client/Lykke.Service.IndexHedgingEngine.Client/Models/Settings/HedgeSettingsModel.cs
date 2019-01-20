@@ -19,6 +19,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settings
         public decimal ThresholdDown { get; set; }
 
         /// <summary>
+        /// The critical delta threshold used to stop hedging.
+        /// </summary>
+        public decimal ThresholdCritical { get; set; }
+
+        /// <summary>
         /// The markup of market hedge limit order.
         /// </summary>
         public decimal MarketOrderMarkup { get; set; }
