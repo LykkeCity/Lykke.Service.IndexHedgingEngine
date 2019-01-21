@@ -192,7 +192,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     : LimitOrderType.Buy;
 
                 LimitOrderPrice limitOrderPrice = LimitOrderPriceCalculator.Calculate(assetInvestment.Quote,
-                    Math.Abs(assetInvestment.RemainingAmount), limitOrderType, hedgeSettings);
+                    Math.Abs(assetInvestment.RemainingAmount), limitOrderType,
+                    assetHedgeSettings.ThresholdUp ?? hedgeSettings.ThresholdUp, hedgeSettings.MarketOrderMarkup);
 
                 decimal price = limitOrderPrice.Price;
 
@@ -333,15 +334,19 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (assetInvestment.IsDisabled)
                 return false;
 
-            if (Math.Abs(assetInvestment.RemainingAmount) <= 0)
+            decimal absoluteRemainingAmount = Math.Abs(assetInvestment.RemainingAmount);
+            
+            if (absoluteRemainingAmount <= 0)
                 return false;
 
-            if (0 < hedgeSettings.ThresholdCritical &&
-                hedgeSettings.ThresholdCritical <= Math.Abs(assetInvestment.RemainingAmount))
+            decimal thresholdCritical = assetHedgeSettings.ThresholdCritical ?? hedgeSettings.ThresholdCritical;
+            
+            if (0 < thresholdCritical && thresholdCritical <= absoluteRemainingAmount)
                 return false;
 
-            if (assetHedgeSettings.Exchange != ExchangeNames.Virtual &&
-                Math.Abs(assetInvestment.RemainingAmount) < hedgeSettings.ThresholdDown)
+            decimal thresholdDown = assetHedgeSettings.ThresholdDown ?? hedgeSettings.ThresholdDown;
+            
+            if (assetHedgeSettings.Exchange != ExchangeNames.Virtual && absoluteRemainingAmount < thresholdDown)
                 return false;
 
             if (assetHedgeSettings.Mode != AssetHedgeMode.Auto && assetHedgeSettings.Mode != AssetHedgeMode.Idle)

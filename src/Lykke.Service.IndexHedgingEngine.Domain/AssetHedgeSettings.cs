@@ -36,12 +36,27 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The name of the exchange that used to control deviation of hedge limit order price.
         /// </summary>
         public string ReferenceExchange { get; set; }
-        
+
         /// <summary>
         /// The allowed deviation of hedge limit order price in comparison with <see cref="ReferenceExchange"/>.
         /// </summary>
         public decimal? ReferenceDelta { get; set; }
-        
+
+        /// <summary>
+        /// The upper delta threshold used for risk exposure.
+        /// </summary>
+        public decimal? ThresholdUp { get; set; }
+
+        /// <summary>
+        /// The lower delta threshold used for risk exposure.
+        /// </summary>
+        public decimal? ThresholdDown { get; set; }
+
+        /// <summary>
+        /// The critical delta threshold used to stop hedging.
+        /// </summary>
+        public decimal? ThresholdCritical { get; set; }
+
         public void Update(AssetHedgeSettings assetHedgeSettings)
         {
             Exchange = assetHedgeSettings.Exchange;
@@ -49,6 +64,9 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
             Mode = assetHedgeSettings.Mode;
             ReferenceExchange = assetHedgeSettings.ReferenceExchange;
             ReferenceDelta = assetHedgeSettings.ReferenceDelta;
+            ThresholdUp = assetHedgeSettings.ThresholdUp;
+            ThresholdDown = assetHedgeSettings.ThresholdDown;
+            ThresholdCritical = assetHedgeSettings.ThresholdCritical;
         }
 
         public void Approve()

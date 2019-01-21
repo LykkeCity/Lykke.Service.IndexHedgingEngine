@@ -34,7 +34,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
                     {
                         MarketOrderMarkup = .02m,
                         ThresholdDown = 1000,
-                        ThresholdUp = 5000
+                        ThresholdUp = 5000,
+                        ThresholdCritical = 10000
                     };
                 }
 

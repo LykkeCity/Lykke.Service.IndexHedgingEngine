@@ -5,9 +5,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
     public static class LimitOrderPriceCalculator
     {
         public static LimitOrderPrice Calculate(Quote quote, decimal volume, LimitOrderType limitOrderType,
-            HedgeSettings hedgeSettings)
+            decimal thresholdUp, decimal marketOrderMarkup)
         {
-            if (volume < hedgeSettings.ThresholdUp)
+            if (volume < thresholdUp)
             {
                 decimal price = limitOrderType == LimitOrderType.Sell
                     ? quote.Ask
@@ -18,8 +18,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             else
             {
                 decimal price = limitOrderType == LimitOrderType.Sell
-                    ? quote.Bid * (1 - hedgeSettings.MarketOrderMarkup)
-                    : quote.Ask * (1 + hedgeSettings.MarketOrderMarkup);
+                    ? quote.Bid * (1 -marketOrderMarkup)
+                    : quote.Ask * (1 +marketOrderMarkup);
 
                 return new LimitOrderPrice(price, PriceType.Market);
             }

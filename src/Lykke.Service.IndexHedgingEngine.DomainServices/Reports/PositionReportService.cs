@@ -103,7 +103,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                     AssetInvestment = assetInvestment,
                     Error = ValidateAssetHedgeSettings(assetHedgeSettings)
                             ?? ValidateInvestments(assetInvestment)
-                            ?? ValidateThresholdCritical(assetInvestment, hedgeSettings)
+                            ?? ValidateThresholdCritical(assetInvestment, hedgeSettings, assetHedgeSettings)
                             ?? ValidateQuote(assetQuote)
                 });
 
@@ -172,9 +172,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
             return null;
         }
 
-        private static string ValidateThresholdCritical(AssetInvestment assetInvestment, HedgeSettings hedgeSettings)
+        private static string ValidateThresholdCritical(AssetInvestment assetInvestment, HedgeSettings hedgeSettings,
+            AssetHedgeSettings assetHedgeSettings)
         {
-            if(assetInvestment != null && hedgeSettings.ThresholdCritical <= Math.Abs(assetInvestment.RemainingAmount))
+            decimal thresholdCritical = assetHedgeSettings.ThresholdCritical ?? hedgeSettings.ThresholdCritical;
+            
+            if(assetInvestment != null && thresholdCritical <= Math.Abs(assetInvestment.RemainingAmount))
                 return "Critical delta threshold exceeded";
 
             return null;
