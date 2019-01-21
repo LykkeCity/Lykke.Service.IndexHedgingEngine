@@ -33,6 +33,7 @@ namespace Lykke.Service.IndexHedgingEngine
                 _settings.CurrentValue.IndexHedgingEngineService.Name,
                 _settings.CurrentValue.IndexHedgingEngineService.WalletId,
                 _settings.CurrentValue.IndexHedgingEngineService.TransitWalletId,
+                _settings.CurrentValue.IndexHedgingEngineService.PrimaryMarketWalletId,
                 _settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers.Quotes.Exchanges
                     .Where(o => o.Name != ExchangeNames.Lykke)
                     .Select(o => new ExchangeSettings

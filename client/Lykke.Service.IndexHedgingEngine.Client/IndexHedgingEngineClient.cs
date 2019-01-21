@@ -29,6 +29,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client
             Settlements = httpClientGenerator.Generate<ISettlementsApi>();
             Tokens = httpClientGenerator.Generate<ITokensApi>();
             Trades = httpClientGenerator.Generate<ITradesApi>();
+            PrimaryMarket = httpClientGenerator.Generate<IPrimaryMarketApi>();
         }
 
         /// <inheritdoc/>
@@ -81,5 +82,8 @@ namespace Lykke.Service.IndexHedgingEngine.Client
 
         /// <inheritdoc/>
         public ITradesApi Trades { get; }
+
+        /// <inheritdoc/>
+        public IPrimaryMarketApi PrimaryMarket { get; }
     }
 }

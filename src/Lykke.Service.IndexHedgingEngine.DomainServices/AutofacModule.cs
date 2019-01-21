@@ -13,6 +13,7 @@ using Lykke.Service.IndexHedgingEngine.DomainServices.Indices;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Instruments;
 using Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Positions;
+using Lykke.Service.IndexHedgingEngine.DomainServices.PrimaryMarket;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Reports;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Settings;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Settlements;
@@ -28,16 +29,19 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly string _instanceName;
         private readonly string _walletId;
         private readonly string _transitWalletId;
+        private readonly string _primaryMarketWalletId;
         private readonly IReadOnlyCollection<ExchangeSettings> _exchanges;
 
         public AutofacModule(
             string instanceName,
             string walletId,
             string transitWalletId,
+            string primaryMarketWalletId,
             IReadOnlyCollection<ExchangeSettings> exchanges)
         {
             _instanceName = instanceName;
             _walletId = walletId;
+            _primaryMarketWalletId = primaryMarketWalletId;
             _transitWalletId = transitWalletId;
             _exchanges = exchanges;
         }
@@ -190,6 +194,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             builder.RegisterType<RiskExposureReportService>()
                 .As<IRiskExposureReportService>()
+                .SingleInstance();
+
+            builder.RegisterType<PrimaryMarketService>()
+                .As<IPrimaryMarketService>()
+                .WithParameter(new NamedParameter("walletId", _primaryMarketWalletId))
                 .SingleInstance();
         }
     }
