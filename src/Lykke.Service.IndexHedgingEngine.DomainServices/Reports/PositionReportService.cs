@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
@@ -133,6 +134,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                 }
             }
 
+            foreach (PositionReport positionReport in positionReports)
+            {
+                if (positionReport.Exchange == ExchangeNames.Virtual)
+                    positionReport.ActualPnL = -1 * positionReport.PnL;
+                else
+                    positionReport.ActualPnL = positionReport.PnL;
+            }
+            
             return positionReports
                 .OrderBy(o => o.AssetId)
                 .ToArray();
