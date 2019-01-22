@@ -264,8 +264,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             if (!assetSettlement.IsDirect || !assetSettlement.IsExternal)
                 throw new InvalidOperationException("Only direct external assets can be manually executed");
 
-            var allowedStatuses = new[]
-                {SettlementStatus.Approved, SettlementStatus.Reserved, SettlementStatus.Transferred};
+            var allowedStatuses = new[] {SettlementStatus.Reserved, SettlementStatus.Transferred};
             
             if(!allowedStatuses.Contains(settlement.Status) || assetSettlement.Status != AssetSettlementStatus.New)
                 throw new InvalidOperationException("Can not execute asset.");
