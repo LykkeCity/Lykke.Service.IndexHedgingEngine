@@ -33,14 +33,14 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// <param name="amount">Amount to add or subtract from current balance (value can be negative).</param>
         /// <param name="userId">Backoffice user.</param>
         /// <param name="comment">A comment of why the change is performed.</param>
-        [Post("/api/PrimaryMarket/update")]
-        Task ChangeBalance(string assetId, decimal amount, string userId, string comment);
+        [Put("/api/PrimaryMarket/update")]
+        Task ChangeBalanceAsync(string assetId, decimal amount, string userId, string comment);
         
         /// <summary>
         /// Method to request history of balance changes of Primary Market wallet.
         /// </summary>
         /// <returns>A list of balance changes of Primary Market wallet.</returns>
         [Get("/api/PrimaryMarket/history")]
-        Task<IReadOnlyList<PrimaryMarketBalanceChangeModel>> GetBalanceChangeHistoryAsync();
+        Task<IReadOnlyList<PrimaryMarketHistoryItemModel>> GetBalanceChangeHistoryAsync();
     }
 }

@@ -7,7 +7,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.PrimaryMarket
     /// Represents balance update entity.
     /// </summary>
     [PublicAPI]
-    public class PrimaryMarketBalanceChangeModel
+    public class PrimaryMarketHistoryItemModel
     {
         /// <summary>
         /// Date and time of when balance update was performed.

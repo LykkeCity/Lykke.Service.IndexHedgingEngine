@@ -39,8 +39,8 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
             CreateMap<AssetSettings, AssetSettingsEntity>(MemberList.Source);
             CreateMap<AssetSettingsEntity, AssetSettings>(MemberList.Destination);
 
-            CreateMap<PrimaryMarketHistoryItem, PrimaryMarketBalanceUpdateEntity>(MemberList.Source);
-            CreateMap<PrimaryMarketBalanceUpdateEntity, PrimaryMarketHistoryItem>(MemberList.Destination);
+            CreateMap<PrimaryMarketHistoryItem, PrimaryMarketHistoryItemEntity>(MemberList.Source);
+            CreateMap<PrimaryMarketHistoryItemEntity, PrimaryMarketHistoryItem>(MemberList.Destination);
 
             CreateMap<AssetPairSettings, AssetPairSettingsEntity>(MemberList.Source);
             CreateMap<AssetPairSettingsEntity, AssetPairSettings>(MemberList.Destination);

@@ -36,16 +36,16 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             return Mapper.Map<PrimaryMarketBalanceModel[]>(await _primaryMarketService.GetBalancesAsync());
         }
 
-        [HttpPost("update")]
-        public Task ChangeBalance(string assetId, decimal amount, string userId, string comment)
+        [HttpPut("update")]
+        public Task ChangeBalanceAsync(string assetId, decimal amount, string userId, string comment)
         {
             return _primaryMarketService.UpdateBalanceAsync(assetId, amount, userId, comment);
         }
         
         [HttpGet("history")]
-        public async Task<IReadOnlyList<PrimaryMarketBalanceChangeModel>> GetBalanceChangeHistoryAsync()
+        public async Task<IReadOnlyList<PrimaryMarketHistoryItemModel>> GetBalanceChangeHistoryAsync()
         {
-            return Mapper.Map<PrimaryMarketBalanceChangeModel[]>(await _primaryMarketService.GetHistoryAsync());
+            return Mapper.Map<PrimaryMarketHistoryItemModel[]>(await _primaryMarketService.GetHistoryAsync());
         }
     }
 }

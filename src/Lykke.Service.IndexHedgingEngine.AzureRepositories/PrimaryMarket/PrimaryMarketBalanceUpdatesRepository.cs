@@ -14,17 +14,17 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.PrimaryMarket
     [UsedImplicitly]
     public class PrimaryMarketBalanceUpdatesRepository : IPrimaryMarketBalanceUpdatesRepository
     {
-        private readonly INoSQLTableStorage<PrimaryMarketBalanceUpdateEntity> _storage;
+        private readonly INoSQLTableStorage<PrimaryMarketHistoryItemEntity> _storage;
         
         public PrimaryMarketBalanceUpdatesRepository(
-            INoSQLTableStorage<PrimaryMarketBalanceUpdateEntity> storage)
+            INoSQLTableStorage<PrimaryMarketHistoryItemEntity> storage)
         {
             _storage = storage;
         }
         
         public Task CreateAsync(PrimaryMarketHistoryItem item)
         {
-            var entity = new PrimaryMarketBalanceUpdateEntity(GetPartitionKey(item.AssetId), GetRowKey(item.DateTime));
+            var entity = new PrimaryMarketHistoryItemEntity(GetPartitionKey(item.AssetId), GetRowKey(item.DateTime));
 
             Mapper.Map(item, entity);
 

@@ -8,13 +8,13 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.PrimaryMarket
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     [ValueTypeMergingStrategy(ValueTypeMergingStrategy.UpdateIfDirty)]
-    public class PrimaryMarketBalanceUpdateEntity : AzureTableEntity
+    public class PrimaryMarketHistoryItemEntity : AzureTableEntity
     {
-        public PrimaryMarketBalanceUpdateEntity()
+        public PrimaryMarketHistoryItemEntity()
         {
         }
 
-        public PrimaryMarketBalanceUpdateEntity(string partitionKey, string rowKey)
+        public PrimaryMarketHistoryItemEntity(string partitionKey, string rowKey)
         {
             PartitionKey = partitionKey;
             RowKey = rowKey;

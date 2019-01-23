@@ -147,7 +147,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                 .SingleInstance();
 
             builder.Register(container => new PrimaryMarketBalanceUpdatesRepository(
-                    AzureTableStorage<PrimaryMarketBalanceUpdateEntity>.Create(_connectionString,
+                    AzureTableStorage<PrimaryMarketHistoryItemEntity>.Create(_connectionString,
                         "PrimaryMarketBalanceUpdates", container.Resolve<ILogFactory>())))
                 .As<IPrimaryMarketBalanceUpdatesRepository>()
                 .SingleInstance();
