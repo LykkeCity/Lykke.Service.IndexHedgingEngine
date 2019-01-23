@@ -109,6 +109,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
                     Timestamp = DateTime.UtcNow,
                     AssetId = AssetId,
                     Type = balanceOperationType,
+                    IsCredit = true,
                     Amount = amount,
                     Comment = comment,
                     UserId = userId,

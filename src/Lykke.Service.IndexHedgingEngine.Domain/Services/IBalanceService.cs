@@ -10,5 +10,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
         Balance GetByAssetId(string exchange, string assetId);
 
         Task UpdateAsync();
+
+        Task UpdateAsync(string assetId, BalanceOperationType balanceOperationType, decimal amount, string comment,
+            string userId);
     }
 }

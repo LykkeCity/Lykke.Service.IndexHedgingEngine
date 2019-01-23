@@ -14,6 +14,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances
         private DateTime _time;
         private decimal _amount;
         private BalanceOperationType _type;
+        private bool _isCredit;
 
         public BalanceOperationEntity()
         {
@@ -53,6 +54,19 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances
             }
         }
 
+        public bool IsCredit
+        {
+            get => _isCredit;
+            set
+            {
+                if (_isCredit != value)
+                {
+                    _isCredit = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
         public decimal Amount
         {
             get => _amount;
@@ -69,7 +83,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances
         public string Comment { get; set; }
 
         public string UserId { get; set; }
-        
+
         public string TransactionId { get; set; }
     }
 }
