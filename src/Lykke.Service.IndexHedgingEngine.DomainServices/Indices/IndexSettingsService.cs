@@ -105,9 +105,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
 
         private async Task ValidateAsync(IndexSettings indexSettings)
         {
-            AssetSettings assetSettings =
-                await _instrumentService.GetAssetAsync(indexSettings.AssetId, ExchangeNames.Lykke);
-
+            // TODO: Use internal asset id
+            AssetSettings assetSettings = (await _instrumentService.GetAssetsAsync())
+                .Single(o => o.Exchange == ExchangeNames.Lykke && o.AssetId == indexSettings.AssetId);
+            
             if (assetSettings == null)
                 throw new InvalidOperationException("Asset settings not found");
 

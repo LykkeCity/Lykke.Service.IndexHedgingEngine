@@ -23,7 +23,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         public BalanceOperationType Type { get; set; }
 
         /// <summary>
-        /// Indicates that the balance operation.
+        /// Indicates credit balance operation.
         /// </summary>
         public bool IsCredit { get; set; }
         
