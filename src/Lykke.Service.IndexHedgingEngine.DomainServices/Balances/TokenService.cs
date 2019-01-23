@@ -116,6 +116,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
                     AssetId = assetId,
                     Type = balanceOperationType,
                     Amount = amount,
+                    IsCredit = false,
                     Comment = comment,
                     UserId = userId,
                     TransactionId = transactionId

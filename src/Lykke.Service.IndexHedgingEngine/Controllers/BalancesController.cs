@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
+using Lykke.Common.Api.Contract.Responses;
+using Lykke.Common.ApiLibrary.Exceptions;
 using Lykke.Service.IndexHedgingEngine.Client.Api;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Balances;
 using Lykke.Service.IndexHedgingEngine.Domain;
@@ -32,6 +35,25 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             var model = Mapper.Map<BalanceModel[]>(balances);
 
             return Task.FromResult<IReadOnlyList<BalanceModel>>(model);
+        }
+
+        /// <inheritdoc/>
+        /// <response code="204">A balance operation successfully executed.</response>
+        /// <response code="400">Balance can not be less than zero.</response>
+        [HttpPost("lykke")]
+        [ProducesResponseType((int) HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        public async Task UpdateAsync([FromBody] AssetBalanceOperationModel model, string userId)
+        {
+            try
+            {
+                await _balanceService.UpdateAsync(model.AssetId, (BalanceOperationType) model.Type, model.Amount,
+                    model.Comment, userId);
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
+            }
         }
     }
 }

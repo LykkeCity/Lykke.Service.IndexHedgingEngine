@@ -26,6 +26,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
         private readonly Mock<IIndexSettingsService> _indexSettingsServiceMock =
             new Mock<IIndexSettingsService>();
 
+        private readonly Mock<IAssetHedgeSettingsService> _assetHedgeSettingsServiceMock =
+            new Mock<IAssetHedgeSettingsService>();
+        
         private readonly Mock<ITokenService> _tokenServiceMock =
             new Mock<ITokenService>();
 
@@ -62,6 +65,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
                 _hedgeServiceMock.Object,
                 _internalTradeServiceMock.Object,
                 _indexSettingsServiceMock.Object,
+                _assetHedgeSettingsServiceMock.Object,
                 _tokenServiceMock.Object,
                 _marketMakerStateServiceMock.Object,
                 _settlementServiceMock.Object,

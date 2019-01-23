@@ -21,6 +21,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly IHedgeService _hedgeService;
         private readonly IInternalTradeService _internalTradeService;
         private readonly IIndexSettingsService _indexSettingsService;
+        private readonly IAssetHedgeSettingsService _assetHedgeSettingsService;
         private readonly ITokenService _tokenService;
         private readonly IMarketMakerStateService _marketMakerStateService;
         private readonly ISettlementService _settlementService;
@@ -32,6 +33,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             IHedgeService hedgeService,
             IInternalTradeService internalTradeService,
             IIndexSettingsService indexSettingsService,
+            IAssetHedgeSettingsService assetHedgeSettingsService,
             ITokenService tokenService,
             IMarketMakerStateService marketMakerStateService,
             ISettlementService settlementService,
@@ -42,6 +44,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _hedgeService = hedgeService;
             _internalTradeService = internalTradeService;
             _indexSettingsService = indexSettingsService;
+            _assetHedgeSettingsService = assetHedgeSettingsService;
             _tokenService = tokenService;
             _marketMakerStateService = marketMakerStateService;
             _settlementService = settlementService;
@@ -52,10 +55,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         {
             MarketMakerState marketMakerState = await _marketMakerStateService.GetAsync();
 
-            if (marketMakerState.Status != MarketMakerStatus.Active)
-                return;
-
             IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(index.Name);
+            
+            if (marketMakerState.Status != MarketMakerStatus.Active)
+            {
+                if (indexSettings != null)
+                {
+                    foreach (AssetWeight assetWeight in index.Weights)
+                        await _assetHedgeSettingsService.EnsureAsync(assetWeight.AssetId);                        
+                }
+                
+                return;
+            }
             
             if(indexSettings == null)
                 return;

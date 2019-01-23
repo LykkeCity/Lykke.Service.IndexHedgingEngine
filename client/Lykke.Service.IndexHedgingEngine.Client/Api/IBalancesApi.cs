@@ -18,5 +18,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// <returns>A collection of balances.</returns>
         [Get("/api/Balances/lykke")]
         Task<IReadOnlyList<BalanceModel>> GetLykkeAsync();
+
+        /// <summary>
+        /// Returns a collection of balances from Lykke exchange.
+        /// </summary>
+        [Post("/api/Balances/lykke")]
+        Task UpdateAsync([Body] AssetBalanceOperationModel model, string userId);
     }
 }

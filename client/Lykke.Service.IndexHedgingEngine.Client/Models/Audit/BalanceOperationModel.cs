@@ -28,6 +28,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Audit
         public BalanceOperationType Type { get; set; }
 
         /// <summary>
+        /// Indicates credit balance operation.
+        /// </summary>
+        public bool IsCredit { get; set; }
+
+        /// <summary>
         /// The amount than was changed by operation.
         /// </summary>
         public decimal Amount { get; set; }
@@ -41,7 +46,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Audit
         /// The identifier of the user which instantiated operation.
         /// </summary>
         public string UserId { get; set; }
-        
+
         /// <summary>
         /// The identifier of the transaction.
         /// </summary>
