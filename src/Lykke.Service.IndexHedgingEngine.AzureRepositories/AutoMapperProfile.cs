@@ -29,8 +29,11 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
             CreateMap<Token, TokenEntity>(MemberList.Source);
             CreateMap<TokenEntity, Token>(MemberList.Destination);
 
-            CreateMap<AssetHedgeSettings, AssetHedgeSettingsEntity>(MemberList.Source);
-            CreateMap<AssetHedgeSettingsEntity, AssetHedgeSettings>(MemberList.Destination);
+            CreateMap<AssetHedgeSettings, AssetHedgeSettingsEntity>(MemberList.Source)
+                .ForMember(dest => dest.ReferenceExchange, opt => opt.AddTransform(value => value ?? string.Empty));
+            CreateMap<AssetHedgeSettingsEntity, AssetHedgeSettings>(MemberList.Destination)
+                .ForMember(dest => dest.ReferenceExchange,
+                    opt => opt.AddTransform(value => string.IsNullOrEmpty(value) ? null : value));
 
             CreateMap<IndexSettings, IndexSettingsEntity>(MemberList.Source);
             CreateMap<IndexSettingsEntity, IndexSettings>(MemberList.Destination);
@@ -65,6 +68,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp));
             CreateMap<MarketMakerStateEntity, MarketMakerState>(MemberList.Destination)
                 .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Date));
+
+            CreateMap<QuoteThresholdSettings, QuoteThresholdSettingsEntity>(MemberList.Source);
+            CreateMap<QuoteThresholdSettingsEntity, QuoteThresholdSettings>(MemberList.Destination);
 
             CreateMap<TimersSettings, TimersSettingsEntity>(MemberList.Source);
             CreateMap<TimersSettingsEntity, TimersSettings>(MemberList.Destination);

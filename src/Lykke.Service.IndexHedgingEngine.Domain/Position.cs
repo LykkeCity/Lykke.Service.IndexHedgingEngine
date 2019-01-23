@@ -52,7 +52,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
 
         public void Close(decimal volume, decimal price)
         {
-            OppositeVolume -= volume * price;
+            OppositeVolume += volume * price;
             Volume -= volume;
         }
     }

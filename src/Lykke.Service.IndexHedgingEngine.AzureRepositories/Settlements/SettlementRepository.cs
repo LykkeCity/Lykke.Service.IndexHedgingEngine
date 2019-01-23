@@ -37,7 +37,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements
 
             var statuses = new[] {SettlementStatus.Approved, SettlementStatus.Reserved, SettlementStatus.Transferred};
 
-            return settlements.Where(o => statuses.Contains(o.Status)).ToArray();
+            return settlements.Where(o => statuses.Contains(o.Status) && o.Error == SettlementError.None).ToArray();
         }
         
         public async Task<IReadOnlyCollection<Settlement>> GetByClientIdAsync(string clientId)

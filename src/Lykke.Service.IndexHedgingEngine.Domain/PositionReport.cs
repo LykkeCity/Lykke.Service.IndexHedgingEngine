@@ -39,6 +39,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The deference between <see cref="OppositeVolume"/> and <see cref="VolumeInUsd"/>.
         /// </summary>
         public decimal? PnL { get; set; }
+        
+        /// <summary>
+        /// The deference between <see cref="OppositeVolume"/> and <see cref="VolumeInUsd"/> inverse sing for virtual exchange.
+        /// </summary>
+        public decimal? ActualPnL { get; set; }
 
         /// <summary>
         /// The current hedge limit order that associated with asset.

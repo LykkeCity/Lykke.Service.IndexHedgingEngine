@@ -1,20 +1,31 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
 {
     [UsedImplicitly]
     public class QuoteService : IQuoteService
     {
+        private readonly IQuoteThresholdSettingsService _quoteThresholdSettingsService;
+        private readonly ILog _log;
         private readonly InMemoryCache<Quote> _cache;
 
-        public QuoteService()
+        public QuoteService(
+            IQuoteThresholdSettingsService quoteThresholdSettingsService,
+            ILogFactory logFactory)
         {
+            _quoteThresholdSettingsService = quoteThresholdSettingsService;
             _cache = new InMemoryCache<Quote>(GetKey, true);
+            _log = logFactory.CreateLog(this);
         }
 
         public IReadOnlyCollection<Quote> GetAll()
@@ -52,9 +63,33 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
                 .Average();
         }
 
-        public void Update(Quote quote)
+        public async Task UpdateAsync(Quote quote)
         {
-            _cache.Set(quote);
+            Quote currentQuote = _cache.Get(GetKey(quote));
+
+            if (currentQuote != null)
+            {
+                QuoteThresholdSettings quoteThresholdSettings = await _quoteThresholdSettingsService.GetAsync();
+
+                if (quoteThresholdSettings.Enabled &&
+                    Math.Abs(currentQuote.Mid - quote.Mid) / currentQuote.Mid > quoteThresholdSettings.Value)
+                {
+                    _log.WarningWithDetails("Invalid quote", new
+                    {
+                        Quote = quote,
+                        CurrentQuote = currentQuote,
+                        Threshold = quoteThresholdSettings.Value
+                    });
+                }
+                else
+                {
+                    _cache.Set(quote);
+                }
+            }
+            else
+            {
+                _cache.Set(quote);
+            }
         }
 
         private static string GetKey(Quote quote)

@@ -129,6 +129,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<IMarketMakerStateService>()
                 .SingleInstance();
 
+            builder.RegisterType<QuoteThresholdSettingsService>()
+                .As<IQuoteThresholdSettingsService>()
+                .SingleInstance();
+
             builder.RegisterType<SettingsService>()
                 .As<ISettingsService>()
                 .WithParameter(new NamedParameter("instanceName", _instanceName))
@@ -143,6 +147,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             builder.RegisterType<SettlementService>()
                 .As<ISettlementService>()
+                .SingleInstance();
+            
+            builder.RegisterType<SettlementTransferService>()
+                .As<ISettlementTransferService>()
                 .SingleInstance();
 
             builder.RegisterType<LykkeBalancesTimer>()

@@ -55,10 +55,8 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
 
         private Task ProcessMessageAsync(TickPrice tickPrice)
         {
-            _quoteService.Update(new Quote(tickPrice.Asset, tickPrice.Timestamp, tickPrice.Ask, tickPrice.Bid,
-                tickPrice.Source));
-
-            return Task.CompletedTask;
+            return _quoteService.UpdateAsync(new Quote(tickPrice.Asset, tickPrice.Timestamp, tickPrice.Ask,
+                tickPrice.Bid, tickPrice.Source));
         }
     }
 }

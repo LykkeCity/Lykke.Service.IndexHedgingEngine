@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -13,15 +12,6 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
     [PublicAPI]
     public interface IOrderBooksApi
     {
-        /// <summary>
-        /// Returns all order books that includes clients limit orders limited by levels. 
-        /// </summary>
-        /// <param name="limit">The number of limit orders per side.</param>
-        /// <returns>A collection of order books.</returns>
-        [Obsolete("Use GetLykkeAsync")]
-        [Get("/api/OrderBooks")]
-        Task<IReadOnlyCollection<OrderBookModel>> GetAllAsync(int limit);
-
         /// <summary>
         /// Returns all order books that includes clients limit orders limited by levels. 
         /// </summary>

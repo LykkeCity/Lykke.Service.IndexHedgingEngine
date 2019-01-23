@@ -10,16 +10,20 @@ namespace Lykke.Service.IndexHedgingEngine.Validators
         public HedgeSettingsModelValidator()
         {
             RuleFor(o => o.ThresholdDown)
-                .GreaterThan(0)
-                .WithMessage("Threshold down should be greater than zero");
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Threshold down should be greater than or equal to zero");
             
             RuleFor(o => o.ThresholdUp)
                 .Cascade(CascadeMode.StopOnFirstFailure)
-                .GreaterThan(0)
-                .WithMessage("Threshold up should be greater than zero")
-                .Must((model, value) => model.ThresholdDown < value)
-                .WithMessage("Threshold up should be greater than threshold down");
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Threshold up should be greater than or equal to zero")
+                .Must((model, value) => model.ThresholdDown <= value)
+                .WithMessage("Threshold up should be greater than or equal to threshold down");
 
+            RuleFor(o => o.ThresholdCritical)
+                .GreaterThan(0)
+                .WithMessage("Threshold critical should be greater than zero");
+            
             RuleFor(o => o.MarketOrderMarkup)
                 .InclusiveBetween(0, 1)
                 .WithMessage("The market order markup should be between 0 and 100%");

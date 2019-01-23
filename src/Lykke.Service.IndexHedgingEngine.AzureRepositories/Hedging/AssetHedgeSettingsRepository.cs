@@ -41,7 +41,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
 
         public async Task UpdateAsync(AssetHedgeSettings assetHedgeSettings)
         {
-            await _storage.MergeAsync(GetPartitionKey(), GetRowKey(assetHedgeSettings.AssetId), entity =>
+            await _storage.ReplaceAsync(GetPartitionKey(), GetRowKey(assetHedgeSettings.AssetId), entity =>
             {
                 Mapper.Map(assetHedgeSettings, entity);
                 return entity;

@@ -6,6 +6,7 @@ using Common;
 using Common.Log;
 using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Infrastructure;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm;
@@ -73,6 +74,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _log.InfoWithDetails("Investments calculated", assetInvestments);
 
             IReadOnlyCollection<HedgeLimitOrder> hedgeLimitOrders = await CreateLimitOrdersAsync(assetInvestments);
+
+            await ValidateHedgeLimitOrdersAsync(hedgeLimitOrders);
 
             _log.InfoWithDetails("Hedge limit orders calculated", hedgeLimitOrders);
 
@@ -147,11 +150,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             if (quote == null)
                 throw new InvalidOperationException("No quote");
-            
+
             LimitOrderType limitOrderType = position.Volume > 0
                 ? LimitOrderType.Sell
                 : LimitOrderType.Buy;
-            
+
             decimal price = limitOrderType == LimitOrderType.Sell
                 ? quote.Ask
                 : quote.Bid;
@@ -178,19 +181,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             foreach (AssetInvestment assetInvestment in assetInvestments)
             {
-                if (assetInvestment.IsDisabled)
-                    continue;
-
-                if (!LimitOrderPriceCalculator.CanCalculate(Math.Abs(assetInvestment.RemainingAmount), hedgeSettings))
-                    continue;
-
                 AssetHedgeSettings assetHedgeSettings =
                     await _assetHedgeSettingsService.EnsureAsync(assetInvestment.AssetId);
 
-                if (assetHedgeSettings.Mode != AssetHedgeMode.Auto && assetHedgeSettings.Mode != AssetHedgeMode.Idle)
-                    continue;
-
-                if (assetInvestment.Quote == null)
+                if (!CanCreateHedgeLimitOrder(assetInvestment, assetHedgeSettings, hedgeSettings))
                     continue;
 
                 LimitOrderType limitOrderType = assetInvestment.RemainingAmount > 0
@@ -198,7 +192,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     : LimitOrderType.Buy;
 
                 LimitOrderPrice limitOrderPrice = LimitOrderPriceCalculator.Calculate(assetInvestment.Quote,
-                    Math.Abs(assetInvestment.RemainingAmount), limitOrderType, hedgeSettings);
+                    Math.Abs(assetInvestment.RemainingAmount), limitOrderType,
+                    assetHedgeSettings.ThresholdUp ?? hedgeSettings.ThresholdUp, hedgeSettings.MarketOrderMarkup);
 
                 decimal price = limitOrderPrice.Price;
 
@@ -227,7 +222,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
                 if (_exchangeAdapters.TryGetValue(assetHedgeSettings.Exchange, out IExchangeAdapter exchangeAdapter))
                 {
-                    if (hedgeLimitOrder == null)
+                    if (hedgeLimitOrder == null || hedgeLimitOrder.Error != LimitOrderError.None)
                     {
                         if (assetHedgeSettings.Mode != AssetHedgeMode.Manual)
                             await exchangeAdapter.CancelLimitOrderAsync(assetId);
@@ -261,7 +256,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
                 if (indexPrice == null)
                 {
-                    _log.WarningWithDetails("Index price does not exist", indexSettings.Name);
+                    _log.WarningWithDetails("Index price not found", indexSettings.Name);
                     valid = false;
                 }
                 else if (!indexPrice.ValidateValue())
@@ -277,6 +272,42 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
 
             return valid;
+        }
+
+        private async Task ValidateHedgeLimitOrdersAsync(IEnumerable<HedgeLimitOrder> hedgeLimitOrders)
+        {
+            foreach (HedgeLimitOrder hedgeLimitOrder in hedgeLimitOrders)
+            {
+                if (hedgeLimitOrder.Error != LimitOrderError.None)
+                    continue;
+
+                AssetHedgeSettings assetHedgeSettings =
+                    await _assetHedgeSettingsService.GetByAssetIdAsync(hedgeLimitOrder.AssetId);
+
+                if (!string.IsNullOrEmpty(assetHedgeSettings.ReferenceExchange) &&
+                    assetHedgeSettings.ReferenceDelta.HasValue)
+                {
+                    Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.ReferenceExchange,
+                        assetHedgeSettings.AssetPairId);
+
+                    if (quote == null)
+                    {
+                        _log.WarningWithDetails("No reference quote", new
+                        {
+                            Exchange = assetHedgeSettings.ReferenceExchange,
+                            AssetPair = assetHedgeSettings.AssetPairId
+                        });
+
+                        continue;
+                    }
+
+                    if (Math.Abs(hedgeLimitOrder.Price - quote.Mid) / quote.Mid >= assetHedgeSettings.ReferenceDelta)
+                    {
+                        hedgeLimitOrder.Error = LimitOrderError.Unknown;
+                        hedgeLimitOrder.ErrorMessage = "Large price deviation";
+                    }
+                }
+            }
         }
 
         private async Task<IReadOnlyDictionary<string, Quote>> GetAssetPricesAsync(IEnumerable<string> assets)
@@ -295,6 +326,36 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
 
             return assetPrices;
+        }
+
+        private static bool CanCreateHedgeLimitOrder(AssetInvestment assetInvestment,
+            AssetHedgeSettings assetHedgeSettings, HedgeSettings hedgeSettings)
+        {
+            if (assetInvestment.IsDisabled)
+                return false;
+
+            decimal absoluteRemainingAmount = Math.Abs(assetInvestment.RemainingAmount);
+            
+            if (absoluteRemainingAmount <= 0)
+                return false;
+
+            decimal thresholdCritical = assetHedgeSettings.ThresholdCritical ?? hedgeSettings.ThresholdCritical;
+            
+            if (0 < thresholdCritical && thresholdCritical <= absoluteRemainingAmount)
+                return false;
+
+            decimal thresholdDown = assetHedgeSettings.ThresholdDown ?? hedgeSettings.ThresholdDown;
+            
+            if (assetHedgeSettings.Exchange != ExchangeNames.Virtual && absoluteRemainingAmount < thresholdDown)
+                return false;
+
+            if (assetHedgeSettings.Mode != AssetHedgeMode.Auto && assetHedgeSettings.Mode != AssetHedgeMode.Idle)
+                return false;
+
+            if (assetInvestment.Quote == null)
+                return false;
+
+            return true;
         }
 
         private static string[] GetAssets(IEnumerable<IndexSettings> indicesSettings, IEnumerable<Position> positions,

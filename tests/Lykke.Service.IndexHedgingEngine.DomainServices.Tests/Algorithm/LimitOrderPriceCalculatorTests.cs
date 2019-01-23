@@ -19,17 +19,13 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.Algorithm
 
             LimitOrderType limitOrderType = LimitOrderType.Sell;
 
-            var hedgeSettings = new HedgeSettings
-            {
-                ThresholdUp = 5000,
-                ThresholdDown = 1000,
-                MarketOrderMarkup = .1m
-            };
+            decimal thresholdUp = 5000;
+            decimal marketOrderMarkup = .1m;
             
             // act
 
             LimitOrderPrice limitOrderPrice =
-                LimitOrderPriceCalculator.Calculate(quote, volume, limitOrderType, hedgeSettings);
+                LimitOrderPriceCalculator.Calculate(quote, volume, limitOrderType, thresholdUp, marketOrderMarkup);
 
             // assert
 
@@ -47,17 +43,13 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.Algorithm
 
             LimitOrderType limitOrderType = LimitOrderType.Buy;
 
-            var hedgeSettings = new HedgeSettings
-            {
-                ThresholdUp = 5000,
-                ThresholdDown = 1000,
-                MarketOrderMarkup = .1m
-            };
+            decimal thresholdUp = 5000;
+            decimal marketOrderMarkup = .1m;
             
             // act
 
             LimitOrderPrice limitOrderPrice =
-                LimitOrderPriceCalculator.Calculate(quote, volume, limitOrderType, hedgeSettings);
+                LimitOrderPriceCalculator.Calculate(quote, volume, limitOrderType, thresholdUp, marketOrderMarkup);
 
             // assert
 
@@ -75,21 +67,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.Algorithm
 
             LimitOrderType limitOrderType = LimitOrderType.Sell;
 
-            var hedgeSettings = new HedgeSettings
-            {
-                ThresholdUp = 5000,
-                ThresholdDown = 1000,
-                MarketOrderMarkup = .1m
-            };
+            decimal thresholdUp = 5000;
+            decimal marketOrderMarkup = .1m;
             
             // act
 
             LimitOrderPrice limitOrderPrice =
-                LimitOrderPriceCalculator.Calculate(quote, volume, limitOrderType, hedgeSettings);
+                LimitOrderPriceCalculator.Calculate(quote, volume, limitOrderType, thresholdUp, marketOrderMarkup);
 
             // assert
 
-            Assert.IsTrue(limitOrderPrice.Price == quote.Bid * (1 - hedgeSettings.MarketOrderMarkup) &&
+            Assert.IsTrue(limitOrderPrice.Price == quote.Bid * (1 - marketOrderMarkup) &&
                           limitOrderPrice.Type == PriceType.Market);
         }
         
@@ -104,68 +92,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.Algorithm
 
             LimitOrderType limitOrderType = LimitOrderType.Buy;
 
-            var hedgeSettings = new HedgeSettings
-            {
-                ThresholdUp = 5000,
-                ThresholdDown = 1000,
-                MarketOrderMarkup = .1m
-            };
+            decimal thresholdUp = 5000;
+            decimal marketOrderMarkup = .1m;
             
             // act
 
             LimitOrderPrice limitOrderPrice =
-                LimitOrderPriceCalculator.Calculate(quote, volume, limitOrderType, hedgeSettings);
+                LimitOrderPriceCalculator.Calculate(quote, volume, limitOrderType, thresholdUp, marketOrderMarkup);
 
             // assert
 
-            Assert.IsTrue(limitOrderPrice.Price == quote.Ask * (1 + hedgeSettings.MarketOrderMarkup) &&
+            Assert.IsTrue(limitOrderPrice.Price == quote.Ask * (1 + marketOrderMarkup) &&
                           limitOrderPrice.Type == PriceType.Market);
-        }
-        
-        [TestMethod]
-        public void Can_Calculate_Price_If_Volume_Greater_Than_Down_Threshold()
-        {
-            // arrange
-
-            decimal volume = 3000;
-
-            var hedgeSettings = new HedgeSettings
-            {
-                ThresholdUp = 5000,
-                ThresholdDown = 1000,
-                MarketOrderMarkup = .1m
-            };
-            
-            // act
-
-            bool result = LimitOrderPriceCalculator.CanCalculate(volume, hedgeSettings);
-
-            // assert
-
-            Assert.IsTrue(result);
-        }
-        
-        [TestMethod]
-        public void Can_Not_Calculate_Price_If_Volume_Less_Than_Down_Threshold()
-        {
-            // arrange
-
-            decimal volume = 500;
-
-            var hedgeSettings = new HedgeSettings
-            {
-                ThresholdUp = 5000,
-                ThresholdDown = 1000,
-                MarketOrderMarkup = .1m
-            };
-            
-            // act
-
-            bool result = LimitOrderPriceCalculator.CanCalculate(volume, hedgeSettings);
-
-            // assert
-
-            Assert.IsFalse(result);
         }
     }
 }

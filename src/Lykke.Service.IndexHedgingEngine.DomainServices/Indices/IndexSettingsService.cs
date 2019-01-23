@@ -68,7 +68,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
 
             _cache.Set(indexSettings);
 
-            _log.InfoWithDetails("Index settings was added", indexSettings);
+            _log.InfoWithDetails("Index settings added", indexSettings);
         }
 
         public async Task UpdateAsync(IndexSettings indexSettings)
@@ -86,7 +86,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
 
             _cache.Set(currentIndexSettings);
 
-            _log.InfoWithDetails("Index settings was added", currentIndexSettings);
+            _log.InfoWithDetails("Index settings updated", currentIndexSettings);
         }
 
         public async Task DeleteAsync(string indexName)
@@ -100,7 +100,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
 
             _cache.Remove(GetKey(indexName));
 
-            _log.InfoWithDetails("Index settings was removed", currentIndexSettings);
+            _log.InfoWithDetails("Index settings removed", currentIndexSettings);
         }
 
         private async Task ValidateAsync(IndexSettings indexSettings)

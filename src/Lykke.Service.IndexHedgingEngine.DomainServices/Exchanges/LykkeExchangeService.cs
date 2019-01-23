@@ -216,7 +216,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             _log.InfoWithDetails("Cash out response", result);
 
             if (result.Code != 0)
+            {
+                if(result.Code == 401)
+                    throw new NotEnoughFundsException();
+                
                 throw new BalanceOperationException("Unexpected cash out response status", result.Code);
+            }
 
             return result.TransactionId;
         }

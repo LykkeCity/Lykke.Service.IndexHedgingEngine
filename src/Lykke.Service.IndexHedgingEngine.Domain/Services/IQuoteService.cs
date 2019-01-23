@@ -11,6 +11,6 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         decimal GetAvgMid(string assetPairId);
         
-        void Update(Quote quote);
+        Task UpdateAsync(Quote quote);
     }
 }

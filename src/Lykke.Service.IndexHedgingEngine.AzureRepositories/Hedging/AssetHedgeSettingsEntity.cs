@@ -12,6 +12,10 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
     {
         private bool _approved;
         private AssetHedgeMode _mode;
+        private decimal? _referenceDelta;
+        private decimal? _thresholdUp;
+        private decimal? _thresholdDown;
+        private decimal? _thresholdCritical;
 
         public AssetHedgeSettingsEntity()
         {
@@ -50,6 +54,60 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging
                 if (_mode != value)
                 {
                     _mode = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        public string ReferenceExchange { get; set; }
+
+        public decimal? ReferenceDelta
+        {
+            get => _referenceDelta;
+            set
+            {
+                if (_referenceDelta != value)
+                {
+                    _referenceDelta = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        public decimal? ThresholdUp
+        {
+            get => _thresholdUp;
+            set
+            {
+                if (_thresholdUp != value)
+                {
+                    _thresholdUp = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        public decimal? ThresholdDown
+        {
+            get => _thresholdDown;
+            set
+            {
+                if (_thresholdDown != value)
+                {
+                    _thresholdDown = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        public decimal? ThresholdCritical
+        {
+            get => _thresholdCritical;
+            set
+            {
+                if (_thresholdCritical != value)
+                {
+                    _thresholdCritical = value;
                     MarkValueTypePropertyAsDirty();
                 }
             }

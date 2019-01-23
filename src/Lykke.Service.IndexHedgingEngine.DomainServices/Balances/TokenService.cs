@@ -94,7 +94,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
                             transactionId = await _lykkeExchangeService
                                 .CashOutAsync(walletId, assetId, amount, userId, comment);
                         }
-                        catch (BalanceOperationException exception) when (exception.Code == 401)
+                        catch (NotEnoughFundsException)
                         {
                             throw new InvalidOperationException("No enough funds");
                         }

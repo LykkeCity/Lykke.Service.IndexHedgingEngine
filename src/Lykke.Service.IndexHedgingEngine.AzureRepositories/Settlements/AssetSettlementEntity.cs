@@ -152,5 +152,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements
                 }
             }
         }
+        
+        public string TransactionId { get; set; }
     }
 }

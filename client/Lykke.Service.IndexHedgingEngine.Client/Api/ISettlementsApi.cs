@@ -53,6 +53,14 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         Task RejectAsync(string settlementId, string userId);
 
         /// <summary>
+        /// Retry the settlement.
+        /// </summary>
+        /// <param name="settlementId">The identifier fo the settlement.</param>
+        /// <param name="userId">The identifier of the user who retried the settlement.</param>
+        [Post("/api/Settlements/{settlementId}/retry")]
+        Task RetryAsync(string settlementId, string userId);
+        
+        /// <summary>
         /// Recalculate the settlement.
         /// </summary>
         /// <param name="settlementId">The identifier fo the settlement.</param>
