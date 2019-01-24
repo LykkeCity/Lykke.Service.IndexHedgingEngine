@@ -12,6 +12,8 @@ namespace Lykke.Service.IndexHedgingEngine.Settings.ServiceSettings
         public string WalletId { get; set; }
 
         public string TransitWalletId { get; set; }
+        
+        public string PrimaryMarketWalletId { get; set; }
 
         public DbSettings Db { get; set; }
 

@@ -11,6 +11,7 @@ using Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Instruments;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Positions;
+using Lykke.Service.IndexHedgingEngine.AzureRepositories.PrimaryMarket;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades;
@@ -149,6 +150,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                     AzureTableStorage<VirtualTradeEntity>.Create(_connectionString,
                         "VirtualTrades", container.Resolve<ILogFactory>())))
                 .As<IVirtualTradeRepository>()
+                .SingleInstance();
+
+            builder.Register(container => new PrimaryMarketBalanceUpdatesRepository(
+                    AzureTableStorage<PrimaryMarketHistoryItemEntity>.Create(_connectionString,
+                        "PrimaryMarketBalanceUpdates", container.Resolve<ILogFactory>())))
+                .As<IPrimaryMarketBalanceUpdatesRepository>()
                 .SingleInstance();
 
             builder.Register(container => new AzureStorageDeduplicator(

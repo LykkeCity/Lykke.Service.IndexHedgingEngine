@@ -93,5 +93,10 @@ namespace Lykke.Service.IndexHedgingEngine.Client
         /// Trades API.
         /// </summary>
         ITradesApi Trades { get; }
+        
+        /// <summary>
+        /// Primary Market API.
+        /// </summary>
+        IPrimaryMarketApi PrimaryMarket { get; }
     }
 }

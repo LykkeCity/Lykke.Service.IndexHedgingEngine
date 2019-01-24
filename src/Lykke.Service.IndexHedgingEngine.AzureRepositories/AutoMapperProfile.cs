@@ -6,6 +6,7 @@ using Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Instruments;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Positions;
+using Lykke.Service.IndexHedgingEngine.AzureRepositories.PrimaryMarket;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades;
@@ -40,6 +41,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
 
             CreateMap<AssetSettings, AssetSettingsEntity>(MemberList.Source);
             CreateMap<AssetSettingsEntity, AssetSettings>(MemberList.Destination);
+
+            CreateMap<PrimaryMarketHistoryItem, PrimaryMarketHistoryItemEntity>(MemberList.Source);
+            CreateMap<PrimaryMarketHistoryItemEntity, PrimaryMarketHistoryItem>(MemberList.Destination);
 
             CreateMap<AssetPairSettings, AssetPairSettingsEntity>(MemberList.Source);
             CreateMap<AssetPairSettingsEntity, AssetPairSettings>(MemberList.Destination);

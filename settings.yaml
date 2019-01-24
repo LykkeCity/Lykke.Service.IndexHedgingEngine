@@ -7,6 +7,9 @@ IndexHedgingEngineService:
   TransitWalletId:
     settings-key: IndexHedgingEngineService-TransitWalletId
 
+  PrimaryMarketWalletId:
+    settings-key: IndexHedgingEngineService-PrimaryMarketWalletId
+
   Db:
     DataConnectionString:
       settings-key: IndexHedgingEngineService-DataConnectionString

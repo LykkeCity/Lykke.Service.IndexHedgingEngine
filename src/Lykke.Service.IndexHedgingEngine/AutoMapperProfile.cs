@@ -12,6 +12,7 @@ using Lykke.Service.IndexHedgingEngine.Client.Models.IndexSettings;
 using Lykke.Service.IndexHedgingEngine.Client.Models.IndexPrices;
 using Lykke.Service.IndexHedgingEngine.Client.Models.OrderBooks;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Positions;
+using Lykke.Service.IndexHedgingEngine.Client.Models.PrimaryMarket;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Reports;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Settings;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Settlements;
@@ -84,6 +85,9 @@ namespace Lykke.Service.IndexHedgingEngine
             CreateMap<VirtualTrade, VirtualTradeModel>(MemberList.Source);
 
             CreateMap<Quote, QuoteModel>(MemberList.Destination);
+
+            CreateMap<PrimaryMarketBalance, PrimaryMarketBalanceModel>(MemberList.Source);
+            CreateMap<PrimaryMarketHistoryItem, PrimaryMarketHistoryItemModel>(MemberList.Source);
 
             CreateMap<AssetDelta, AssetDeltaModel>(MemberList.Destination);
             CreateMap<InstrumentDeltaReport, InstrumentDeltaReportModel>(MemberList.Destination);
