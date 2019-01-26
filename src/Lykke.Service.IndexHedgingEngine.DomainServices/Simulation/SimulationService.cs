@@ -66,7 +66,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Simulation
             {
                 foreach (AssetWeight assetWeight in indexPrice.Weights)
                 {
-                    decimal amountInUsd = simulationParameters.Investments * assetWeight.Weight;
+                    decimal amountInUsd = simulationReport.AmountInUsd * assetWeight.Weight;
 
                     decimal amount = amountInUsd / assetWeight.Price;
                     
