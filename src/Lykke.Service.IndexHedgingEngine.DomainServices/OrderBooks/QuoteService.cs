@@ -16,14 +16,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
     public class QuoteService : IQuoteService
     {
         private readonly IQuoteThresholdSettingsService _quoteThresholdSettingsService;
+        private readonly IInstrumentService _instrumentService;
         private readonly ILog _log;
         private readonly InMemoryCache<Quote> _cache;
 
         public QuoteService(
             IQuoteThresholdSettingsService quoteThresholdSettingsService,
+            IInstrumentService instrumentService,
             ILogFactory logFactory)
         {
             _quoteThresholdSettingsService = quoteThresholdSettingsService;
+            _instrumentService = instrumentService;
             _cache = new InMemoryCache<Quote>(GetKey, true);
             _log = logFactory.CreateLog(this);
         }
@@ -56,8 +59,25 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
 
         public decimal GetAvgMid(string assetPairId)
         {
-            return _cache.GetAll()
+            List<Quote> quotes = _cache.GetAll()
                 .Where(o => o.AssetPairId == assetPairId)
+                .OrderBy(o => o.Mid)
+                .ToList();
+
+            if (quotes.Count >= 7)
+            {
+                quotes.RemoveAt(0);
+                quotes.RemoveAt(0);
+                quotes.RemoveAt(quotes.Count - 1);
+                quotes.RemoveAt(quotes.Count - 1);
+            }
+            else if (quotes.Count >= 3)
+            {
+                quotes.RemoveAt(0);
+                quotes.RemoveAt(quotes.Count - 1);
+            }
+
+            return quotes
                 .Select(o => o.Mid)
                 .DefaultIfEmpty(0)
                 .Average();
@@ -65,6 +85,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
 
         public async Task UpdateAsync(Quote quote)
         {
+            if (!_instrumentService.IsAssetPairExist(quote.AssetPairId))
+                return;
+
             Quote currentQuote = _cache.Get(GetKey(quote));
 
             if (currentQuote != null)
