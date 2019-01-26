@@ -70,6 +70,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client
         IPositionsApi Positions { get; }
 
         /// <summary>
+        /// Quotes API.
+        /// </summary>
+        IQuotesApi Quotes { get; set; }
+
+        /// <summary>
         /// Reports API.
         /// </summary>
         IReportsApi Reports { get; set; }
