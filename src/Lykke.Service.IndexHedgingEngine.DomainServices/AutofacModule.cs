@@ -5,6 +5,7 @@ using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Handlers;
 using Lykke.Service.IndexHedgingEngine.Domain.Infrastructure;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Simulation;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Balances;
 using Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges;
@@ -17,6 +18,7 @@ using Lykke.Service.IndexHedgingEngine.DomainServices.PrimaryMarket;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Reports;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Settings;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Settlements;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Simulation;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Timers;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Trades;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Utils;
@@ -152,9 +154,13 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             builder.RegisterType<SettlementService>()
                 .As<ISettlementService>()
                 .SingleInstance();
-            
+
             builder.RegisterType<SettlementTransferService>()
                 .As<ISettlementTransferService>()
+                .SingleInstance();
+
+            builder.RegisterType<SimulationService>()
+                .As<ISimulationService>()
                 .SingleInstance();
 
             builder.RegisterType<LykkeBalancesTimer>()
