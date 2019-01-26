@@ -63,24 +63,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
                 .Where(o => o.AssetPairId == assetPairId)
                 .OrderBy(o => o.Mid)
                 .ToList();
-
+            
             if (quotes.Count >= 7)
-            {
-                quotes.RemoveAt(0);
-                quotes.RemoveAt(0);
-                quotes.RemoveAt(quotes.Count - 1);
-                quotes.RemoveAt(quotes.Count - 1);
-            }
-            else if (quotes.Count >= 3)
-            {
-                quotes.RemoveAt(0);
-                quotes.RemoveAt(quotes.Count - 1);
-            }
+                return quotes.GetRange(2, quotes.Count - 4).Average(o => o.Mid);
+            
+            if (quotes.Count >= 3)
+                return quotes.GetRange(1, quotes.Count - 2).Average(o => o.Mid);
 
-            return quotes
-                .Select(o => o.Mid)
-                .DefaultIfEmpty(0)
-                .Average();
+            return quotes.Select(o=>o.Mid).DefaultIfEmpty(0).Average();
         }
 
         public async Task UpdateAsync(Quote quote)

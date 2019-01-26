@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Logs;
 using Lykke.Service.IndexHedgingEngine.Domain;
@@ -112,6 +113,174 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
             // assert
 
             Assert.IsTrue(secondQuote.Ask == quote.Ask && secondQuote.Bid == quote.Bid);
+        }
+
+        [TestMethod]
+        public void Quote_Get_Avg_Price_From_0_Quotes()
+        {
+            // arrange
+
+            const string assetPair = "BTCUSD";
+
+            decimal expectedPrice = 0;
+
+            // act
+
+            decimal actualPrice = _service.GetAvgMid(assetPair);
+
+            // assert
+
+            Assert.AreEqual(expectedPrice, actualPrice);
+        }
+
+        [TestMethod]
+        public async Task Quote_Get_Avg_Price_From_2_Quotes()
+        {
+            // arrange
+
+            const string assetPair = "BTCUSD";
+
+            var quotes = new[]
+            {
+                new Quote(assetPair, DateTime.UtcNow, 5800 * 1.01m, 5800 * .99m, "1"),
+                new Quote(assetPair, DateTime.UtcNow, 6000 * 1.01m, 6000 * .99m, "3")
+            };
+
+            decimal expectedPrice = quotes
+                .Average(o => o.Mid);
+
+            // act
+
+            foreach (Quote quote in quotes)
+                await _service.UpdateAsync(quote);
+
+            decimal actualPrice = _service.GetAvgMid(assetPair);
+
+            // assert
+
+            Assert.AreEqual(expectedPrice, actualPrice);
+        }
+
+        [TestMethod]
+        public async Task Quote_Get_Avg_Price_From_3_Quotes()
+        {
+            // arrange
+
+            const string assetPair = "BTCUSD";
+
+            var quotes = new[]
+            {
+                new Quote(assetPair, DateTime.UtcNow, 5800 * 1.01m, 5800 * .99m, "1"),
+                new Quote(assetPair, DateTime.UtcNow, 5900 * 1.02m, 5900 * .98m, "2"),
+                new Quote(assetPair, DateTime.UtcNow, 6000 * 1.01m, 6000 * .99m, "3")
+            };
+
+            decimal expectedPrice = quotes
+                .OrderBy(o => o.Mid)
+                .ToList()
+                .GetRange(1, quotes.Length - 2)
+                .Average(o => o.Mid);
+
+            // act
+
+            foreach (Quote quote in quotes)
+                await _service.UpdateAsync(quote);
+
+            decimal actualPrice = _service.GetAvgMid(assetPair);
+
+            // assert
+
+            Assert.AreEqual(expectedPrice, actualPrice);
+        }
+
+        [TestMethod]
+        public async Task Quote_Get_Avg_Price_From_4_Quotes()
+        {
+            // arrange
+
+            const string assetPair = "BTCUSD";
+
+            var quotes = new[]
+            {
+                new Quote(assetPair, DateTime.UtcNow, 5800 * 1.01m, 5800 * .99m, "1"),
+                new Quote(assetPair, DateTime.UtcNow, 5900 * 1.02m, 5900 * .98m, "2"),
+                new Quote(assetPair, DateTime.UtcNow, 6000 * 1.01m, 6000 * .99m, "3"),
+                new Quote(assetPair, DateTime.UtcNow, 6100 * 1.04m, 6100 * .96m, "4")
+            };
+
+            decimal expectedPrice = quotes
+                .OrderBy(o => o.Mid)
+                .ToList()
+                .GetRange(1, quotes.Length - 2)
+                .Average(o => o.Mid);
+
+            // act
+
+            foreach (Quote quote in quotes)
+                await _service.UpdateAsync(quote);
+
+            decimal actualPrice = _service.GetAvgMid(assetPair);
+
+            // assert
+
+            Assert.AreEqual(expectedPrice, actualPrice);
+        }
+
+        [TestMethod]
+        public async Task Quote_Get_Avg_Price_From_7_Quotes()
+        {
+            // arrange
+
+            const string assetPair = "BTCUSD";
+
+            var quotes = new[]
+            {
+                new Quote(assetPair, DateTime.UtcNow, 5800 * 1.01m, 5800 * .99m, "1"),
+                new Quote(assetPair, DateTime.UtcNow, 5900 * 1.02m, 5900 * .98m, "2"),
+                new Quote(assetPair, DateTime.UtcNow, 6000 * 1.01m, 6000 * .99m, "3"),
+                new Quote(assetPair, DateTime.UtcNow, 6100 * 1.04m, 6100 * .96m, "4"),
+                new Quote(assetPair, DateTime.UtcNow, 6500 * 1.05m, 6500 * .95m, "5"),
+                new Quote(assetPair, DateTime.UtcNow, 7000 * 1.03m, 7000 * .97m, "6"),
+                new Quote(assetPair, DateTime.UtcNow, 7100 * 1.01m, 7100 * .99m, "7")
+            };
+
+            decimal expectedPrice = quotes
+                .OrderBy(o => o.Mid)
+                .ToList()
+                .GetRange(2, quotes.Length - 4)
+                .Average(o => o.Mid);
+
+            // act
+
+            foreach (Quote quote in quotes)
+                await _service.UpdateAsync(quote);
+
+            decimal actualPrice = _service.GetAvgMid(assetPair);
+
+            // assert
+
+            Assert.AreEqual(expectedPrice, actualPrice);
+        }
+        
+        [TestMethod]
+        public async Task Do_Not_Update_Quote_If_No_Associated_Instrument()
+        {
+            // arrange
+
+            _instrumentServiceMock.Setup(o => o.IsAssetPairExist(It.IsAny<string>()))
+                .Returns((string assetPair) => false);
+            
+            var expectedQuote = new Quote("BTCUSD", DateTime.UtcNow, 6000, 5990, "lykke");
+
+            // act
+
+            await _service.UpdateAsync(expectedQuote);
+
+            Quote actualQuote = _service.GetByAssetPairId(expectedQuote.Source, expectedQuote.AssetPairId);
+
+            // assert
+
+            Assert.IsNull(actualQuote);
         }
     }
 }
