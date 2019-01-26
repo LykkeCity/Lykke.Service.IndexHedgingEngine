@@ -44,6 +44,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Simulation
         public decimal Investments { get; set; }
 
         /// <summary>
+        /// The amount of open tokens in USD.
+        /// </summary>
+        public decimal AmountInUsd { get; set; }
+
+        /// <summary>
         /// The identifier of the asset that associated with token.
         /// </summary>
         public string AssetId { get; set; }
@@ -82,6 +87,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Simulation
         /// The volume of buy limit order.
         /// </summary>
         public decimal BuyVolume { get; set; }
+
+        /// <summary>
+        /// The profit and loss of current amount in USD and investments.
+        /// </summary>
+        public decimal PnL { get; set; }
 
         /// <summary>
         /// A collection of assets distributions.

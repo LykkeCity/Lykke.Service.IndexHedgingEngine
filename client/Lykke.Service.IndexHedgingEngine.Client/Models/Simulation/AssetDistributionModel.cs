@@ -21,7 +21,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Simulation
         /// <summary>
         /// The current asset price in USD.
         /// </summary>
-        public QuoteModel Quote { get; set; }
+        public decimal Price { get; set; }
 
         /// <summary>
         /// The distributed amount of the asset.

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,22 +11,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Simulation
     public class SimulationService : ISimulationService
     {
         private readonly IIndexSettingsService _indexSettingsService;
-        private readonly IAssetHedgeSettingsService _assetHedgeSettingsService;
         private readonly IIndexPriceService _indexPriceService;
-        private readonly IQuoteService _quoteService;
         private readonly ISimulationParametersRepository _simulationParametersRepository;
 
         public SimulationService(
             IIndexSettingsService indexSettingsService,
-            IAssetHedgeSettingsService assetHedgeSettingsService,
             IIndexPriceService indexPriceService,
-            IQuoteService quoteService,
             ISimulationParametersRepository simulationParametersRepository)
         {
             _indexSettingsService = indexSettingsService;
-            _assetHedgeSettingsService = assetHedgeSettingsService;
             _indexPriceService = indexPriceService;
-            _quoteService = quoteService;
             _simulationParametersRepository = simulationParametersRepository;
         }
 
@@ -45,7 +38,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Simulation
                 return null;
             
             IndexPrice indexPrice = await _indexPriceService.GetByIndexAsync(indexSettings.Name);
-            
+
             var simulationReport = new SimulationReport
             {
                 IndexName = indexName,
@@ -56,13 +49,15 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Simulation
                 Timestamp = indexPrice?.Timestamp,
                 K = indexPrice?.K,
                 OpenTokens = simulationParameters.OpenTokens,
+                AmountInUsd = simulationParameters.OpenTokens * indexPrice?.Price ?? 0,
                 Investments = simulationParameters.Investments,
                 Alpha = indexSettings.Alpha,
                 TrackingFee = indexSettings.TrackingFee,
                 PerformanceFee = indexSettings.PerformanceFee,
                 SellMarkup = indexSettings.SellMarkup,
                 SellVolume = indexSettings.SellVolume,
-                BuyVolume = indexSettings.BuyVolume
+                BuyVolume = indexSettings.BuyVolume,
+                PnL = simulationParameters.OpenTokens * indexPrice?.Price - simulationParameters.Investments ?? 0
             };
             
             var assets = new List<AssetDistribution>();
@@ -71,15 +66,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Simulation
             {
                 foreach (AssetWeight assetWeight in indexPrice.Weights)
                 {
-                    AssetHedgeSettings assetHedgeSettings =
-                        await _assetHedgeSettingsService.EnsureAsync(assetWeight.AssetId);
-
-                    Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.Exchange,
-                        assetHedgeSettings.AssetPairId);
-
                     decimal amountInUsd = simulationParameters.Investments * assetWeight.Weight;
 
-                    decimal amount = amountInUsd / quote?.Mid ?? decimal.Zero;
+                    decimal amount = amountInUsd / assetWeight.Price;
                     
                     assets.Add(new AssetDistribution
                     {
@@ -88,7 +77,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Simulation
                         IsHedged = simulationParameters.Assets.Contains(assetWeight.AssetId),
                         Amount = amount,
                         AmountInUsd = amountInUsd,
-                        Quote = quote
+                        Price = assetWeight.Price
                     });
                 }
             }
