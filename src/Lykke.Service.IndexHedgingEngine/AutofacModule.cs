@@ -1,4 +1,5 @@
 using System.Net;
+using System.Collections.Generic;
 using Autofac;
 using JetBrains.Annotations;
 using Lykke.Sdk;
@@ -26,11 +27,17 @@ namespace Lykke.Service.IndexHedgingEngine
 
         protected override void Load(ContainerBuilder builder)
         {
+            var assetPairMapping = new Dictionary<string, string>
+            {
+                {"EOScoinUSD", "EOSUSD"}
+            };
+
             builder.RegisterModule(new DomainServices.AutofacModule(
                 _settings.CurrentValue.IndexHedgingEngineService.Name,
                 _settings.CurrentValue.IndexHedgingEngineService.WalletId,
                 _settings.CurrentValue.IndexHedgingEngineService.TransitWalletId,
-                _settings.CurrentValue.IndexHedgingEngineService.PrimaryMarketWalletId));
+                _settings.CurrentValue.IndexHedgingEngineService.PrimaryMarketWalletId,
+                assetPairMapping));
             builder.RegisterModule(new AzureRepositories.AutofacModule(
                 _settings.Nested(o => o.IndexHedgingEngineService.Db
                     .DataConnectionString),
@@ -43,11 +50,11 @@ namespace Lykke.Service.IndexHedgingEngine
             builder.RegisterType<ShutdownManager>()
                 .As<IShutdownManager>();
 
-            RegisterRabbit(builder);
+            RegisterRabbit(builder, assetPairMapping);
             RegisterClients(builder);
         }
 
-        private void RegisterRabbit(ContainerBuilder builder)
+        private void RegisterRabbit(ContainerBuilder builder, IReadOnlyDictionary<string, string> assetPairMapping)
         {
             builder.RegisterType<LykkeTradeSubscriber>()
                 .WithParameter(TypedParameter.From(_settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers
@@ -79,6 +86,7 @@ namespace Lykke.Service.IndexHedgingEngine
                         Queue = quotesSettings.Queue,
                         ConnectionString = quotesSettings.ConnectionString
                     }))
+                    .WithParameter(TypedParameter.From(assetPairMapping))
                     .SingleInstance();
             }
         }

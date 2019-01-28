@@ -25,17 +25,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
         private readonly IMatchingEngineClient _matchingEngineClient;
         private readonly IExchangeOperationsServiceClient _exchangeOperationsServiceClient;
         private readonly ISettingsService _settingsService;
+        private readonly IReadOnlyDictionary<string, string> _assetPairMapping;
         private readonly ILog _log;
 
         public LykkeExchangeService(
             IMatchingEngineClient matchingEngineClient,
             IExchangeOperationsServiceClient exchangeOperationsServiceClient,
             ISettingsService settingsService,
+            IReadOnlyDictionary<string, string> assetPairMapping,
             ILogFactory logFactory)
         {
             _matchingEngineClient = matchingEngineClient;
             _exchangeOperationsServiceClient = exchangeOperationsServiceClient;
             _settingsService = settingsService;
+            _assetPairMapping = assetPairMapping;
             _log = logFactory.CreateLog(this);
         }
 
@@ -70,7 +73,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             {
                 Id = Guid.NewGuid().ToString(),
                 ClientId = walletId,
-                AssetPairId = assetPairId,
+                AssetPairId = GetAssetPair(assetPairId),
                 CancelPreviousOrders = true,
                 Orders = multiOrderItems,
                 CancelMode = CancelMode.BothSides
@@ -139,7 +142,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             {
                 Id = Guid.NewGuid().ToString(),
                 ClientId = walletId,
-                AssetPairId = assetPairId,
+                AssetPairId = GetAssetPair(assetPairId),
                 CancelPreviousOrders = true,
                 Orders = new List<MultiOrderItemModel>(),
                 CancelMode = CancelMode.BothSides
@@ -224,6 +227,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
             }
 
             return result.TransactionId;
+        }
+
+        private string GetAssetPair(string assetPairId)
+        {
+            // TODO: Remove this workaround
+            string assetPair = _assetPairMapping.FirstOrDefault(o => o.Value == assetPairId).Key;
+
+            return assetPair ?? assetPairId;
         }
 
         private static OrderAction ToOrderAction(LimitOrderType limitOrderType)

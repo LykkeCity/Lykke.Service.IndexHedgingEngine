@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Autofac;
 using JetBrains.Annotations;
-using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Handlers;
 using Lykke.Service.IndexHedgingEngine.Domain.Infrastructure;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
@@ -32,16 +31,19 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly string _walletId;
         private readonly string _transitWalletId;
         private readonly string _primaryMarketWalletId;
+        private readonly IReadOnlyDictionary<string, string> _assetPairMapping;
 
         public AutofacModule(
             string instanceName,
             string walletId,
             string transitWalletId,
-            string primaryMarketWalletId)
+            string primaryMarketWalletId,
+            IReadOnlyDictionary<string, string> assetPairMapping)
         {
             _instanceName = instanceName;
             _walletId = walletId;
             _primaryMarketWalletId = primaryMarketWalletId;
+            _assetPairMapping = assetPairMapping;
             _transitWalletId = transitWalletId;
         }
 
@@ -65,6 +67,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             builder.RegisterType<LykkeExchangeService>()
                 .As<ILykkeExchangeService>()
+                .WithParameter(TypedParameter.From(_assetPairMapping))
                 .SingleInstance();
 
             builder.RegisterType<VirtualExchangeAdapter>()
