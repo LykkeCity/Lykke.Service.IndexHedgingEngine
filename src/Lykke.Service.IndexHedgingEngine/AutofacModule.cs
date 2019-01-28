@@ -1,12 +1,9 @@
-using System.Linq;
 using System.Net;
 using Autofac;
 using JetBrains.Annotations;
 using Lykke.Sdk;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.ExchangeOperations.Client;
-using Lykke.Service.IndexHedgingEngine.Domain;
-using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Managers;
 using Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers;
 using Lykke.Service.IndexHedgingEngine.Settings;
@@ -33,16 +30,7 @@ namespace Lykke.Service.IndexHedgingEngine
                 _settings.CurrentValue.IndexHedgingEngineService.Name,
                 _settings.CurrentValue.IndexHedgingEngineService.WalletId,
                 _settings.CurrentValue.IndexHedgingEngineService.TransitWalletId,
-                _settings.CurrentValue.IndexHedgingEngineService.PrimaryMarketWalletId,
-                _settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers.Quotes.Exchanges
-                    .Where(o => o.Name != ExchangeNames.Lykke)
-                    .Select(o => new ExchangeSettings
-                    {
-                        Name = o.Name,
-                        Fee = decimal.Zero,
-                        HasApi = true
-                    })
-                    .ToArray()));
+                _settings.CurrentValue.IndexHedgingEngineService.PrimaryMarketWalletId));
             builder.RegisterModule(new AzureRepositories.AutofacModule(
                 _settings.Nested(o => o.IndexHedgingEngineService.Db
                     .DataConnectionString),

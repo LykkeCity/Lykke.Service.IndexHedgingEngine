@@ -18,8 +18,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
         public SettingsService(
             string instanceName,
             string walletId,
-            string transitWalletId,
-            IReadOnlyCollection<ExchangeSettings> exchanges)
+            string transitWalletId)
         {
             _instanceName = instanceName;
             _walletId = walletId;
@@ -39,7 +38,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
                         HasApi = true
                     }
                 }
-                .Union(exchanges.Where(o => !o.Name.Equals(ExchangeNames.Lykke)))
                 .ToArray();
         }
 

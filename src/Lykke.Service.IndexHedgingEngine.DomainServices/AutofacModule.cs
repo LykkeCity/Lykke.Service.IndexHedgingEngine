@@ -32,20 +32,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly string _walletId;
         private readonly string _transitWalletId;
         private readonly string _primaryMarketWalletId;
-        private readonly IReadOnlyCollection<ExchangeSettings> _exchanges;
 
         public AutofacModule(
             string instanceName,
             string walletId,
             string transitWalletId,
-            string primaryMarketWalletId,
-            IReadOnlyCollection<ExchangeSettings> exchanges)
+            string primaryMarketWalletId)
         {
             _instanceName = instanceName;
             _walletId = walletId;
             _primaryMarketWalletId = primaryMarketWalletId;
             _transitWalletId = transitWalletId;
-            _exchanges = exchanges;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -144,7 +141,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .WithParameter(new NamedParameter("instanceName", _instanceName))
                 .WithParameter(new NamedParameter("walletId", _walletId))
                 .WithParameter(new NamedParameter("transitWalletId", _transitWalletId))
-                .WithParameter(TypedParameter.From(_exchanges))
                 .SingleInstance();
 
             builder.RegisterType<TimersSettingsService>()

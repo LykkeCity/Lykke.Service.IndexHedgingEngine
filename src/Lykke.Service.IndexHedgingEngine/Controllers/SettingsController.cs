@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -6,6 +7,7 @@ using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.IndexHedgingEngine.Client.Api;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Settings;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,17 +19,20 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         private readonly ISettingsService _settingsService;
         private readonly IHedgeSettingsService _hedgeSettingsService;
         private readonly ITimersSettingsService _timersSettingsService;
+        private readonly IQuoteService _quoteService;
         private readonly IQuoteThresholdSettingsService _quoteThresholdSettingsService;
 
         public SettingsController(
             ISettingsService settingsService,
             IHedgeSettingsService hedgeSettingsService,
             ITimersSettingsService timersSettingsService,
+            IQuoteService quoteService,
             IQuoteThresholdSettingsService quoteThresholdSettingsService)
         {
             _settingsService = settingsService;
             _hedgeSettingsService = hedgeSettingsService;
             _timersSettingsService = timersSettingsService;
+            _quoteService = quoteService;
             _quoteThresholdSettingsService = quoteThresholdSettingsService;
         }
 
@@ -50,7 +55,17 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         {
             IReadOnlyCollection<ExchangeSettings> exchangeSettings = _settingsService.GetExchanges();
 
-            var model = Mapper.Map<ExchangeSettingsModel[]>(exchangeSettings);
+            IEnumerable<ExchangeSettings> exchanges = _quoteService.GetExchanges()
+                .Where(o => !o.Equals(ExchangeNames.Lykke))
+                .Select(o =>
+                    new ExchangeSettings
+                    {
+                        Name = o,
+                        Fee = 0,
+                        HasApi = false
+                    });
+
+            var model = Mapper.Map<ExchangeSettingsModel[]>(exchangeSettings.Union(exchanges));
 
             return Task.FromResult<IReadOnlyCollection<ExchangeSettingsModel>>(model);
         }
