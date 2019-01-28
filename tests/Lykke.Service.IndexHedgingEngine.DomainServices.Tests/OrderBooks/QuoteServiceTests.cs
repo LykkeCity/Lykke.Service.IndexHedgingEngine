@@ -32,8 +32,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
             _quoteThresholdSettingsServiceMock.Setup(o => o.GetAsync())
                 .Returns(() => Task.FromResult(_quoteThresholdSettings));
 
-            _instrumentServiceMock.Setup(o => o.IsAssetPairExist(It.IsAny<string>()))
-                .Returns((string assetPair) => true);
+            _instrumentServiceMock.Setup(o => o.IsAssetPairExistAsync(It.IsAny<string>()))
+                .Returns((string assetPair) => Task.FromResult(true));
 
             _service = new QuoteService(
                 _quoteThresholdSettingsServiceMock.Object,
@@ -267,8 +267,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
         {
             // arrange
 
-            _instrumentServiceMock.Setup(o => o.IsAssetPairExist(It.IsAny<string>()))
-                .Returns((string assetPair) => false);
+            _instrumentServiceMock.Setup(o => o.IsAssetPairExistAsync(It.IsAny<string>()))
+                .Returns((string assetPair) => Task.FromResult(false));
             
             var expectedQuote = new Quote("BTCUSD", DateTime.UtcNow, 6000, 5990, "lykke");
 

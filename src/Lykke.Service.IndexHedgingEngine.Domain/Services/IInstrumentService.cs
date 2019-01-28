@@ -25,6 +25,6 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task DeleteAssetPairAsync(string assetPair, string exchange, string userId);
 
-        bool IsAssetPairExist(string assetPair);
+        Task<bool> IsAssetPairExistAsync(string assetPair);
     }
 }

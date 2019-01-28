@@ -187,13 +187,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Instruments
             _log.InfoWithDetails("Asset settings deleted", new {existingAssetPairSettings, userId});
         }
 
-        public bool IsAssetPairExist(string assetPair)
-            => _assetPairs.Contains(assetPair);
+        public async Task<bool> IsAssetPairExistAsync(string assetPair)
+        {
+            if (!_assetPairsCache.Initialized)
+                await GetAssetPairsAsync();
+
+            return _assetPairs.Contains(assetPair);
+        }
 
         private void InitializeAssetPairs()
         {
             _assetPairs.Clear();
-            
+
             foreach (AssetPairSettings assetPairSettings in _assetPairsCache.GetAll())
                 _assetPairs.Add(assetPairSettings.AssetPair);
         }
