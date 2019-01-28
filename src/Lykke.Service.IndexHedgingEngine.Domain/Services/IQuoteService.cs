@@ -7,10 +7,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
     {
         IReadOnlyCollection<Quote> GetAll();
 
+        IReadOnlyCollection<string> GetExchanges();
+
         Quote GetByAssetPairId(string source, string assetPairId);
 
-        decimal GetAvgMid(string assetPairId);
-        
         Task UpdateAsync(Quote quote);
     }
 }

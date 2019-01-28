@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Logs;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -122,15 +123,13 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
 
             const string assetPair = "BTCUSD";
 
-            decimal expectedPrice = 0;
-
             // act
 
-            decimal actualPrice = _service.GetAvgMid(assetPair);
+            Quote actualQuote = _service.GetByAssetPairId(ExchangeNames.Virtual, assetPair);
 
             // assert
 
-            Assert.AreEqual(expectedPrice, actualPrice);
+            Assert.IsNull(actualQuote);
         }
 
         [TestMethod]
@@ -154,11 +153,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
             foreach (Quote quote in quotes)
                 await _service.UpdateAsync(quote);
 
-            decimal actualPrice = _service.GetAvgMid(assetPair);
+            Quote actualQuote = _service.GetByAssetPairId(ExchangeNames.Virtual, assetPair);
 
             // assert
 
-            Assert.AreEqual(expectedPrice, actualPrice);
+            Assert.AreEqual(expectedPrice, actualQuote.Mid);
         }
 
         [TestMethod]
@@ -186,11 +185,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
             foreach (Quote quote in quotes)
                 await _service.UpdateAsync(quote);
 
-            decimal actualPrice = _service.GetAvgMid(assetPair);
+            Quote actualQuote = _service.GetByAssetPairId(ExchangeNames.Virtual, assetPair);
 
             // assert
 
-            Assert.AreEqual(expectedPrice, actualPrice);
+            Assert.AreEqual(expectedPrice, actualQuote.Mid);
         }
 
         [TestMethod]
@@ -219,11 +218,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
             foreach (Quote quote in quotes)
                 await _service.UpdateAsync(quote);
 
-            decimal actualPrice = _service.GetAvgMid(assetPair);
+            Quote actualQuote = _service.GetByAssetPairId(ExchangeNames.Virtual, assetPair);
 
             // assert
 
-            Assert.AreEqual(expectedPrice, actualPrice);
+            Assert.AreEqual(expectedPrice, actualQuote.Mid);
         }
 
         [TestMethod]
@@ -255,11 +254,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
             foreach (Quote quote in quotes)
                 await _service.UpdateAsync(quote);
 
-            decimal actualPrice = _service.GetAvgMid(assetPair);
+            Quote actualQuote = _service.GetByAssetPairId(ExchangeNames.Virtual, assetPair);
 
             // assert
 
-            Assert.AreEqual(expectedPrice, actualPrice);
+            Assert.AreEqual(expectedPrice, actualQuote.Mid);
         }
         
         [TestMethod]
