@@ -16,14 +16,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
     public class QuoteService : IQuoteService
     {
         private readonly IQuoteThresholdSettingsService _quoteThresholdSettingsService;
+        private readonly IInstrumentService _instrumentService;
         private readonly ILog _log;
         private readonly InMemoryCache<Quote> _cache;
 
         public QuoteService(
             IQuoteThresholdSettingsService quoteThresholdSettingsService,
+            IInstrumentService instrumentService,
             ILogFactory logFactory)
         {
             _quoteThresholdSettingsService = quoteThresholdSettingsService;
+            _instrumentService = instrumentService;
             _cache = new InMemoryCache<Quote>(GetKey, true);
             _log = logFactory.CreateLog(this);
         }
@@ -56,15 +59,25 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
 
         public decimal GetAvgMid(string assetPairId)
         {
-            return _cache.GetAll()
+            List<Quote> quotes = _cache.GetAll()
                 .Where(o => o.AssetPairId == assetPairId)
-                .Select(o => o.Mid)
-                .DefaultIfEmpty(0)
-                .Average();
+                .OrderBy(o => o.Mid)
+                .ToList();
+
+            if (quotes.Count >= 7)
+                return quotes.GetRange(2, quotes.Count - 4).Average(o => o.Mid);
+
+            if (quotes.Count >= 3)
+                return quotes.GetRange(1, quotes.Count - 2).Average(o => o.Mid);
+
+            return quotes.Select(o => o.Mid).DefaultIfEmpty(0).Average();
         }
 
         public async Task UpdateAsync(Quote quote)
         {
+            if (!await _instrumentService.IsAssetPairExistAsync(quote.AssetPairId))
+                return;
+
             Quote currentQuote = _cache.Get(GetKey(quote));
 
             if (currentQuote != null)

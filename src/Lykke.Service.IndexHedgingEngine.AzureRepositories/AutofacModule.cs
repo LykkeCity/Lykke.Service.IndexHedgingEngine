@@ -14,8 +14,10 @@ using Lykke.Service.IndexHedgingEngine.AzureRepositories.Positions;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.PrimaryMarket;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements;
+using Lykke.Service.IndexHedgingEngine.AzureRepositories.Simulation;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
+using Lykke.Service.IndexHedgingEngine.Domain.Simulation;
 using Lykke.SettingsReader;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
@@ -129,7 +131,13 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                             "AssetSettlements", container.Resolve<ILogFactory>()))))
                 .As<ISettlementRepository>()
                 .SingleInstance();
-            
+
+            builder.Register(container => new SimulationParametersRepository(
+                    AzureTableStorage<SimulationParametersEntity>.Create(_connectionString,
+                        "SimulationParameters", container.Resolve<ILogFactory>())))
+                .As<ISimulationParametersRepository>()
+                .SingleInstance();
+
             builder.Register(container => new InternalTradeRepository(
                     AzureTableStorage<InternalTradeEntity>.Create(_connectionString,
                         "InternalTrades", container.Resolve<ILogFactory>()),

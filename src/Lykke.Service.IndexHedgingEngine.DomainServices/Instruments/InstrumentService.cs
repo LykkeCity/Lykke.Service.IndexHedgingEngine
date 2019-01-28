@@ -22,6 +22,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Instruments
         private readonly InMemoryCache<AssetSettings> _assetsCache;
         private readonly InMemoryCache<AssetPairSettings> _assetPairsCache;
 
+        private readonly HashSet<string> _assetPairs = new HashSet<string>();
+
         public InstrumentService(
             IAssetSettingsRepository assetSettingsRepository,
             IAssetPairSettingsRepository assetPairSettingsRepository,
@@ -60,6 +62,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Instruments
                 assetPairsSettings = await _assetPairSettingsRepository.GetAllAsync();
 
                 _assetPairsCache.Initialize(assetPairsSettings);
+
+                InitializeAssetPairs();
             }
 
             return assetPairsSettings;
@@ -106,6 +110,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Instruments
             await _assetPairSettingsRepository.InsertAsync(assetPairSettings);
 
             _assetPairsCache.Set(assetPairSettings);
+
+            InitializeAssetPairs();
 
             _log.InfoWithDetails("Asset pair settings added", new {assetPairSettings, userId});
         }
@@ -176,7 +182,25 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Instruments
 
             _assetPairsCache.Remove(GetKey(assetPair, exchange));
 
+            InitializeAssetPairs();
+
             _log.InfoWithDetails("Asset settings deleted", new {existingAssetPairSettings, userId});
+        }
+
+        public async Task<bool> IsAssetPairExistAsync(string assetPair)
+        {
+            if (!_assetPairsCache.Initialized)
+                await GetAssetPairsAsync();
+
+            return _assetPairs.Contains(assetPair);
+        }
+
+        private void InitializeAssetPairs()
+        {
+            _assetPairs.Clear();
+
+            foreach (AssetPairSettings assetPairSettings in _assetPairsCache.GetAll())
+                _assetPairs.Add(assetPairSettings.AssetPair);
         }
 
         private async Task ValidateAssetPairSettingsAsync(AssetPairSettings assetPairSettings)

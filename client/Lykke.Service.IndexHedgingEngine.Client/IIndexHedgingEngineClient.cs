@@ -70,6 +70,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client
         IPositionsApi Positions { get; }
 
         /// <summary>
+        /// Quotes API.
+        /// </summary>
+        IQuotesApi Quotes { get; set; }
+
+        /// <summary>
         /// Reports API.
         /// </summary>
         IReportsApi Reports { get; set; }
@@ -85,6 +90,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client
         ISettlementsApi Settlements { get; }
 
         /// <summary>
+        /// Simulation API.
+        /// </summary>
+        ISimulationApi Simulation { get; }
+
+        /// <summary>
         /// Tokens API.
         /// </summary>
         ITokensApi Tokens { get; }
@@ -93,7 +103,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client
         /// Trades API.
         /// </summary>
         ITradesApi Trades { get; }
-        
+
         /// <summary>
         /// Primary Market API.
         /// </summary>

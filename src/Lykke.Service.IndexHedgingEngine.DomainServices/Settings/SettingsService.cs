@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
@@ -23,22 +24,23 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             _instanceName = instanceName;
             _walletId = walletId;
             _transitWalletId = transitWalletId;
-            // TODO: Union exchanges
             _exchanges = new[]
-            {
-                new ExchangeSettings
                 {
-                    Name = ExchangeNames.Lykke,
-                    Fee = decimal.Zero,
-                    HasApi = true
-                },
-                new ExchangeSettings
-                {
-                    Name = ExchangeNames.Virtual,
-                    Fee = decimal.Zero,
-                    HasApi = true
+                    new ExchangeSettings
+                    {
+                        Name = ExchangeNames.Lykke,
+                        Fee = decimal.Zero,
+                        HasApi = true
+                    },
+                    new ExchangeSettings
+                    {
+                        Name = ExchangeNames.Virtual,
+                        Fee = decimal.Zero,
+                        HasApi = true
+                    }
                 }
-            };
+                .Union(exchanges.Where(o => !o.Name.Equals(ExchangeNames.Lykke)))
+                .ToArray();
         }
 
         public string GetInstanceName()

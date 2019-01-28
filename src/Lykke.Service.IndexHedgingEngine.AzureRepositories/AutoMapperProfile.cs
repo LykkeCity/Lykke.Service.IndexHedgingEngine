@@ -9,8 +9,10 @@ using Lykke.Service.IndexHedgingEngine.AzureRepositories.Positions;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.PrimaryMarket;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements;
+using Lykke.Service.IndexHedgingEngine.AzureRepositories.Simulation;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Simulation;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
 {
@@ -86,6 +88,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                 .ForSourceMember(src => src.Assets, opt => opt.DoNotValidate());
             CreateMap<SettlementEntity, Settlement>(MemberList.Destination)
                 .ForMember(dest => dest.Assets, opt => opt.Ignore());
+
+            CreateMap<SimulationParameters, SimulationParametersEntity>(MemberList.Source);
+            CreateMap<SimulationParametersEntity, SimulationParameters>(MemberList.Destination);
 
             CreateMap<InternalTrade, InternalTradeEntity>(MemberList.Source)
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp));
