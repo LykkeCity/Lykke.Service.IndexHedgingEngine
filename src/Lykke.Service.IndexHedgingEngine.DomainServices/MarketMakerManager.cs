@@ -139,16 +139,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
         public async Task ExecuteAsync()
         {
+            await _settlementService.ReserveAsync();
+
             await _semaphore.WaitAsync();
 
             try
             {
-                await _settlementService.ExecuteAsync();
+                await _settlementService.CompleteAsync();
             }
             finally
             {
                 _semaphore.Release();
             }
+
+            await _settlementService.TransferAsync();
         }
     }
 }

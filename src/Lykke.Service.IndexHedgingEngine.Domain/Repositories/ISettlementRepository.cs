@@ -7,7 +7,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Repositories
     {
         Task<IReadOnlyCollection<Settlement>> GetAllAsync();
 
-        Task<IReadOnlyCollection<Settlement>> GetActiveAsync();
+        Task<IReadOnlyCollection<Settlement>> GetByStatusAsync(SettlementStatus settlementStatus);
 
         Task<IReadOnlyCollection<Settlement>> GetByClientIdAsync(string clientId);
 

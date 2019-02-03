@@ -19,6 +19,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The asset amount transferred to the transit wallet.
         /// </summary>
         Reserved,
+                
+        /// <summary>
+        /// The asset settlement is processed and position closed.
+        /// </summary>
+        Processed,
         
         /// <summary>
         /// The asset amount transferred to the client.
@@ -28,11 +33,6 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// <summary>
         /// The reserved asset amount transferred back to the market maker wallet.
         /// </summary>
-        Cancelled,
-        
-        /// <summary>
-        /// The asset settlement is completed.
-        /// </summary>
-        Completed
+        Cancelled
     }
 }

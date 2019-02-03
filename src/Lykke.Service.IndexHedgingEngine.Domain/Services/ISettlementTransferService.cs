@@ -4,7 +4,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {
     public interface ISettlementTransferService
     {
-        Task ReserveFundsAsync(string asset, decimal amount, string clientId, string settlementId);
+        Task ReserveFundsAsync(string asset, decimal amount, string settlementId);
 
         Task ReserveClientFundsAsync(string walletId, string asset, decimal amount, string clientId,
             string settlementId);

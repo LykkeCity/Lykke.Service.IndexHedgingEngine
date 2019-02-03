@@ -28,9 +28,15 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             _log = logFactory.CreateLog(this);
         }
 
-        public async Task ReserveFundsAsync(string asset, decimal amount, string clientId, string settlementId)
+        public async Task ReserveFundsAsync(string asset, decimal amount, decimal price, bool isDirect,
+            string settlementId)
         {
-            string comment = $"Reserve market maker funds. ClientId: {clientId}; SettlementId: {settlementId}";
+            
+        }
+
+        public async Task ReserveFundsAsync(string asset, decimal amount, string settlementId)
+        {
+            string comment = $"Reserve market maker funds. SettlementId: {settlementId}";
 
             string mainWalletId = _settingsService.GetWalletId();
 
@@ -107,7 +113,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
 
         private async Task<string> CashOutAsync(string asset, string walletId, decimal amount, string comment)
         {
-            string assetId = await GetAssetId(asset);
+            string assetId = await GetLykkeAssetIdAsync(asset);
 
             string transactionId = await _lykkeExchangeService.CashOutAsync(walletId, assetId, amount, "empty",
                 comment);
@@ -126,7 +132,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
 
         private async Task<string> CashInAsync(string asset, string walletId, decimal amount, string comment)
         {
-            string assetId = await GetAssetId(asset);
+            string assetId = await GetLykkeAssetIdAsync(asset);
 
             string transactionId = await _lykkeExchangeService.CashInAsync(walletId, assetId, amount, "empty", comment);
 
@@ -143,7 +149,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
         }
 
         // TODO: Move to LykkeExchangeService
-        private async Task<string> GetAssetId(string asset)
+        private async Task<string> GetLykkeAssetIdAsync(string asset)
         {
             AssetSettings assetSettings = await _instrumentService.GetAssetAsync(asset, ExchangeNames.Lykke);
 

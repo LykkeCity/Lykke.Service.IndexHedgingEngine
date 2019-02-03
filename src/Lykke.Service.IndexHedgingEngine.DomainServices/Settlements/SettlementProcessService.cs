@@ -1,135 +1,153 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Common.Log;
-using Lykke.Common.Log;
-using Lykke.Service.IndexHedgingEngine.Domain;
-using Lykke.Service.IndexHedgingEngine.Domain.Constants;
-using Lykke.Service.IndexHedgingEngine.Domain.Exceptions;
-using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
-using Lykke.Service.IndexHedgingEngine.Domain.Services;
-using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
-
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
 {
-    public class SettlementService : ISettlementService
+    public class SettlementProcessService
     {
-        private const decimal AssetMinWeightToDirectTransfer = 0.02m;
-
-        private readonly IIndexPriceService _indexPriceService;
-        private readonly IIndexSettingsService _indexSettingsService;
-        private readonly IAssetHedgeSettingsService _assetHedgeSettingsService;
-        private readonly ISettlementRepository _settlementRepository;
-        private readonly IQuoteService _quoteService;
-        private readonly IBalanceService _balanceService;
-        private readonly ISettlementTransferService _settlementTransferService;
-        private readonly IInstrumentService _instrumentService;
-        private readonly IPositionService _positionService;
-        private readonly ITokenService _tokenService;
-        private readonly ILog _log;
-
-        public SettlementService(
-            IIndexPriceService indexPriceService,
-            IIndexSettingsService indexSettingsService,
-            IAssetHedgeSettingsService assetHedgeSettingsService,
-            ISettlementRepository settlementRepository,
-            IQuoteService quoteService,
-            IBalanceService balanceService,
-            ISettlementTransferService settlementTransferService,
-            IInstrumentService instrumentService,
-            IPositionService positionService,
-            ITokenService tokenService,
-            ILogFactory logFactory)
+        public async Task ReserveAsync()
         {
-            _indexPriceService = indexPriceService;
-            _indexSettingsService = indexSettingsService;
-            _assetHedgeSettingsService = assetHedgeSettingsService;
-            _settlementRepository = settlementRepository;
-            _quoteService = quoteService;
-            _balanceService = balanceService;
-            _settlementTransferService = settlementTransferService;
-            _instrumentService = instrumentService;
-            _positionService = positionService;
-            _tokenService = tokenService;
-            _log = logFactory.CreateLog(this);
-        }
+            IEnumerable<Settlement> settlements =
+                await _settlementRepository.GetByStatusAsync(SettlementStatus.Approved);
 
-        public Task<IReadOnlyCollection<Settlement>> GetAllAsync()
-        {
-            return _settlementRepository.GetAllAsync();
-        }
-
-        public Task<IReadOnlyCollection<Settlement>> GetByClientIdAsync(string clientId)
-        {
-            return _settlementRepository.GetByClientIdAsync(clientId);
-        }
-
-        public async Task<Settlement> GetByIdAsync(string settlementId)
-        {
-            Settlement settlement = await _settlementRepository.GetByIdAsync(settlementId);
-
-            if (settlement == null)
-                throw new EntityNotFoundException();
-
-            return settlement;
-        }
-
-        public async Task CreateAsync(string indexName, decimal amount, string comment, string walletId,
-            string clientId, string userId, bool isDirect)
-        {
-            IndexPrice indexPrice = await _indexPriceService.GetByIndexAsync(indexName);
-
-            if (indexPrice == null)
-                throw new InvalidOperationException("Index price not found");
-
-            var settlement = new Settlement
+            foreach (Settlement settlement in settlements.Where(o => !o.HasError()))
             {
-                Id = Guid.NewGuid().ToString("D"),
-                IndexName = indexName,
-                Amount = amount,
-                Price = indexPrice.Price,
-                WalletId = walletId,
-                ClientId = clientId,
-                Comment = comment,
-                IsDirect = isDirect,
-                Status = SettlementStatus.New,
-                CreatedBy = userId,
-                CreatedDate = DateTime.UtcNow
-            };
+                try
+                {
+                    IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
+                        .Where(o => !o.HasError() && o.Status == AssetSettlementStatus.New);
 
-            await CalculateAssetSettlementsAsync(settlement, indexPrice.Weights);
+                    foreach (AssetSettlement assetSettlement in assetSettlements)
+                    {
+                        await ReserveFundsAsync(assetSettlement);
 
-            await ValidateBalanceAsync(settlement);
+                        //if
+                        // set error
+                        //else
+                        // set status
 
-            await _settlementRepository.InsertAsync(settlement);
+                        // update
+                    }
 
-            _log.InfoWithDetails("Settlement created", settlement);
+                    if (settlement.Assets.All(o => o.Status == AssetSettlementStatus.Reserved))
+                        await ReserveClientFundsAsync(settlement);
+
+                    //if
+                    // set error
+                    //else
+                    // set status
+
+                    // update
+                }
+                catch (Exception exception)
+                {
+                    _log.WarningWithDetails("An error occurred while reserving funds for settlement", exception,
+                        settlement);
+                }
+            }
         }
 
-        public async Task RecalculateAsync(string settlementId, string userId)
+        public async Task ProcessAsync()
+        {
+            IEnumerable<Settlement> settlements =
+                await _settlementRepository.GetByStatusAsync(SettlementStatus.Reserved);
+
+            foreach (Settlement settlement in settlements.Where(o => !o.HasError()))
+            {
+                try
+                {
+                    IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
+                        .Where(o => !o.HasError() && o.Status == AssetSettlementStatus.Reserved);
+
+                    foreach (AssetSettlement assetSettlement in assetSettlements)
+                        await ProcessAssetSettlementAsync(assetSettlement);
+
+                    if (settlement.Assets.All(o => o.Status == AssetSettlementStatus.Processed))
+                        await ProcessSettlementAsync(settlement);
+                }
+                catch (Exception exception)
+                {
+                    _log.WarningWithDetails("An error occurred while closing positions of settlement", exception,
+                        settlement);
+                }
+            }
+        }
+
+        public async Task TransferAsync()
+        {
+            IEnumerable<Settlement> settlements =
+                await _settlementRepository.GetByStatusAsync(SettlementStatus.Processed);
+
+            foreach (Settlement settlement in settlements.Where(o => !o.HasError()))
+            {
+                try
+                {
+                    IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
+                        .Where(o => !o.IsManual() && !o.HasError() && o.Status == AssetSettlementStatus.Processed);
+
+                    foreach (AssetSettlement assetSettlement in assetSettlements)
+                    {
+                        await TransferReservedFundsAsync(assetSettlement, settlement.ClientId,
+                            settlement.WalletId);
+                    }
+
+                    if (settlement.Assets.All(o => o.Status == AssetSettlementStatus.Transferred))
+                        await TransferClientReservedFundsAsync(settlement);
+                }
+                catch (Exception exception)
+                {
+                    _log.WarningWithDetails("An error occurred while transferring settlement", exception, settlement);
+                }
+            }
+        }
+
+        public async Task CompleteAsync()
+        {
+            IEnumerable<Settlement> settlements =
+                await _settlementRepository.GetByStatusAsync(SettlementStatus.Transferred);
+
+            foreach (Settlement settlement in settlements.Where(o => !o.HasError()))
+            {
+                try
+                {
+                    if (settlement.Assets.All(o => !o.HasError() && o.Status == AssetSettlementStatus.Transferred))
+                    {
+                        settlement.Status = SettlementStatus.Completed;
+                        await _settlementRepository.UpdateAsync(settlement);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    _log.WarningWithDetails("An error occurred while completing settlement", exception, settlement);
+                }
+            }
+        }
+        
+        public async Task ExecuteAssetAsync(string settlementId, string assetId, decimal actualAmount,
+            decimal actualPrice, string userId)
         {
             Settlement settlement = await GetByIdAsync(settlementId);
 
-            if (settlement.Status != SettlementStatus.New)
-                throw new InvalidOperationException("Only new settlement can be recalculated");
+            AssetSettlement assetSettlement = settlement.GetAsset(assetId);
 
-            IndexPrice indexPrice = await _indexPriceService.GetByIndexAsync(settlement.IndexName);
+            if (assetSettlement == null)
+                throw new InvalidOperationException("Asset not found");
 
-            if (indexPrice == null)
-                throw new InvalidOperationException("Index price not found");
+            if (!assetSettlement.IsDirect || !assetSettlement.IsExternal)
+                throw new InvalidOperationException("Only direct external assets can be manually executed");
 
-            settlement.Price = indexPrice.Price;
+            if (settlement.Status != SettlementStatus.Processed)
+                throw new InvalidOperationException("Can not execute asset.");
 
-            await CalculateAssetSettlementsAsync(settlement, indexPrice.Weights);
+            assetSettlement.ActualAmount = actualAmount;
+            assetSettlement.ActualPrice = actualPrice;
+            assetSettlement.Status = AssetSettlementStatus.Transferred;
 
-            await ValidateBalanceAsync(settlement);
+            await _settlementRepository.UpdateAsync(assetSettlement);
 
-            await _settlementRepository.ReplaceAsync(settlement);
+            // TODO: Cash out actual amount in USD from transit wallet.
+            // TODO: Cash out remaining loss from main wallet
 
-            _log.InfoWithDetails("Settlement recalculated", new {settlement, userId});
+            _log.InfoWithDetails("Asset updated", new {assetSettlement, userId});
         }
-
+        
         public async Task ApproveAsync(string settlementId, string userId)
         {
             Settlement settlement = await GetByIdAsync(settlementId);
@@ -216,235 +234,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
             _log.InfoWithDetails("Asset settlement retry", new {assetSettlement, userId});
         }
 
-        public async Task UpdateAssetAsync(string settlementId, string assetId, decimal amount, bool isDirect,
-            bool isExternal, string userId)
-        {
-            Settlement settlement = await GetByIdAsync(settlementId);
-
-            if (settlement.Status != SettlementStatus.New)
-                throw new InvalidOperationException("Only new settlement can be updated");
-
-            AssetSettlement assetSettlement = settlement.GetAsset(assetId);
-
-            if (assetSettlement == null)
-                throw new InvalidOperationException("Asset not found");
-
-            assetSettlement.Update(amount, isDirect, isExternal);
-
-            await ValidateBalanceAsync(settlement);
-
-            await _settlementRepository.ReplaceAsync(settlement);
-
-            _log.InfoWithDetails("Asset updated", new {assetSettlement, userId});
-        }
-
-        public async Task ValidateAsync(string settlementId, string userId)
-        {
-            Settlement settlement = await GetByIdAsync(settlementId);
-
-            if (settlement.Status != SettlementStatus.New)
-                throw new InvalidOperationException("Only new settlement can be validated");
-
-            await ValidateBalanceAsync(settlement);
-
-            await _settlementRepository.ReplaceAsync(settlement);
-
-            _log.InfoWithDetails("Settlement validated", new {settlement.Id, userId});
-        }
-
-        // Processing 
-        
-        public async Task ExecuteAssetAsync(string settlementId, string assetId, decimal actualAmount,
-            decimal actualPrice, string userId)
-        {
-            Settlement settlement = await GetByIdAsync(settlementId);
-
-            AssetSettlement assetSettlement = settlement.GetAsset(assetId);
-
-            if (assetSettlement == null)
-                throw new InvalidOperationException("Asset not found");
-
-            if (!assetSettlement.IsDirect || !assetSettlement.IsExternal)
-                throw new InvalidOperationException("Only direct external assets can be manually executed");
-
-            if (settlement.Status != SettlementStatus.Processed)
-                throw new InvalidOperationException("Can not execute asset.");
-
-            assetSettlement.ActualAmount = actualAmount;
-            assetSettlement.ActualPrice = actualPrice;
-            assetSettlement.Status = AssetSettlementStatus.Transferred;
-
-            await _settlementRepository.UpdateAsync(assetSettlement);
-
-            // TODO: Cash out actual amount in USD from transit wallet.
-            // TODO: Cash out remaining loss from main wallet
-
-            _log.InfoWithDetails("Asset updated", new {assetSettlement, userId});
-        }
-
-        public async Task ReserveAsync()
-        {
-            IEnumerable<Settlement> settlements =
-                await _settlementRepository.GetByStatusAsync(SettlementStatus.Approved);
-
-            foreach (Settlement settlement in settlements.Where(o => !o.HasError()))
-            {
-                try
-                {
-                    IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
-                        .Where(o => !o.HasError() && !o.IsManual() && o.Status == AssetSettlementStatus.New);
-
-                    foreach (AssetSettlement assetSettlement in assetSettlements)
-                    {
-                        await ReserveFundsAsync(assetSettlement);
-                        
-                        //if
-                        // set error
-                        //else
-                        // set status
-                        
-                        // update
-                    }
-
-                    if (settlement.Assets.All(o => o.Status == AssetSettlementStatus.Reserved))
-                        await ReserveClientFundsAsync(settlement);
-                    
-                    //if
-                    // set error
-                    //else
-                    // set status
-                        
-                    // update
-                }
-                catch (Exception exception)
-                {
-                    _log.WarningWithDetails("An error occurred while reserving funds for settlement", exception,
-                        settlement);
-                }
-            }
-        }
-
-        public async Task ProcessAsync()
-        {
-            IEnumerable<Settlement> settlements =
-                await _settlementRepository.GetByStatusAsync(SettlementStatus.Reserved);
-
-            foreach (Settlement settlement in settlements.Where(o => !o.HasError()))
-            {
-                try
-                {
-                    IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
-                        .Where(o => !o.HasError() && o.Status == AssetSettlementStatus.Reserved);
-
-                    foreach (AssetSettlement assetSettlement in assetSettlements)
-                        await ProcessAssetSettlementAsync(assetSettlement);
-
-                    if (settlement.Assets.All(o => o.Status == AssetSettlementStatus.Processed))
-                        await ProcessSettlementAsync(settlement);
-                }
-                catch (Exception exception)
-                {
-                    _log.WarningWithDetails("An error occurred while closing positions of settlement", exception,
-                        settlement);
-                }
-            }
-        }
-
-        public async Task TransferAsync()
-        {
-            IEnumerable<Settlement> settlements =
-                await _settlementRepository.GetByStatusAsync(SettlementStatus.Processed);
-
-            foreach (Settlement settlement in settlements.Where(o => !o.HasError()))
-            {
-                try
-                {
-                    IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
-                        .Where(o => !o.IsManual() && !o.HasError() && o.Status == AssetSettlementStatus.Processed);
-
-                    foreach (AssetSettlement assetSettlement in assetSettlements)
-                    {
-                        await TransferReservedFundsAsync(assetSettlement, settlement.ClientId,
-                            settlement.WalletId);
-                    }
-
-                    if (settlement.Assets.All(o => o.Status == AssetSettlementStatus.Transferred))
-                        await TransferClientReservedFundsAsync(settlement);
-                }
-                catch (Exception exception)
-                {
-                    _log.WarningWithDetails("An error occurred while transferring settlement", exception, settlement);
-                }
-            }
-        }
-
-        public async Task CompleteAsync()
-        {
-            IEnumerable<Settlement> settlements =
-                await _settlementRepository.GetByStatusAsync(SettlementStatus.Transferred);
-
-            foreach (Settlement settlement in settlements.Where(o => !o.HasError()))
-            {
-                try
-                {
-                    if (settlement.Assets.All(o => !o.HasError() && o.Status == AssetSettlementStatus.Transferred))
-                    {
-                        settlement.Status = SettlementStatus.Completed;
-                        await _settlementRepository.UpdateAsync(settlement);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    _log.WarningWithDetails("An error occurred while completing settlement", exception, settlement);
-                }
-            }
-        }
-
-        private async Task CalculateAssetSettlementsAsync(Settlement settlement, IEnumerable<AssetWeight> assetWeights)
-        {
-            decimal amountInUsd = settlement.Amount * settlement.Price;
-
-            var assetSettlements = new List<AssetSettlement>();
-
-            foreach (AssetWeight assetWeight in assetWeights)
-            {
-                AssetHedgeSettings assetHedgeSettings =
-                    await _assetHedgeSettingsService.EnsureAsync(assetWeight.AssetId);
-
-                Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.Exchange,
-                    assetHedgeSettings.AssetPairId);
-
-                decimal amount = 0;
-                decimal price = 0;
-
-                if (quote != null)
-                {
-                    amount = amountInUsd * assetWeight.Weight / quote.Mid;
-                    price = quote.Mid;
-                }
-
-                assetSettlements.Add(new AssetSettlement
-                {
-                    AssetId = assetWeight.AssetId,
-                    SettlementId = settlement.Id,
-                    Amount = amount,
-                    Price = price,
-                    Fee = decimal.Zero,
-                    Weight = assetWeight.Weight,
-                    IsDirect = settlement.IsDirect && assetWeight.Weight > AssetMinWeightToDirectTransfer,
-                    IsExternal = assetHedgeSettings.Exchange != ExchangeNames.Lykke,
-                    Status = AssetSettlementStatus.New,
-                    ActualAmount = amount,
-                    ActualPrice = price,
-                    Error = quote == null ? SettlementError.NoQuote : SettlementError.None
-                });
-            }
-
-            settlement.Assets = assetSettlements;
-        }
-
-        // Transfers
-        
         private async Task ReserveFundsAsync(AssetSettlement assetSettlement)
         {
             try
@@ -724,58 +513,5 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
 
             await _settlementRepository.UpdateAsync(settlement);
         }
-
-        // Validation
-        
-        private async Task ValidateBalanceAsync(Settlement settlement)
-        {
-            IEnumerable<AssetSettlement> assetSettlements = settlement.Assets
-                .Where(o => o.Error == SettlementError.NotEnoughFunds);
-
-            foreach (AssetSettlement assetSettlement in assetSettlements)
-                assetSettlement.Error = SettlementError.None;
-
-            AssetSettlement[] assetSettlementsDirect = settlement.Assets
-                .Where(o => o.Error == SettlementError.None)
-                .Where(o => o.IsDirect && !o.IsExternal)
-                .ToArray();
-
-            AssetSettlement[] assetSettlementsInUsd = settlement.Assets
-                .Where(o => o.Error == SettlementError.None)
-                .Where(o => !o.IsDirect)
-                .ToArray();
-
-            foreach (AssetSettlement assetSettlement in assetSettlementsDirect)
-            {
-                AssetSettings assetSettings =
-                    await _instrumentService.GetAssetAsync(assetSettlement.AssetId, ExchangeNames.Lykke);
-
-                Balance balance = _balanceService.GetByAssetId(ExchangeNames.Lykke, assetSettings.AssetId);
-
-                if (balance.Amount - balance.Reserved < assetSettlement.Amount)
-                    assetSettlement.Error = SettlementError.NotEnoughFunds;
-            }
-
-            decimal amountInUsd = assetSettlementsInUsd.Sum(o => o.Amount * o.Price);
-
-            AssetSettings usdAssetSettings =
-                await _instrumentService.GetAssetAsync("USD", ExchangeNames.Lykke);
-
-            Balance usdBalance = _balanceService.GetByAssetId(ExchangeNames.Lykke, usdAssetSettings.AssetId);
-
-            if (usdBalance.Amount - usdBalance.Reserved < amountInUsd)
-            {
-                foreach (AssetSettlement assetSettlement in assetSettlementsInUsd)
-                    assetSettlement.Error = SettlementError.NotEnoughFunds;
-            }
-        }
-
-        // Auxiliary methods
-        
-        private static string GetAssetSettlementAsset(AssetSettlement assetSettlement)
-            => assetSettlement.IsDirect ? assetSettlement.AssetId : "USD";
-
-        private static decimal GetAssetSettlementAmount(AssetSettlement assetSettlement)
-            => assetSettlement.IsDirect ? assetSettlement.Amount : assetSettlement.Amount * assetSettlement.Price;
     }
 }

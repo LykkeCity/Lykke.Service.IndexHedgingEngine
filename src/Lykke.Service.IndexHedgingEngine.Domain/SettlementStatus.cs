@@ -31,6 +31,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         Reserved,
         
         /// <summary>
+        /// The settlement is processed and open tokens closed.
+        /// </summary>
+        Processed,
+        
+        /// <summary>
         /// The assets are transferred to the client.
         /// </summary>
         Transferred,

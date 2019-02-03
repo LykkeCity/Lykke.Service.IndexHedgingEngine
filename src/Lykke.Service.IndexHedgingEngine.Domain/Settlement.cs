@@ -73,11 +73,14 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The identifier of the main wallet cash-in transaction.
         /// </summary>
         public string TransactionId { get; set; }
-        
+
         /// <summary>
         /// The collection of asset to settle.
         /// </summary>
         public IReadOnlyCollection<AssetSettlement> Assets { get; set; }
+
+        public bool HasError()
+            => Error != SettlementError.None;
 
         public AssetSettlement GetAsset(string assetId)
             => Assets.FirstOrDefault(o => o.AssetId == assetId);

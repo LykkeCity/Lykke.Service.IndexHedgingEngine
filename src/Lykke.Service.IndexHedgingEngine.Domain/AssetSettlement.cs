@@ -19,17 +19,17 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The amount of asset to settle.
         /// </summary>
         public decimal Amount { get; set; }
-        
+
         /// <summary>
         /// The price in USD of the asset that was while requesting the settlement.
         /// </summary>
         public decimal Price { get; set; }
-        
+
         /// <summary>
         /// The fee of settlement asset on external exchange, zero for Lykke exchange.
         /// </summary>
         public decimal Fee { get; set; }
-        
+
         /// <summary>
         /// The weight of the asset in index that was while requesting the settlement.
         /// </summary>
@@ -39,12 +39,12 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// If <c>true</c> the asset should be settle direct, otherwise in USD. 
         /// </summary>
         public bool IsDirect { get; set; }
-        
+
         /// <summary>
         /// If <c>true</c> the asset is on an external exchange, otherwise on Lykke exchange. 
         /// </summary>
         public bool IsExternal { get; set; }
-        
+
         /// <summary>
         /// The status of the asset settlement.
         /// </summary>
@@ -59,12 +59,12 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The actual amount of the asset. Can be different for external asset.
         /// </summary>
         public decimal ActualAmount { get; set; }
-        
+
         /// <summary>
         /// The actual price of the asset. Can be different for external asset.
         /// </summary>
         public decimal ActualPrice { get; set; }
-        
+
         /// <summary>
         /// The identifier of the client wallet cash-in transaction.
         /// </summary>
@@ -72,7 +72,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
 
         public bool IsManual()
             => IsDirect && IsExternal;
-        
+
+        public bool HasError()
+            => Error != SettlementError.None;
+
         public void Update(decimal amount, bool isDirect, bool isExternal)
         {
             Amount = amount;
