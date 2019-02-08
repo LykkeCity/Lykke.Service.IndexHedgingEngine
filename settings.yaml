@@ -74,6 +74,11 @@ IndexHedgingEngineService:
         Queue:
           settings-key: IndexHedgingEngineService-Rabbit-Subscribers-Queue
 
+  ExchangeAdapters:
+    settings-key: IndexHedgingEngineService-ExchangeAdapters
+      types:
+        - JsonArray
+    
 AssetsServiceClient:
   ServiceUrl:
     settings-key: AssetsServiceUrl

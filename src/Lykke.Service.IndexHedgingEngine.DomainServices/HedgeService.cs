@@ -68,6 +68,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             IReadOnlyDictionary<string, Quote> assetPrices = await GetAssetPricesAsync(assets);
 
+            await CancelLimitOrdersAsync(assets);
+
+            positions = await _positionService.GetAllAsync();
+            
             IReadOnlyCollection<AssetInvestment> assetInvestments = InvestmentCalculator.Calculate(assets,
                 indicesSettings, tokens, indexPrices, positions, assetPrices);
 
@@ -209,6 +213,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
 
             return hedgeLimitOrders;
+        }
+
+        private async Task CancelLimitOrdersAsync(IEnumerable<string> assets)
+        {
+            foreach (string assetId in assets)
+            {
+                AssetHedgeSettings assetHedgeSettings = await _assetHedgeSettingsService.GetByAssetIdAsync(assetId);
+
+                if (_exchangeAdapters.TryGetValue(assetHedgeSettings.Exchange, out IExchangeAdapter exchangeAdapter))
+                {
+                    if (assetHedgeSettings.Mode != AssetHedgeMode.Manual)
+                        await exchangeAdapter.CancelLimitOrderAsync(assetId);
+                }
+            }
         }
 
         private async Task ApplyLimitOrdersAsync(IEnumerable<string> assets,

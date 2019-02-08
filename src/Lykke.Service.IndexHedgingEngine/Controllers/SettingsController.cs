@@ -7,7 +7,6 @@ using Lykke.Common.Api.Contract.Responses;
 using Lykke.Service.IndexHedgingEngine.Client.Api;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Settings;
 using Lykke.Service.IndexHedgingEngine.Domain;
-using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -56,7 +55,7 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             IReadOnlyCollection<ExchangeSettings> exchangeSettings = _settingsService.GetExchanges();
 
             IEnumerable<ExchangeSettings> exchanges = _quoteService.GetExchanges()
-                .Where(o => !o.Equals(ExchangeNames.Lykke))
+                .Where(o => exchangeSettings.All(p => !p.Name.Equals(o)))
                 .Select(o =>
                     new ExchangeSettings
                     {

@@ -1,7 +1,10 @@
+using System;
 using System.Net;
 using System.Collections.Generic;
+using System.Linq;
 using Autofac;
 using JetBrains.Annotations;
+using Lykke.Common.ExchangeAdapter.Client;
 using Lykke.Sdk;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.ExchangeOperations.Client;
@@ -37,7 +40,8 @@ namespace Lykke.Service.IndexHedgingEngine
                 _settings.CurrentValue.IndexHedgingEngineService.WalletId,
                 _settings.CurrentValue.IndexHedgingEngineService.TransitWalletId,
                 _settings.CurrentValue.IndexHedgingEngineService.PrimaryMarketWalletId,
-                assetPairMapping));
+                assetPairMapping,
+                _settings.CurrentValue.IndexHedgingEngineService.ExchangeAdapters.Select(o => o.Name).ToList()));
             builder.RegisterModule(new AzureRepositories.AutofacModule(
                 _settings.Nested(o => o.IndexHedgingEngineService.Db
                     .DataConnectionString),
@@ -61,7 +65,7 @@ namespace Lykke.Service.IndexHedgingEngine
                     .LykkeTrades))
                 .AsSelf()
                 .SingleInstance();
-            
+
             builder.RegisterType<LykkeOrderBookSubscriber>()
                 .WithParameter(TypedParameter.From(_settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers
                     .LykkeOrderBooks))
@@ -93,6 +97,12 @@ namespace Lykke.Service.IndexHedgingEngine
 
         private void RegisterClients(ContainerBuilder builder)
         {
+            IReadOnlyDictionary<string, AdapterEndpoint> endpoints =
+                _settings.CurrentValue.IndexHedgingEngineService.ExchangeAdapters.ToDictionary(o => o.Name,
+                    v => new AdapterEndpoint(v.ApiKey, new Uri(v.Url)));
+
+            builder.RegisterInstance(new ExchangeAdapterClientFactory(endpoints));
+
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient);
 
             builder.Register(container =>

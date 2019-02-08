@@ -9,6 +9,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models
     public class QuoteModel
     {
         /// <summary>
+        /// The identifier of the asset pair.
+        /// </summary>
+        public string AssetPairId { get; }
+
+        /// <summary>
         /// The best sell price in order book.
         /// </summary>
         public decimal Ask { get; set; }
@@ -22,7 +27,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models
         /// The mid price in order book.
         /// </summary>
         public decimal Mid { get; set; }
-        
+
         /// <summary>
         /// The name of exchange.
         /// </summary>
