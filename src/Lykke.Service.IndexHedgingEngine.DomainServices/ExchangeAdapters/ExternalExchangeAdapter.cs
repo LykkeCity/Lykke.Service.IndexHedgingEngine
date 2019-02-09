@@ -166,8 +166,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
                     Volume = volume
                 });
 
-                externalOrder = new ExternalOrder(response.OrderId, hedgeLimitOrder.Id, hedgeLimitOrder.AssetId,
-                    hedgeLimitOrder.Exchange);
+                externalOrder = new ExternalOrder(response.OrderId, hedgeLimitOrder.Exchange,
+                    hedgeLimitOrder.AssetId, hedgeLimitOrder.Id);
 
                 await _externalOrderRepository.InsertAsync(externalOrder);
 
