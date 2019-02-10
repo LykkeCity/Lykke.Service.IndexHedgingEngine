@@ -34,12 +34,19 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         Task<IReadOnlyCollection<PositionReportModel>> GetVirtualPositionReportsAsync();
 
         /// <summary>
+        /// Returns report by positions on external exchange. 
+        /// </summary>
+        /// <returns>A collection of position reports.</returns>
+        [Get("/api/Reports/positions/external")]
+        Task<IReadOnlyCollection<PositionReportModel>> GetExternalPositionReportsAsync(string exchange);
+
+        /// <summary>
         /// Returns reports by indices. 
         /// </summary>
         /// <returns>A collection of of index reports.</returns>
         [Get("/api/Reports/indices")]
         Task<IReadOnlyCollection<IndexReportModel>> GetIndexReportsAsync();
-        
+
         /// <summary>
         /// Returns risk exposure report.
         /// </summary>

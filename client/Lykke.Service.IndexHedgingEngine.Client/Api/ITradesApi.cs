@@ -52,6 +52,19 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
             string assetPairId, string oppositeWalletId, int limit);
 
         /// <summary>
+        /// Returns a collection of trades from external exchange by period.
+        /// </summary>
+        /// <param name="startDate">The start date of period.</param>
+        /// <param name="endDate">The end date of period.</param>
+        /// <param name="exchange">The name of exchange.</param>
+        /// <param name="assetPairId">The identifier of asset pair.</param>
+        /// <param name="limit">The maximum number of trades.</param>
+        /// <returns>A collection of external trades.</returns>
+        [Get("/api/trades/external")]
+        Task<IReadOnlyCollection<ExternalTradeModel>> GetExternalTradesAsync(DateTime startDate, DateTime endDate,
+            string exchange, string assetPairId, int limit);
+        
+        /// <summary>
         /// Returns an internal trade by id.
         /// </summary>
         /// <param name="tradeId">The trade id.</param>
