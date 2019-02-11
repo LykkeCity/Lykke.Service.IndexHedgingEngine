@@ -71,7 +71,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
                     return;
                 }
 
-                if (order.ExecutionStatus == OrderStatus.Fill)
+                if (order.ExecutionStatus == OrderStatus.Fill ||
+                    order.ExecutionStatus == OrderStatus.Canceled && order.ExecutedVolume > 0)
                 {
                     await _positionService.UpdateAsync(hedgeLimitOrder.AssetId, hedgeLimitOrder.Exchange,
                         hedgeLimitOrder.Type == LimitOrderType.Sell
