@@ -6,6 +6,7 @@ using Lykke.Common.Log;
 using Lykke.RabbitMq.Azure.Deduplicator;
 using Lykke.RabbitMqBroker.Deduplication;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances;
+using Lykke.Service.IndexHedgingEngine.AzureRepositories.ExternalOrders;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders;
@@ -54,6 +55,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                     AzureTableStorage<TokenEntity>.Create(_connectionString,
                         "Tokens", container.Resolve<ILogFactory>())))
                 .As<ITokenRepository>()
+                .SingleInstance();
+
+            builder.Register(container => new ExternalOrderRepository(
+                    AzureTableStorage<ExternalOrderEntity>.Create(_connectionString,
+                        "ExternalOrders", container.Resolve<ILogFactory>())))
+                .As<IExternalOrderRepository>()
                 .SingleInstance();
 
             builder.Register(container => new AssetHedgeSettingsRepository(
@@ -136,6 +143,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                     AzureTableStorage<SimulationParametersEntity>.Create(_connectionString,
                         "SimulationParameters", container.Resolve<ILogFactory>())))
                 .As<ISimulationParametersRepository>()
+                .SingleInstance();
+
+            builder.Register(container => new ExternalTradeRepository(
+                    AzureTableStorage<ExternalTradeEntity>.Create(_connectionString,
+                        "ExternalTrades", container.Resolve<ILogFactory>())))
+                .As<IExternalTradeRepository>()
                 .SingleInstance();
 
             builder.Register(container => new InternalTradeRepository(

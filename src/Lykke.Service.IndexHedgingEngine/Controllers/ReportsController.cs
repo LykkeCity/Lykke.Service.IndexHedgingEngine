@@ -71,6 +71,18 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         }
 
         /// <inheritdoc/>
+        /// <response code="200">A collection of position reports.</response>
+        [HttpGet("positions/external")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<PositionReportModel>), (int) HttpStatusCode.OK)]
+        public async Task<IReadOnlyCollection<PositionReportModel>> GetExternalPositionReportsAsync(string exchange)
+        {
+            IReadOnlyCollection<PositionReport> positionReports =
+                await _positionReportService.GetByExchangeAsync(exchange);
+
+            return Mapper.Map<PositionReportModel[]>(positionReports);
+        }
+        
+        /// <inheritdoc/>
         /// <response code="200">A collection of index reports.</response>
         [HttpGet("indices")]
         [ProducesResponseType(typeof(IReadOnlyCollection<IndexReportModel>), (int) HttpStatusCode.OK)]

@@ -1,6 +1,7 @@
 using AutoMapper;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances;
+using Lykke.Service.IndexHedgingEngine.AzureRepositories.ExternalOrders;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Hedging;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.HedgeLimitOrders;
@@ -31,6 +32,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
 
             CreateMap<Token, TokenEntity>(MemberList.Source);
             CreateMap<TokenEntity, Token>(MemberList.Destination);
+
+            CreateMap<ExternalOrder, ExternalOrderEntity>(MemberList.Source);
+            CreateMap<ExternalOrderEntity, ExternalOrder>(MemberList.Destination);
 
             CreateMap<AssetHedgeSettings, AssetHedgeSettingsEntity>(MemberList.Source)
                 .ForMember(dest => dest.ReferenceExchange, opt => opt.AddTransform(value => value ?? string.Empty));
@@ -91,6 +95,11 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
 
             CreateMap<SimulationParameters, SimulationParametersEntity>(MemberList.Source);
             CreateMap<SimulationParametersEntity, SimulationParameters>(MemberList.Destination);
+
+            CreateMap<ExternalTrade, ExternalTradeEntity>(MemberList.Source)
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp));
+            CreateMap<ExternalTradeEntity, ExternalTrade>(MemberList.Destination)
+                .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Date));
 
             CreateMap<InternalTrade, InternalTradeEntity>(MemberList.Source)
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp));

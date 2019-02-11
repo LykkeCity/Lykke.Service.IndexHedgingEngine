@@ -32,18 +32,21 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly string _transitWalletId;
         private readonly string _primaryMarketWalletId;
         private readonly IReadOnlyDictionary<string, string> _assetPairMapping;
+        private readonly IReadOnlyCollection<string> _exchangeAdapters;
 
         public AutofacModule(
             string instanceName,
             string walletId,
             string transitWalletId,
             string primaryMarketWalletId,
-            IReadOnlyDictionary<string, string> assetPairMapping)
+            IReadOnlyDictionary<string, string> assetPairMapping,
+            IReadOnlyCollection<string> exchangeAdapters)
         {
             _instanceName = instanceName;
             _walletId = walletId;
             _primaryMarketWalletId = primaryMarketWalletId;
             _assetPairMapping = assetPairMapping;
+            _exchangeAdapters = exchangeAdapters;
             _transitWalletId = transitWalletId;
         }
 
@@ -78,6 +81,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<IExchangeAdapter>()
                 .As<IInternalTradeHandler>()
                 .SingleInstance();
+
+            foreach (string exchangeAdapter in _exchangeAdapters)
+            {
+                builder.RegisterType<ExternalExchangeAdapter>()
+                    .WithParameter(TypedParameter.From(exchangeAdapter))
+                    .As<IExchangeAdapter>()
+                    .SingleInstance();
+            }
 
             builder.RegisterType<AssetHedgeSettingsService>()
                 .As<IAssetHedgeSettingsService>()
@@ -144,6 +155,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .WithParameter(new NamedParameter("instanceName", _instanceName))
                 .WithParameter(new NamedParameter("walletId", _walletId))
                 .WithParameter(new NamedParameter("transitWalletId", _transitWalletId))
+                .WithParameter(TypedParameter.From(_exchangeAdapters))
                 .SingleInstance();
 
             builder.RegisterType<TimersSettingsService>()
@@ -168,6 +180,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             builder.RegisterType<SettlementsTimer>()
                 .AsSelf()
+                .SingleInstance();
+
+            builder.RegisterType<ExternalTradeService>()
+                .As<IExternalTradeService>()
                 .SingleInstance();
 
             builder.RegisterType<InternalTradeService>()

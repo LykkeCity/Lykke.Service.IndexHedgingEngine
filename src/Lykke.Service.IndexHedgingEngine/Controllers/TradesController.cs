@@ -19,15 +19,18 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         private readonly IInternalTradeService _internalTradeService;
         private readonly IVirtualTradeService _virtualTradeService;
         private readonly ILykkeTradeService _lykkeTradeService;
+        private readonly IExternalTradeService _externalTradeService;
 
         public TradesController(
             IInternalTradeService internalTradeService,
             IVirtualTradeService virtualTradeService,
-            ILykkeTradeService lykkeTradeService)
+            ILykkeTradeService lykkeTradeService,
+            IExternalTradeService externalTradeService)
         {
             _internalTradeService = internalTradeService;
             _virtualTradeService = virtualTradeService;
             _lykkeTradeService = lykkeTradeService;
+            _externalTradeService = externalTradeService;
         }
 
         /// <inheritdoc/>
@@ -50,23 +53,36 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         public async Task<IReadOnlyCollection<VirtualTradeModel>> GetVirtualTradesAsync(DateTime startDate,
             DateTime endDate, string assetPairId, int limit)
         {
-            IReadOnlyCollection<VirtualTrade> internalTrades =
+            IReadOnlyCollection<VirtualTrade> virtualTrades =
                 await _virtualTradeService.GetAsync(startDate, endDate, assetPairId, limit);
 
-            return Mapper.Map<VirtualTradeModel[]>(internalTrades);
+            return Mapper.Map<VirtualTradeModel[]>(virtualTrades);
         }
 
         /// <inheritdoc/>
         /// <response code="200">A collection of Lykke trades.</response>
         [HttpGet("lykke")]
         [ProducesResponseType(typeof(IReadOnlyCollection<InternalTradeModel>), (int) HttpStatusCode.OK)]
-        public async Task<IReadOnlyCollection<InternalTradeModel>> GetLykkeTradesAsync(DateTime startDate, DateTime endDate,
-            string assetPairId, string oppositeWalletId, int limit)
+        public async Task<IReadOnlyCollection<InternalTradeModel>> GetLykkeTradesAsync(DateTime startDate,
+            DateTime endDate, string assetPairId, string oppositeWalletId, int limit)
         {
             IReadOnlyCollection<InternalTrade> internalTrades =
                 await _lykkeTradeService.GetAsync(startDate, endDate, assetPairId, oppositeWalletId, limit);
 
             return Mapper.Map<InternalTradeModel[]>(internalTrades);
+        }
+
+        /// <inheritdoc/>
+        /// <response code="200">A collection of external trades.</response>
+        [HttpGet("external")]
+        [ProducesResponseType(typeof(IReadOnlyCollection<ExternalTradeModel>), (int) HttpStatusCode.OK)]
+        public async Task<IReadOnlyCollection<ExternalTradeModel>> GetExternalTradesAsync(DateTime startDate,
+            DateTime endDate, string exchange, string assetPairId, int limit)
+        {
+            IReadOnlyCollection<ExternalTrade> externalTrades =
+                await _externalTradeService.GetAsync(startDate, endDate, exchange, assetPairId, limit);
+
+            return Mapper.Map<ExternalTradeModel[]>(externalTrades);
         }
 
         /// <inheritdoc/>
