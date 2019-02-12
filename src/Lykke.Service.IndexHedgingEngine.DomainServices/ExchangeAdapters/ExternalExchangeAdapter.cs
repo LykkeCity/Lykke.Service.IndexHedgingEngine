@@ -81,8 +81,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
                                 : Domain.TradeType.Buy,
                             order.ExecutedVolume, order.ExecutedVolume * order.AvgExecutionPrice);
 
-                        await _externalOrderRepository.DeleteAsync(externalOrder.Exchange, externalOrder.Asset);
-
                         await _externalTradeService.RegisterAsync(new ExternalTrade
                         {
                             Id = Guid.NewGuid().ToString("D"),
@@ -103,6 +101,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
                             RemainingVolume = order.RemainingAmount
                         });
                     }
+
+                    await _externalOrderRepository.DeleteAsync(externalOrder.Exchange, externalOrder.Asset);
 
                     _hedgeLimitOrderService.Close(hedgeLimitOrder);
                 }
