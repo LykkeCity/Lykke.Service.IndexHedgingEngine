@@ -72,8 +72,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
 
             if (quote.Ask == 0 || quote.Bid == 0 || quote.Mid == 0)
             {
-                _log.WarningWithDetails("Invalid quote received", quote);
-                return;
+                _log.InfoWithDetails("Invalid quote received", quote);
+                throw new InvalidOperationException();
             }
 
             Quote currentQuote = _cache.Get(GetKey(quote));

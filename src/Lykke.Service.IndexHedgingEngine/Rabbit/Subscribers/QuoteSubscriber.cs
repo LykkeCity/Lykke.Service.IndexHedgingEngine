@@ -72,8 +72,11 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                     .Value;
 
                 await _quoteService.UpdateAsync(new Quote(assetPair ?? tickPrice.Asset, tickPrice.Timestamp,
-                    tickPrice.Ask,
-                    tickPrice.Bid, tickPrice.Source));
+                    tickPrice.Ask, tickPrice.Bid, tickPrice.Source));
+            }
+            catch (InvalidOperationException)
+            {
+                _log.InfoWithDetails("Invalid quote received", tickPrice);
             }
             catch (Exception exception)
             {
