@@ -11,7 +11,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models
         /// <summary>
         /// The identifier of the asset pair.
         /// </summary>
-        public string AssetPairId { get; }
+        public string AssetPairId { get; set; }
 
         /// <summary>
         /// The best sell price in order book.

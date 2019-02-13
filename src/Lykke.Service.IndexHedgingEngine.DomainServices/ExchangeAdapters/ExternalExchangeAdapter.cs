@@ -71,36 +71,38 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
                     return;
                 }
 
-                if (order.ExecutionStatus == OrderStatus.Fill ||
-                    order.ExecutionStatus == OrderStatus.Canceled && order.ExecutedVolume > 0)
+                if (order.ExecutionStatus == OrderStatus.Fill || order.ExecutionStatus == OrderStatus.Canceled)
                 {
-                    await _positionService.UpdateAsync(hedgeLimitOrder.AssetId, hedgeLimitOrder.Exchange,
-                        hedgeLimitOrder.Type == LimitOrderType.Sell
-                            ? Domain.TradeType.Sell
-                            : Domain.TradeType.Buy,
-                        order.ExecutedVolume, order.ExecutedVolume * order.AvgExecutionPrice);
+                    if (order.ExecutedVolume > 0)
+                    {
+                        await _positionService.UpdateAsync(hedgeLimitOrder.AssetId, hedgeLimitOrder.Exchange,
+                            hedgeLimitOrder.Type == LimitOrderType.Sell
+                                ? Domain.TradeType.Sell
+                                : Domain.TradeType.Buy,
+                            order.ExecutedVolume, order.ExecutedVolume * order.AvgExecutionPrice);
+
+                        await _externalTradeService.RegisterAsync(new ExternalTrade
+                        {
+                            Id = Guid.NewGuid().ToString("D"),
+                            Exchange = hedgeLimitOrder.Exchange,
+                            LimitOrderId = hedgeLimitOrder.Id,
+                            ExchangeOrderId = externalOrder.Id,
+                            AssetPairId = hedgeLimitOrder.AssetPairId,
+                            Type = hedgeLimitOrder.Type == LimitOrderType.Sell
+                                ? Domain.TradeType.Sell
+                                : Domain.TradeType.Buy,
+                            Timestamp = order.Timestamp,
+                            Price = order.AvgExecutionPrice,
+                            Volume = order.ExecutedVolume,
+                            Status = order.RemainingAmount > 0
+                                ? TradeStatus.PartialFill
+                                : TradeStatus.Fill,
+                            OriginalVolume = order.OriginalVolume,
+                            RemainingVolume = order.RemainingAmount
+                        });
+                    }
 
                     await _externalOrderRepository.DeleteAsync(externalOrder.Exchange, externalOrder.Asset);
-
-                    await _externalTradeService.RegisterAsync(new ExternalTrade
-                    {
-                        Id = Guid.NewGuid().ToString("D"),
-                        Exchange = hedgeLimitOrder.Exchange,
-                        LimitOrderId = hedgeLimitOrder.Id,
-                        ExchangeOrderId = externalOrder.Id,
-                        AssetPairId = hedgeLimitOrder.AssetPairId,
-                        Type = hedgeLimitOrder.Type == LimitOrderType.Sell
-                            ? Domain.TradeType.Sell
-                            : Domain.TradeType.Buy,
-                        Timestamp = order.Timestamp,
-                        Price = order.AvgExecutionPrice,
-                        Volume = order.ExecutedVolume,
-                        Status = order.RemainingAmount > 0
-                            ? TradeStatus.PartialFill
-                            : TradeStatus.Fill,
-                        OriginalVolume = order.OriginalVolume,
-                        RemainingVolume = order.RemainingAmount
-                    });
 
                     _hedgeLimitOrderService.Close(hedgeLimitOrder);
                 }
