@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Autofac;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Domain.Handlers;
@@ -86,6 +86,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             {
                 builder.RegisterType<ExternalExchangeAdapter>()
                     .WithParameter(TypedParameter.From(exchangeAdapter))
+                    .WithParameter(TypedParameter.From(_assetPairMapping))
                     .As<IExchangeAdapter>()
                     .SingleInstance();
             }

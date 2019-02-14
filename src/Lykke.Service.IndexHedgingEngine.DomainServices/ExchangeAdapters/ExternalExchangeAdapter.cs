@@ -1,4 +1,6 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
@@ -23,6 +25,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
         private readonly IExternalOrderRepository _externalOrderRepository;
         private readonly IExternalTradeService _externalTradeService;
         private readonly IPositionService _positionService;
+        private readonly IReadOnlyDictionary<string, string> _assetPairMapping;
         private readonly ILog _log;
 
         public ExternalExchangeAdapter(
@@ -33,7 +36,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
             IExternalOrderRepository externalOrderRepository,
             IExternalTradeService externalTradeService,
             IPositionService positionService,
-            ILogFactory logFactory)
+            ILogFactory logFactory,
+            IReadOnlyDictionary<string, string> assetPairMapping)
         {
             Name = exchangeName;
             _exchangeAdapterClientFactory = exchangeAdapterClientFactory;
@@ -42,6 +46,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
             _externalOrderRepository = externalOrderRepository;
             _externalTradeService = externalTradeService;
             _positionService = positionService;
+            _assetPairMapping = assetPairMapping;
             _log = logFactory.CreateLog(this);
         }
 
@@ -161,9 +166,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
 
             try
             {
+                var assetPair = assetPairSettings.AssetPairId;
+                // TODO: Remove this workaround
+                if (Name == "NettingEngineDefault")
+                {
+                    assetPair = GetAssetPair(assetPair);
+                }
+                
                 OrderIdResponse response = await spotController.CreateLimitOrderAsync(new LimitOrderRequest
                 {
-                    Instrument = assetPairSettings.AssetPairId,
+                    Instrument = assetPair,
                     TradeType = hedgeLimitOrder.Type == LimitOrderType.Sell ? TradeType.Sell : TradeType.Buy,
                     Price = price,
                     Volume = volume
@@ -183,6 +195,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
 
                 _log.WarningWithDetails("An error occurred while creating external order", exception, hedgeLimitOrder);
             }
+        }
+
+        private string GetAssetPair(string assetPairId)
+        {
+            // TODO: Remove this workaround
+            string assetPair = _assetPairMapping.FirstOrDefault(o => o.Value == assetPairId).Key;
+
+            return assetPair ?? assetPairId;
         }
     }
 }
