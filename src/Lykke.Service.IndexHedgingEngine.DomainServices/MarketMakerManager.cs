@@ -83,7 +83,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
             catch (InvalidOperationException exception)
             {
-                _log.WarningWithDetails(exception.Message, index);
+                _log.WarningWithDetails("An error occurred while processing index", exception, index);
             }
             catch (Exception exception)
             {
