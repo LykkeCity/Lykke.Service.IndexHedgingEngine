@@ -138,6 +138,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<IPositionReportService>()
                 .SingleInstance();
 
+            builder.RegisterType<ProfitLossReportService>()
+                .As<IProfitLossReportService>()
+                .SingleInstance();
+
             builder.RegisterType<HedgeSettingsService>()
                 .As<IHedgeSettingsService>()
                 .SingleInstance();

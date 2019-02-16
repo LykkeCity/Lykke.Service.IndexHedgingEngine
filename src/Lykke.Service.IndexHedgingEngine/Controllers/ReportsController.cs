@@ -1,19 +1,12 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Lykke.Service.IndexHedgingEngine.Client.Api;
-using Lykke.Service.IndexHedgingEngine.Client.Models;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Reports;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
-using Lykke.Service.IndexHedgingEngine.DomainServices.Balances;
-using Lykke.Service.IndexHedgingEngine.DomainServices.Hedging;
-using Lykke.Service.IndexHedgingEngine.DomainServices.Indices;
-using Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks;
-using Lykke.Service.IndexHedgingEngine.DomainServices.Positions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.IndexHedgingEngine.Controllers
@@ -24,15 +17,18 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         private readonly IPositionReportService _positionReportService;
         private readonly IIndexReportService _indexReportService;
         private readonly IRiskExposureReportService _riskExposureReportService;
+        private readonly IProfitLossReportService _profitLossReportService;
 
         public ReportsController(
             IPositionReportService positionReportService,
             IIndexReportService indexReportService,
-            IRiskExposureReportService riskExposureReportService)
+            IRiskExposureReportService riskExposureReportService,
+            IProfitLossReportService profitLossReportService)
         {
             _positionReportService = positionReportService;
             _indexReportService = indexReportService;
             _riskExposureReportService = riskExposureReportService;
+            _profitLossReportService = profitLossReportService;
         }
 
         /// <inheritdoc/>
@@ -81,7 +77,7 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
 
             return Mapper.Map<PositionReportModel[]>(positionReports);
         }
-        
+
         /// <inheritdoc/>
         /// <response code="200">A collection of index reports.</response>
         [HttpGet("indices")]
@@ -92,7 +88,7 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
 
             return Mapper.Map<IndexReportModel[]>(indexReports);
         }
-        
+
         /// <inheritdoc/>
         /// <response code="200">A risk exposure report.</response>
         [HttpGet("riskexposure")]
@@ -102,6 +98,17 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             RiskExposureReport riskExposureReport = await _riskExposureReportService.GetAsync();
 
             return Mapper.Map<RiskExposureReportModel>(riskExposureReport);
+        }
+
+        /// <inheritdoc/>
+        /// <response code="200">A profit loss report.</response>
+        [HttpGet("pnl")]
+        [ProducesResponseType(typeof(ProfitLossReportModel), (int) HttpStatusCode.OK)]
+        public async Task<ProfitLossReportModel> GetProfitLossReportAsync()
+        {
+            ProfitLossReport report = await _profitLossReportService.GetAsync();
+
+            return Mapper.Map<ProfitLossReportModel>(report);
         }
     }
 }
