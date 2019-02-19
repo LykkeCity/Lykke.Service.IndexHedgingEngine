@@ -65,6 +65,8 @@ namespace Lykke.Service.IndexHedgingEngine
 
             CreateMap<PositionReport, PositionReportModel>(MemberList.Source);
 
+            CreateMap<ProfitLossReport, ProfitLossReportModel>(MemberList.Source);
+
             CreateMap<HedgeSettings, HedgeSettingsModel>(MemberList.Source);
             CreateMap<HedgeSettingsModel, HedgeSettings>(MemberList.Destination);
 
