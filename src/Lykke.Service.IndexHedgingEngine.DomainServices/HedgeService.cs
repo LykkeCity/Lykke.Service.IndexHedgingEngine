@@ -309,12 +309,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
                     if (quote == null)
                     {
-                        _log.WarningWithDetails("No reference quote", new
-                        {
-                            Exchange = assetHedgeSettings.ReferenceExchange,
-                            AssetPair = assetHedgeSettings.AssetPairId
-                        });
-
+                        hedgeLimitOrder.Error = LimitOrderError.Unknown;
+                        hedgeLimitOrder.ErrorMessage = "No reference quote";
+                        
                         continue;
                     }
 
