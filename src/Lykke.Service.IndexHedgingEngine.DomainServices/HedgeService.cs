@@ -217,7 +217,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         {
             foreach (string assetId in assets)
             {
-                AssetHedgeSettings assetHedgeSettings = await _assetHedgeSettingsService.GetByAssetIdAsync(assetId);
+                AssetHedgeSettings assetHedgeSettings = await _assetHedgeSettingsService.EnsureAsync(assetId);
 
                 if (_exchangeAdapters.TryGetValue(assetHedgeSettings.Exchange, out IExchangeAdapter exchangeAdapter))
                 {
@@ -311,7 +311,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     {
                         hedgeLimitOrder.Error = LimitOrderError.Unknown;
                         hedgeLimitOrder.ErrorMessage = "No reference quote";
-                        
+
                         continue;
                     }
 
