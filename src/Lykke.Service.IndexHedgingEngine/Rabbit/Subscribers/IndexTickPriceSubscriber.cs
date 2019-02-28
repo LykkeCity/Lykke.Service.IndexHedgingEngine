@@ -19,18 +19,18 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
     {
         private readonly SubscriberSettings _settings;
         private RabbitMqSubscriber<IndexTickPrice> _subscriber;
-        private readonly IIndexHandler[] _indexHandlers;
+        private readonly IIndexHandler _indexHandler;
         private readonly ILogFactory _logFactory;
         private readonly ILog _log;
 
         public IndexTickPriceSubscriber(
             SubscriberSettings settings,
-            IIndexHandler[] indexHandlers,
+            IIndexHandler indexHandler,
             ILogFactory logFactory)
         {
             _settings = settings;
 
-            _indexHandlers = indexHandlers;
+            _indexHandler = indexHandler;
             _logFactory = logFactory;
             _log = logFactory.CreateLog(this);
         }
@@ -66,9 +66,8 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                     message.AssetsInfo
                         .Select(o => new AssetWeight(o.AssetId, o.Weight, o.Price, o.IsDisabled))
                         .ToArray());
-
-                foreach (var indexHandler in _indexHandlers)
-                    await indexHandler.HandleIndexAsync(index);
+                
+                await _indexHandler.HandleIndexAsync(index);
 
                 _log.InfoWithDetails("Index price handled", message);
             }

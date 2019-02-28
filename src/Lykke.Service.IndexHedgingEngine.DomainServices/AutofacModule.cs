@@ -125,7 +125,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             builder.RegisterType<QuoteService>()
                 .As<IQuoteService>()
-                .As<IIndexHandler>()
                 .SingleInstance();
 
             builder.RegisterType<PositionService>()
