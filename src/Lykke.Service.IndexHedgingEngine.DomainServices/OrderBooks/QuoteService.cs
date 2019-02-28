@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +6,6 @@ using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
-using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
@@ -42,26 +41,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
 
         public Quote GetByAssetPairId(string source, string assetPairId)
         {
-            if (source == ExchangeNames.Virtual)
-            {
-                List<Quote> quotes = _cache.GetAll()
-                    .Where(o => o.AssetPairId == assetPairId)
-                    .OrderBy(o => o.Mid)
-                    .ToList();
-
-                if (quotes.Count == 0)
-                    return null;
-
-                if (quotes.Count >= 7)
-                    quotes = quotes.GetRange(2, quotes.Count - 4);
-                else if (quotes.Count >= 3)
-                    quotes = quotes.GetRange(1, quotes.Count - 2);
-
-                decimal avgMid = quotes.Select(o => o.Mid).Average();
-
-                return new Quote(assetPairId, quotes.Max(o => o.Time), avgMid, avgMid, ExchangeNames.Virtual);
-            }
-
             return _cache.Get($"{source}-{assetPairId}");
         }
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Handlers;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
@@ -25,6 +26,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly ITokenService _tokenService;
         private readonly IMarketMakerStateService _marketMakerStateService;
         private readonly ISettlementService _settlementService;
+        private readonly IQuoteService _quoteService;
         private readonly ILog _log;
 
         public MarketMakerManager(
@@ -37,6 +39,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             ITokenService tokenService,
             IMarketMakerStateService marketMakerStateService,
             ISettlementService settlementService,
+            IQuoteService quoteService,
             ILogFactory logFactory)
         {
             _indexPriceService = indexPriceService;
@@ -48,6 +51,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _tokenService = tokenService;
             _marketMakerStateService = marketMakerStateService;
             _settlementService = settlementService;
+            _quoteService = quoteService;
             _log = logFactory.CreateLog(this);
         }
 
@@ -67,8 +71,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 
                 return;
             }
-            
-            if(indexSettings == null)
+
+            foreach (var assetWeight in index.Weights)
+            {
+                Quote quote = new Quote($"{assetWeight.AssetId}USD", index.Timestamp, assetWeight.Price,
+                    assetWeight.Price, ExchangeNames.Virtual);
+
+                await _quoteService.UpdateAsync(quote);
+            }
+
+            if (indexSettings == null)
                 return;
             
             await _semaphore.WaitAsync();

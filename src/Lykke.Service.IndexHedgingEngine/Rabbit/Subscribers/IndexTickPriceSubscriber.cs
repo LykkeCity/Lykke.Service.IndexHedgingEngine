@@ -66,7 +66,7 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                     message.AssetsInfo
                         .Select(o => new AssetWeight(o.AssetId, o.Weight, o.Price, o.IsDisabled))
                         .ToArray());
-
+                
                 await _indexHandler.HandleIndexAsync(index);
 
                 _log.InfoWithDetails("Index price handled", message);
