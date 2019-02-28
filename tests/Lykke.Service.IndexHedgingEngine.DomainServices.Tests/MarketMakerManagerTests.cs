@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Logs;
 using Lykke.Service.IndexHedgingEngine.Domain;
@@ -37,7 +37,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
 
         private readonly Mock<ISettlementService> _settlementServiceMock =
             new Mock<ISettlementService>();
-        
+
+        private readonly Mock<IQuoteService> _quoteServiceMock =
+            new Mock<IQuoteService>();
+
         private MarketMakerManager _marketMakerManager;
 
         private List<IndexSettings> _indexSettings = new List<IndexSettings>();
@@ -69,6 +72,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
                 _tokenServiceMock.Object,
                 _marketMakerStateServiceMock.Object,
                 _settlementServiceMock.Object,
+                _quoteServiceMock.Object,
                 EmptyLogFactory.Instance);
         }
 
