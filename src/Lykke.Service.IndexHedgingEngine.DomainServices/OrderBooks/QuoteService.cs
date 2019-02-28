@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,18 +7,20 @@ using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
+using Lykke.Service.IndexHedgingEngine.Domain.Handlers;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
 {
     [UsedImplicitly]
-    public class QuoteService : IQuoteService
+    public class QuoteService : IQuoteService, IIndexHandler
     {
         private readonly IQuoteThresholdSettingsService _quoteThresholdSettingsService;
         private readonly IInstrumentService _instrumentService;
         private readonly ILog _log;
         private readonly InMemoryCache<Quote> _cache;
+        private readonly InMemoryCache<Quote> _indicesPricesCache;
         private readonly HashSet<string> _exchanges = new HashSet<string>();
 
         public QuoteService(
@@ -29,6 +31,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
             _quoteThresholdSettingsService = quoteThresholdSettingsService;
             _instrumentService = instrumentService;
             _cache = new InMemoryCache<Quote>(GetKey, true);
+            _indicesPricesCache = new InMemoryCache<Quote>(GetKey, true);
             _log = logFactory.CreateLog(this);
         }
 
@@ -44,18 +47,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
         {
             if (source == ExchangeNames.Virtual)
             {
-                List<Quote> quotes = _cache.GetAll()
+                List<Quote> quotes = _indicesPricesCache.GetAll()
                     .Where(o => o.AssetPairId == assetPairId)
-                    .OrderBy(o => o.Mid)
                     .ToList();
 
-                if (quotes.Count == 0)
+                if (!quotes.Any())
                     return null;
-
-                if (quotes.Count >= 7)
-                    quotes = quotes.GetRange(2, quotes.Count - 4);
-                else if (quotes.Count >= 3)
-                    quotes = quotes.GetRange(1, quotes.Count - 2);
 
                 decimal avgMid = quotes.Select(o => o.Mid).Average();
 
@@ -103,6 +100,19 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
                 _exchanges.Add(quote.Source);
                 _cache.Set(quote);
             }
+        }
+
+        public Task HandleIndexAsync(Index index)
+        {
+            foreach (var assetWeight in index.Weights)
+            {
+                Quote quote = new Quote($"{assetWeight.AssetId}USD", index.Timestamp, assetWeight.Price,
+                    assetWeight.Price, index.Name);
+
+                _indicesPricesCache.Set(quote);
+            }
+
+            return Task.CompletedTask;
         }
 
         private static string GetKey(Quote quote)
