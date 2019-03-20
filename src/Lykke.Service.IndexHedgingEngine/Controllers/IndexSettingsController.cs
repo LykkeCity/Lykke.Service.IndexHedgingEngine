@@ -18,10 +18,14 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
     public class IndexSettingsController : Controller, IIndexSettingsApi
     {
         private readonly IIndexSettingsService _indexSettingsService;
+        private readonly IIndexPriceService _indexPriceService;
 
-        public IndexSettingsController(IIndexSettingsService indexSettingsService)
+        public IndexSettingsController(
+            IIndexSettingsService indexSettingsService,
+            IIndexPriceService indexPriceService)
         {
             _indexSettingsService = indexSettingsService;
+            _indexPriceService = indexPriceService;
         }
 
         /// <inheritdoc/>
@@ -110,6 +114,8 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             try
             {
                 await _indexSettingsService.DeleteAsync(indexName);
+
+                await _indexPriceService.DeleteAsync(indexName);
             }
             catch (EntityNotFoundException)
             {

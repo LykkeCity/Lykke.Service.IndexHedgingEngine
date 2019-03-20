@@ -25,6 +25,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
         public IndexSettingsService(
             IIndexSettingsRepository indexSettingsRepository,
             IInstrumentService instrumentService,
+            IIndexPriceService indexPriceService,
             ILogFactory logFactory)
         {
             _indexSettingsRepository = indexSettingsRepository;
@@ -108,7 +109,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
             // TODO: Use internal asset id
             AssetSettings assetSettings = (await _instrumentService.GetAssetsAsync())
                 .Single(o => o.Exchange == ExchangeNames.Lykke && o.AssetId == indexSettings.AssetId);
-            
+
             if (assetSettings == null)
                 throw new InvalidOperationException("Asset settings not found");
 

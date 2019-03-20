@@ -55,12 +55,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
         public async Task UpdateAsync(Index index)
         {
-            if(!index.ValidateValue())
+            if (!index.ValidateValue())
                 throw new InvalidOperationException("Invalid index value");
-            
-            if(!index.ValidateWeights())
+
+            if (!index.ValidateWeights())
                 throw new InvalidOperationException("Invalid index weights");
-            
+
             IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(index.Name);
 
             if (indexSettings == null)
@@ -81,7 +81,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 IndexSettlementPrice indexSettlementPrice = IndexSettlementPriceCalculator.Calculate(
                     index.Value, indexPrice.Value, indexSettings.Alpha, indexPrice.K, indexPrice.Price,
                     index.Timestamp, indexPrice.Timestamp, indexSettings.TrackingFee, indexSettings.PerformanceFee);
-                
+
                 indexPrice.Update(index.Value, index.Timestamp, indexSettlementPrice.Price, indexSettlementPrice.K,
                     indexSettlementPrice.R, indexSettlementPrice.Delta, index.Weights);
 
@@ -93,8 +93,15 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     indexSettings
                 });
             }
-            
+
             _cache.Set(indexPrice);
+        }
+
+        public async Task DeleteAsync(string indexName)
+        {
+            await _indexPriceRepository.DeleteAsync(indexName);
+
+            _cache.Remove(GetKey(indexName));
         }
 
         private static string GetKey(IndexPrice indexPrice)
