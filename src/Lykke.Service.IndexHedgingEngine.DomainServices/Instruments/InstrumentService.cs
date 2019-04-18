@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Common.Log;
-using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Exceptions;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Instruments

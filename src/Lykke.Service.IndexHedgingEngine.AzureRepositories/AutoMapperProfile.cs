@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.ExternalOrders;
@@ -13,6 +13,7 @@ using Lykke.Service.IndexHedgingEngine.AzureRepositories.Settlements;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Simulation;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 using Lykke.Service.IndexHedgingEngine.Domain.Simulation;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
@@ -110,6 +111,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp));
             CreateMap<VirtualTradeEntity, VirtualTrade>(MemberList.Destination)
                 .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Date));
+
+            CreateMap<CrossAssetPairSettings, CrossAssetPairSettingsEntity>(MemberList.Source);
+            CreateMap<CrossAssetPairSettingsEntity, CrossAssetPairSettings>(MemberList.Destination);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
 {

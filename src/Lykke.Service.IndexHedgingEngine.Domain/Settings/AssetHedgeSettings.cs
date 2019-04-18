@@ -1,6 +1,6 @@
-using Lykke.Service.IndexHedgingEngine.Domain.Constants;
+﻿using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 
-namespace Lykke.Service.IndexHedgingEngine.Domain
+namespace Lykke.Service.IndexHedgingEngine.Domain.Settings
 {
     /// <summary>
     /// Represents an asset hedge settings.

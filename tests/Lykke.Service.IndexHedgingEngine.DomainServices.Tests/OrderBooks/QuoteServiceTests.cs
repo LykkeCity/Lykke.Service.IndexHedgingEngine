@@ -5,6 +5,7 @@ using Lykke.Logs;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 using Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

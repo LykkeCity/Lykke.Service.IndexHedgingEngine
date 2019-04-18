@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
@@ -10,6 +10,7 @@ using Lykke.Service.IndexHedgingEngine.Domain.Exceptions;
 using Lykke.Service.IndexHedgingEngine.Domain.Handlers;
 using Lykke.Service.IndexHedgingEngine.Domain.Infrastructure;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters

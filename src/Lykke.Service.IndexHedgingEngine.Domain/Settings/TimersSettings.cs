@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace Lykke.Service.IndexHedgingEngine.Domain
+namespace Lykke.Service.IndexHedgingEngine.Domain.Settings
 {
     /// <summary>
     /// Represents settings of service timers. 

@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Client.Models;
 using Lykke.Service.IndexHedgingEngine.Client.Models.AssetHedgeSettings;
@@ -19,6 +19,7 @@ using Lykke.Service.IndexHedgingEngine.Client.Models.Settlements;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Tokens;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Trades;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 
 namespace Lykke.Service.IndexHedgingEngine
 {

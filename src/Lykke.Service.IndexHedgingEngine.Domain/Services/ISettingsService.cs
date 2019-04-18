@@ -1,5 +1,5 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {

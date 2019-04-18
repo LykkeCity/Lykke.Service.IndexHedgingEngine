@@ -12,6 +12,7 @@ using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Infrastructure;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 using TradeType = Lykke.Common.ExchangeAdapter.Contracts.TradeType;
 

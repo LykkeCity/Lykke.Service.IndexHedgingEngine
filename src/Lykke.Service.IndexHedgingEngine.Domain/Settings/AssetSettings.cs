@@ -1,4 +1,4 @@
-namespace Lykke.Service.IndexHedgingEngine.Domain
+﻿namespace Lykke.Service.IndexHedgingEngine.Domain.Settings
 {
     /// <summary>
     /// Represents asset setting for exchange.

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -8,6 +8,7 @@ using Lykke.Service.IndexHedgingEngine.Client.Api;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Settings;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lykke.Service.IndexHedgingEngine.Controllers

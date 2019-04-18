@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks

@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Timers
 {

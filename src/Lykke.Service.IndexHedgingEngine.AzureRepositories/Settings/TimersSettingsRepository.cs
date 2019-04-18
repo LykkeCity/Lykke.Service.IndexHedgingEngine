@@ -1,8 +1,8 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AutoMapper;
 using AzureStorage;
-using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
+using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
 {
