@@ -23,40 +23,40 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             return Mapper.Map<CrossAssetPairSettings[]>(entities);
         }
 
-        public async Task InsertAsync(CrossAssetPairSettings crossAssetPairSettings)
+        public async Task InsertAsync(CrossAssetPairSettings entity)
         {
-            var entity = new CrossAssetPairSettingsEntity(
-                GetPartitionKey(crossAssetPairSettings.AssetPairId),
-                GetRowKey(crossAssetPairSettings.CrossAssetPairId));
+            var newEntity = new CrossAssetPairSettingsEntity(
+                GetPartitionKey(entity.IndexAssetPairId),
+                GetRowKey(entity.Exchange, entity.AssetPairId));
 
-            Mapper.Map(crossAssetPairSettings, entity);
+            Mapper.Map(entity, newEntity);
 
-            await _storage.InsertAsync(entity);
+            await _storage.InsertAsync(newEntity);
         }
 
-        public Task UpdateAsync(CrossAssetPairSettings crossAssetPairSettings)
+        public Task UpdateAsync(CrossAssetPairSettings entity)
         {
             return _storage.MergeAsync(
-                GetPartitionKey(crossAssetPairSettings.AssetPairId),
-                GetRowKey(crossAssetPairSettings.CrossAssetPairId),
-                entity =>
+                GetPartitionKey(entity.IndexAssetPairId),
+                GetRowKey(entity.Exchange, entity.AssetPairId),
+                x =>
                 {
-                    Mapper.Map(crossAssetPairSettings, entity);
-                    return entity;
+                    Mapper.Map(entity, x);
+                    return x;
                 });
         }
 
-        public Task DeleteAsync(string assetPairId, string crossAssetPairId)
+        public Task DeleteAsync(string indexAssetPairId, string exchange, string assetPairId)
         {
             return _storage.DeleteAsync(
-                GetPartitionKey(assetPairId),
-                GetRowKey(crossAssetPairId));
+                GetPartitionKey(indexAssetPairId),
+                GetRowKey(exchange, assetPairId));
         }
 
-        private static string GetPartitionKey(string assetPairId)
-            => assetPairId;
+        private static string GetPartitionKey(string indexAssetPairId)
+            => indexAssetPairId;
 
-        private static string GetRowKey(string crossAssetPairId)
-            => crossAssetPairId;
+        private static string GetRowKey(string exchange, string assetPairId)
+            => $"{exchange}_{assetPairId}";
     }
 }

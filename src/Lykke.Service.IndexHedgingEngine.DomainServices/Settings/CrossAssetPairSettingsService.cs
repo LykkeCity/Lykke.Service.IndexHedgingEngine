@@ -49,80 +49,83 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             return crossAssetPairsSettings;
         }
         
-        public async Task<CrossAssetPairSettings> GetAsync(string assetPairId, string crossAssetPairId)
+        public async Task<CrossAssetPairSettings> GetAsync(string indexAssetPairId, string exchange, string assetPairId)
         {
             IReadOnlyCollection<CrossAssetPairSettings> assetPairsSettings = await GetAllAsync();
 
-            return assetPairsSettings.SingleOrDefault(o => o.AssetPairId == assetPairId && o.CrossAssetPairId == crossAssetPairId);
+            return assetPairsSettings.SingleOrDefault(o =>
+                o.IndexAssetPairId == indexAssetPairId &&
+                o.Exchange == exchange &&
+                o.AssetPairId == assetPairId);
         }
 
-        public async Task AddAsync(CrossAssetPairSettings crossAssetPairSettings, string userId)
+        public async Task AddAsync(CrossAssetPairSettings entity, string userId)
         {
             CrossAssetPairSettings existed =
-                await GetAsync(crossAssetPairSettings.AssetPairId, crossAssetPairSettings.CrossAssetPairId);
+                await GetAsync(entity.IndexAssetPairId, entity.Exchange, entity.AssetPairId);
 
             if (existed != null)
                 throw new EntityAlreadyExistsException();
 
-            await ValidateAsync(crossAssetPairSettings);
+            await ValidateAsync(entity);
 
-            await _crossAssetPairSettingsRepository.InsertAsync(crossAssetPairSettings);
+            await _crossAssetPairSettingsRepository.InsertAsync(entity);
 
-            _crossAssetPairsCache.Set(crossAssetPairSettings);
+            _crossAssetPairsCache.Set(entity);
 
-            _log.InfoWithDetails("Cross asset pair settings added", new { assetPairSettings = crossAssetPairSettings, userId });
+            _log.InfoWithDetails("Cross asset pair settings added", new { assetPairSettings = entity, userId });
         }
 
-        public async Task UpdateAsync(CrossAssetPairSettings crossAssetPairSettings, string userId)
+        public async Task UpdateAsync(CrossAssetPairSettings entity, string userId)
         {
             CrossAssetPairSettings existed =
-                await GetAsync(crossAssetPairSettings.AssetPairId, crossAssetPairSettings.CrossAssetPairId);
+                await GetAsync(entity.IndexAssetPairId, entity.Exchange, entity.AssetPairId);
 
             if (existed == null)
                 throw new EntityNotFoundException();
 
-            await ValidateAsync(crossAssetPairSettings);
+            await ValidateAsync(entity);
 
-            await _crossAssetPairSettingsRepository.UpdateAsync(crossAssetPairSettings);
+            await _crossAssetPairSettingsRepository.UpdateAsync(entity);
 
-            _crossAssetPairsCache.Set(crossAssetPairSettings);
+            _crossAssetPairsCache.Set(entity);
 
-            _log.InfoWithDetails("Cross asset pair settings updated", new { assetPairSettings = crossAssetPairSettings, userId });
+            _log.InfoWithDetails("Cross asset pair settings updated", new { assetPairSettings = entity, userId });
         }
 
-        public async Task DeleteAsync(string assetPairId, string crossAssetPairId, string userId)
+        public async Task DeleteAsync(string indexAssetPairId, string exchange, string assetPairId, string userId)
         {
-            CrossAssetPairSettings existed = await GetAsync(assetPairId, crossAssetPairId);
+            CrossAssetPairSettings existed = await GetAsync(indexAssetPairId, exchange, assetPairId);
 
             if (existed == null)
                 throw new EntityNotFoundException();
 
-            await _crossAssetPairSettingsRepository.DeleteAsync(assetPairId, crossAssetPairId);
+            await _crossAssetPairSettingsRepository.DeleteAsync(indexAssetPairId, exchange, assetPairId);
 
-            _crossAssetPairsCache.Remove(GetKey(assetPairId, crossAssetPairId));
+            _crossAssetPairsCache.Remove(GetKey(indexAssetPairId, exchange, assetPairId));
 
             _log.InfoWithDetails("Cross asset settings deleted", new { existed, userId });
         }
 
-        private async Task ValidateAsync(CrossAssetPairSettings crossAssetPairSettings)
+        private async Task ValidateAsync(CrossAssetPairSettings entity)
         {
             var indexAssetPair = (await _indexSettingsService.GetAllAsync())
-                .SingleOrDefault(x => x.AssetPairId == crossAssetPairSettings.AssetPairId);
+                .SingleOrDefault(x => x.AssetPairId == entity.IndexAssetPairId);
 
             if (indexAssetPair == null)
-                throw new InvalidOperationException("Asset pair not found");
+                throw new InvalidOperationException("Index asset pair not found");
 
             var crossAssetPair = (await _instrumentService.GetAssetPairsAsync())
-                .SingleOrDefault(x => x.AssetPairId == crossAssetPairSettings.CrossAssetPairId);
+                .SingleOrDefault(x => x.Exchange == entity.Exchange && x.AssetPairId == entity.AssetPairId);
 
             if (crossAssetPair == null)
-                throw new InvalidOperationException("Cross asset pair not found");
+                throw new InvalidOperationException("Asset pair not found");
         }
 
-        private static string GetKey(CrossAssetPairSettings crossAssetPairSettings)
-            => GetKey(crossAssetPairSettings.AssetPairId, crossAssetPairSettings.CrossAssetPairId);
+        private static string GetKey(CrossAssetPairSettings entity)
+            => GetKey(entity.IndexAssetPairId, entity.Exchange, entity.AssetPairId);
 
-        private static string GetKey(string assetPairId, string crossAssetPairId)
-            => $"{assetPairId}_{crossAssetPairId}";
+        private static string GetKey(string indexAssetPairId, string exchange, string assetPairId)
+            => $"{indexAssetPairId}_{exchange}_{assetPairId}";
     }
 }

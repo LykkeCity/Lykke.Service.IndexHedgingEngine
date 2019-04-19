@@ -18,10 +18,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             PartitionKey = partitionKey;
             RowKey = rowKey;
         }
+        
+        public string IndexAssetPairId { get; set; }
+
+        public string Exchange { get; set; }
 
         public string AssetPairId { get; set; }
-
-        public string CrossAssetPairId { get; set; }
 
         private bool _isInverted;
         public bool IsInverted

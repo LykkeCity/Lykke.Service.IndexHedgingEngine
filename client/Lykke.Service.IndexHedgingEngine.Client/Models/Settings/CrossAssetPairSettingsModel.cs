@@ -9,14 +9,19 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settings
     public class CrossAssetPairSettingsModel
     {
         /// <summary>
-        /// The identifier of the the original asset pair.
+        /// The identifier of the original asset pair.
         /// </summary>
-        public string AssetPairId { get; set; }
+        public string IndexAssetPairId { get; set; }
 
         /// <summary>
-        /// The identifier of the the cross asset pair.
+        /// The name of the cross asset pair exchange.
         /// </summary>
-        public string CrossAssetPairId { get; set; }
+        public string Exchange { get; set; }
+
+        /// <summary>
+        /// The identifier of the cross asset pair.
+        /// </summary>
+        public string AssetPairId { get; set; }
 
         /// <summary>
         /// If cross asset pair must be inverted

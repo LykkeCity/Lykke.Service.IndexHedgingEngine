@@ -8,10 +8,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Repositories
     {
         Task<IReadOnlyList<CrossAssetPairSettings>> GetAllAsync();
 
-        Task InsertAsync(CrossAssetPairSettings crossAssetPairSettings);
+        Task InsertAsync(CrossAssetPairSettings entity);
 
-        Task UpdateAsync(CrossAssetPairSettings crossAssetPairSettings);
+        Task UpdateAsync(CrossAssetPairSettings entity);
 
-        Task DeleteAsync(string assetPairId, string crossAssetPairId);
+        Task DeleteAsync(string indexAssetPairId, string exchange, string assetPairId);
     }
 }

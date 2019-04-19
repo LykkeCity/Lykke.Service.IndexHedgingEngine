@@ -38,10 +38,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Api
         /// <summary>
         /// Deletes cross asset pair settings.
         /// </summary>
-        /// <param name="assetPairId">The identifier of the original index asset pair.</param>
-        /// <param name="crossAssetPairId">The identifier of the cross asset pair.</param>
+        /// <param name="indexAssetPairId">The identifier of the index index asset pair.</param>
+        /// <param name="exchange">The name of the cross asset pair exchange.</param>        
+        /// <param name="assetPairId">The identifier of the cross asset pair.</param>
         /// <param name="userId">The identifier of the user who deleted cross asset pair settings.</param>
         [Delete("/api/CrossAssetPairs")]
-        Task DeleteAsync(string assetPairId, string crossAssetPairId, string userId);
+        Task DeleteAsync(string indexAssetPairId, string exchange, string assetPairId, string userId);
     }
 }

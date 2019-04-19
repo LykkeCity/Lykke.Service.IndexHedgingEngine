@@ -92,11 +92,11 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         [HttpDelete]
         [ProducesResponseType((int) HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.NotFound)]
-        public async Task DeleteAsync(string assetPairId, string crossAssetPairId, string userId)
+        public async Task DeleteAsync(string indexAssetPairId, string exchange, string assetPairId, string userId)
         {
             try
             {
-                await _crossAssetPairSettingsService.DeleteAsync(assetPairId, crossAssetPairId, userId);
+                await _crossAssetPairSettingsService.DeleteAsync(indexAssetPairId, exchange, assetPairId, userId);
             }
             catch (EntityNotFoundException)
             {
