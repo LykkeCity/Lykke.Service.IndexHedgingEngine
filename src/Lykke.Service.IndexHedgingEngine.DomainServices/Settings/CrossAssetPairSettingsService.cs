@@ -61,7 +61,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
             _crossAssetPairsCache.Set(crossAssetPairSettings);
 
-            _log.InfoWithDetails("Cross asset pair settings added", new {assetPairSettings = crossAssetPairSettings, userId});
+            _log.InfoWithDetails("Cross asset pair settings added", new { assetPairSettings = crossAssetPairSettings, userId });
         }
 
         public async Task UpdateAsync(CrossAssetPairSettings crossAssetPairSettings, string userId)
@@ -76,7 +76,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
             _crossAssetPairsCache.Set(crossAssetPairSettings);
 
-            _log.InfoWithDetails("Cross asset pair settings updated", new {assetPairSettings = crossAssetPairSettings, userId});
+            _log.InfoWithDetails("Cross asset pair settings updated", new { assetPairSettings = crossAssetPairSettings, userId });
         }
 
         public async Task DeleteAsync(string assetPairId, string crossAssetPairId, string userId)

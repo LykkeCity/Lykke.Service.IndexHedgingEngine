@@ -9,10 +9,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
     [ValueTypeMergingStrategy(ValueTypeMergingStrategy.UpdateIfDirty)]
     public class CrossAssetPairSettingsEntity : AzureTableEntity
     {
-        private int _priceAccuracy;
-        private int _volumeAccuracy;
-        private decimal _minVolume;
-
         public CrossAssetPairSettingsEntity()
         {
         }
@@ -26,5 +22,19 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         public string AssetPairId { get; set; }
 
         public string CrossAssetPairId { get; set; }
+
+        private bool _isInverted;
+        public bool IsInverted
+        {
+            get => _isInverted;
+            set
+            {
+                if (_isInverted != value)
+                {
+                    _isInverted = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settings
     /// Represents cross asset pair setting.
     /// </summary>
     [PublicAPI]
-    public class CrossAssetPairSettings
+    public class CrossAssetPairSettingsModel
     {
         /// <summary>
         /// The identifier of the the original asset pair.

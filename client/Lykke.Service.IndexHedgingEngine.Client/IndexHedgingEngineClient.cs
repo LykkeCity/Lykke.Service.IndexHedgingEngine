@@ -21,6 +21,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client
             Funding = httpClientGenerator.Generate<IFundingApi>();
             HedgeLimitOrders = httpClientGenerator.Generate<IHedgeLimitOrdersApi>();
             IndexSettings = httpClientGenerator.Generate<IIndexSettingsApi>();
+            CrossAssetPairs = httpClientGenerator.Generate<ICrossAssetPairsApi>();
             IndexPrices = httpClientGenerator.Generate<IIndexPricesApi>();
             OrderBooks = httpClientGenerator.Generate<IOrderBooksApi>();
             Positions = httpClientGenerator.Generate<IPositionsApi>();
@@ -57,6 +58,9 @@ namespace Lykke.Service.IndexHedgingEngine.Client
 
         /// <inheritdoc/>
         public IIndexSettingsApi IndexSettings { get; }
+
+        /// <inheritdoc/>
+        public ICrossAssetPairsApi CrossAssetPairs { get; }
 
         /// <inheritdoc/>
         public IMarketMakerApi MarketMaker { get; }
