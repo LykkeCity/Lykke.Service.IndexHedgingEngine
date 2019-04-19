@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
@@ -14,15 +15,21 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
     public class CrossAssetPairSettingsService : ICrossAssetPairSettingsService
     {
         private readonly ICrossAssetPairSettingsRepository _crossAssetPairSettingsRepository;
+        private readonly IIndexSettingsService _indexSettingsService;
+        private readonly IInstrumentService _instrumentService;
         private readonly ILog _log;
         
         private readonly InMemoryCache<CrossAssetPairSettings> _crossAssetPairsCache;
 
         public CrossAssetPairSettingsService(
             ICrossAssetPairSettingsRepository crossAssetPairSettingsRepository,
+            IIndexSettingsService indexSettingsService,
+            IInstrumentService instrumentService,
             ILogFactory logFactory)
         {
             _crossAssetPairSettingsRepository = crossAssetPairSettingsRepository;
+            _indexSettingsService = indexSettingsService;
+            _instrumentService = instrumentService;
             _log = logFactory.CreateLog(this);
             
             _crossAssetPairsCache = new InMemoryCache<CrossAssetPairSettings>(GetKey, false);
@@ -57,6 +64,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             if (existed != null)
                 throw new EntityAlreadyExistsException();
 
+            await ValidateAsync(crossAssetPairSettings);
+
             await _crossAssetPairSettingsRepository.InsertAsync(crossAssetPairSettings);
 
             _crossAssetPairsCache.Set(crossAssetPairSettings);
@@ -71,6 +80,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
             if (existed == null)
                 throw new EntityNotFoundException();
+
+            await ValidateAsync(crossAssetPairSettings);
 
             await _crossAssetPairSettingsRepository.UpdateAsync(crossAssetPairSettings);
 
@@ -91,6 +102,21 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             _crossAssetPairsCache.Remove(GetKey(assetPairId, crossAssetPairId));
 
             _log.InfoWithDetails("Cross asset settings deleted", new { existed, userId });
+        }
+
+        private async Task ValidateAsync(CrossAssetPairSettings crossAssetPairSettings)
+        {
+            var indexAssetPair = (await _indexSettingsService.GetAllAsync())
+                .SingleOrDefault(x => x.AssetPairId == crossAssetPairSettings.AssetPairId);
+
+            if (indexAssetPair == null)
+                throw new InvalidOperationException("Asset pair not found");
+
+            var crossAssetPair = (await _instrumentService.GetAssetPairsAsync())
+                .SingleOrDefault(x => x.AssetPairId == crossAssetPairSettings.CrossAssetPairId);
+
+            if (crossAssetPair == null)
+                throw new InvalidOperationException("Cross asset pair not found");
         }
 
         private static string GetKey(CrossAssetPairSettings crossAssetPairSettings)

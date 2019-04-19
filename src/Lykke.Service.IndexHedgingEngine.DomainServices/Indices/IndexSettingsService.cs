@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
-using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Exceptions;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
@@ -108,7 +107,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Indices
         {
             // TODO: Use internal asset id
             AssetSettings assetSettings = (await _instrumentService.GetAssetsAsync())
-                .Single(o => o.Exchange == ExchangeNames.Lykke && o.AssetId == indexSettings.AssetId);
+                .SingleOrDefault(o => o.Exchange == ExchangeNames.Lykke && o.AssetId == indexSettings.AssetId);
             
             if (assetSettings == null)
                 throw new InvalidOperationException("Asset settings not found");
