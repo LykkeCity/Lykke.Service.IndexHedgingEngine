@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AzureStorage;
+using Lykke.AzureStorage.Tables;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
 using Lykke.Service.IndexHedgingEngine.Domain.Settings;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
 {
@@ -27,7 +31,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         {
             var newEntity = new CrossAssetPairSettingsEntity(
                 GetPartitionKey(entity.IndexAssetPairId),
-                GetRowKey(entity.Exchange, entity.AssetPairId));
+                GetRowKey(entity.Id));
 
             Mapper.Map(entity, newEntity);
 
@@ -38,7 +42,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         {
             return _storage.MergeAsync(
                 GetPartitionKey(entity.IndexAssetPairId),
-                GetRowKey(entity.Exchange, entity.AssetPairId),
+                GetRowKey(entity.Id),
                 x =>
                 {
                     Mapper.Map(entity, x);
@@ -46,17 +50,21 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
                 });
         }
 
-        public Task DeleteAsync(string indexAssetPairId, string exchange, string assetPairId)
+        public async Task DeleteAsync(Guid id)
         {
-            return _storage.DeleteAsync(
-                GetPartitionKey(indexAssetPairId),
-                GetRowKey(exchange, assetPairId));
+            string filter = TableQuery.GenerateFilterCondition(nameof(AzureTableEntity.RowKey), QueryComparisons.Equal, GetRowKey(id));
+
+            var query = new TableQuery<CrossAssetPairSettingsEntity>().Where(filter);
+
+            var model = (await _storage.WhereAsync(query)).Single();
+
+            await _storage.DeleteAsync(model);
         }
 
         private static string GetPartitionKey(string indexAssetPairId)
             => indexAssetPairId;
 
-        private static string GetRowKey(string exchange, string assetPairId)
-            => $"{exchange}_{assetPairId}";
+        private static string GetRowKey(Guid? id)
+            => $"{id}";
     }
 }

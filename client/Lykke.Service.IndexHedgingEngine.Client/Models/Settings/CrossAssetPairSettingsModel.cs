@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 
 namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settings
 {
@@ -8,6 +9,11 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settings
     [PublicAPI]
     public class CrossAssetPairSettingsModel
     {
+        /// <summary>
+        /// Identifier.
+        /// </summary>
+        public Guid? Id { get; set; }
+
         /// <summary>
         /// The identifier of the original asset pair.
         /// </summary>

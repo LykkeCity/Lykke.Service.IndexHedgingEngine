@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
 using Lykke.AzureStorage.Tables.Entity.ValueTypesMerging;
@@ -18,7 +19,21 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             PartitionKey = partitionKey;
             RowKey = rowKey;
         }
-        
+
+        private Guid? _id;
+        public Guid? Id
+        {
+            get => _id;
+            set
+            {
+                if (_id != value)
+                {
+                    _id = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
         public string IndexAssetPairId { get; set; }
 
         public string Exchange { get; set; }

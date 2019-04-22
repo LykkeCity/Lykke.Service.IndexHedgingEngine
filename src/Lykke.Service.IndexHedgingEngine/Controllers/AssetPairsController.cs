@@ -7,7 +7,6 @@ using Lykke.Common.Api.Contract.Responses;
 using Lykke.Common.ApiLibrary.Exceptions;
 using Lykke.Service.IndexHedgingEngine.Client.Api;
 using Lykke.Service.IndexHedgingEngine.Client.Models.AssetPairs;
-using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Exceptions;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.Domain.Settings;

@@ -40,21 +40,27 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         /// <response code="400">An error occurred while adding cross asset pair settings.</response>
         /// <response code="409">The cross asset pair settings already exists.</response>
         [HttpPost]
-        [ProducesResponseType((int) HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.Conflict)]
-        public async Task AddAsync([FromBody] CrossAssetPairSettingsModel model, string userId)
+        public async Task<Guid> AddAsync([FromBody] CrossAssetPairSettingsModel model, string userId)
         {
             try
             {
                 var assetPairSettings = Mapper.Map<CrossAssetPairSettings>(model);
 
-                await _crossAssetPairSettingsService.AddAsync(assetPairSettings, userId);
+                var id = await _crossAssetPairSettingsService.AddAsync(assetPairSettings, userId);
+
+                return id;
             }
             catch (EntityAlreadyExistsException)
             {
                 throw new ValidationApiException(HttpStatusCode.Conflict, "The cross asset pair settings already exists");
             }
             catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
+            }
+            catch (ArgumentException exception)
             {
                 throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
             }
@@ -77,9 +83,13 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
             }
             catch (EntityNotFoundException)
             {
-                throw new ValidationApiException(HttpStatusCode.NotFound, "The asset pair settings does not exist");
+                throw new ValidationApiException(HttpStatusCode.NotFound, "The cross asset pair settings does not exist");
             }
             catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
+            }
+            catch (ArgumentException exception)
             {
                 throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
             }
@@ -92,17 +102,21 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         [HttpDelete]
         [ProducesResponseType((int) HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.NotFound)]
-        public async Task DeleteAsync(string indexAssetPairId, string exchange, string assetPairId, string userId)
+        public async Task DeleteAsync(Guid id, string userId)
         {
             try
             {
-                await _crossAssetPairSettingsService.DeleteAsync(indexAssetPairId, exchange, assetPairId, userId);
+                await _crossAssetPairSettingsService.DeleteAsync(id, userId);
             }
             catch (EntityNotFoundException)
             {
                 throw new ValidationApiException(HttpStatusCode.NotFound, "The cross asset pair settings does not exist");
             }
             catch (InvalidOperationException exception)
+            {
+                throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
+            }
+            catch (ArgumentException exception)
             {
                 throw new ValidationApiException(HttpStatusCode.BadRequest, exception.Message);
             }
