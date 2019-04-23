@@ -11,25 +11,25 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
 {
-    public class CrossAssetPairSettingsRepository : ICrossAssetPairSettingsRepository
+    public class CrossIndexSettingsRepository : ICrossIndexSettingsRepository
     {
-        private readonly INoSQLTableStorage<CrossAssetPairSettingsEntity> _storage;
+        private readonly INoSQLTableStorage<CrossIndexSettingsEntity> _storage;
 
-        public CrossAssetPairSettingsRepository(INoSQLTableStorage<CrossAssetPairSettingsEntity> storage)
+        public CrossIndexSettingsRepository(INoSQLTableStorage<CrossIndexSettingsEntity> storage)
         {
             _storage = storage;
         }
 
-        public async Task<IReadOnlyList<CrossAssetPairSettings>> GetAllAsync()
+        public async Task<IReadOnlyList<CrossIndexSettings>> GetAllAsync()
         {
-            IList<CrossAssetPairSettingsEntity> entities = await _storage.GetDataAsync();
+            IList<CrossIndexSettingsEntity> entities = await _storage.GetDataAsync();
 
-            return Mapper.Map<CrossAssetPairSettings[]>(entities);
+            return Mapper.Map<CrossIndexSettings[]>(entities);
         }
 
-        public async Task InsertAsync(CrossAssetPairSettings entity)
+        public async Task InsertAsync(CrossIndexSettings entity)
         {
-            var newEntity = new CrossAssetPairSettingsEntity(
+            var newEntity = new CrossIndexSettingsEntity(
                 GetPartitionKey(entity.IndexAssetPairId),
                 GetRowKey(entity.Id));
 
@@ -38,7 +38,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             await _storage.InsertAsync(newEntity);
         }
 
-        public Task UpdateAsync(CrossAssetPairSettings entity)
+        public Task UpdateAsync(CrossIndexSettings entity)
         {
             return _storage.MergeAsync(
                 GetPartitionKey(entity.IndexAssetPairId),
@@ -54,7 +54,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         {
             string filter = TableQuery.GenerateFilterCondition(nameof(AzureTableEntity.RowKey), QueryComparisons.Equal, GetRowKey(id));
 
-            var query = new TableQuery<CrossAssetPairSettingsEntity>().Where(filter);
+            var query = new TableQuery<CrossIndexSettingsEntity>().Where(filter);
 
             var model = (await _storage.WhereAsync(query)).Single();
 

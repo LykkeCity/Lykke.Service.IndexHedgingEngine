@@ -5,13 +5,13 @@ using Lykke.Service.IndexHedgingEngine.Domain.Settings;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Repositories
 {
-    public interface ICrossAssetPairSettingsRepository
+    public interface ICrossIndexSettingsRepository
     {
-        Task<IReadOnlyList<CrossAssetPairSettings>> GetAllAsync();
+        Task<IReadOnlyList<CrossIndexSettings>> GetAllAsync();
 
-        Task InsertAsync(CrossAssetPairSettings entity);
+        Task InsertAsync(CrossIndexSettings entity);
 
-        Task UpdateAsync(CrossAssetPairSettings entity);
+        Task UpdateAsync(CrossIndexSettings entity);
 
         Task DeleteAsync(Guid id);
     }

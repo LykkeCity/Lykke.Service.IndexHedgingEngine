@@ -14,6 +14,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task<AssetPairSettings> GetAssetPairAsync(string assetPair, string exchange);
 
+        Task<AssetPairSettings> GetAssetPairAsync(string baseAsset, string quoteAsset, string exchange);
+
         Task AddAssetAsync(AssetSettings assetSettings, string userId);
 
         Task AddAssetPairAsync(AssetPairSettings assetPairSettings, string userId);

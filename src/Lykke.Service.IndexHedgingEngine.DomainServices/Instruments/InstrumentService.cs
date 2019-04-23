@@ -83,6 +83,13 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Instruments
             return assetPairsSettings.SingleOrDefault(o => o.AssetPair == assetPair && o.Exchange == exchange);
         }
 
+        public async Task<AssetPairSettings> GetAssetPairAsync(string baseAsset, string quoteAsset, string exchange)
+        {
+            IReadOnlyCollection<AssetPairSettings> assetPairsSettings = await GetAssetPairsAsync();
+
+            return assetPairsSettings.SingleOrDefault(o => o.BaseAsset == baseAsset && o.QuoteAsset == quoteAsset && o.Exchange == exchange);
+        }
+
         public async Task AddAssetAsync(AssetSettings assetSettings, string userId)
         {
             AssetSettings existingAssetSettings = await GetAssetAsync(assetSettings.Asset, assetSettings.Exchange);

@@ -15,46 +15,46 @@ using Microsoft.AspNetCore.Mvc;
 namespace Lykke.Service.IndexHedgingEngine.Controllers
 {
     [Route("/api/[controller]")]
-    public class CrossAssetPairsController : Controller, ICrossAssetPairsApi
+    public class CrossIndexController : Controller, ICrossIndexApi
     {
-        private readonly ICrossAssetPairSettingsService _crossAssetPairSettingsService;
+        private readonly ICrossIndexSettingsService _crossIndexSettingsService;
 
-        public CrossAssetPairsController(ICrossAssetPairSettingsService crossAssetPairSettingsService)
+        public CrossIndexController(ICrossIndexSettingsService crossIndexSettingsService)
         {
-            _crossAssetPairSettingsService = crossAssetPairSettingsService;
+            _crossIndexSettingsService = crossIndexSettingsService;
         }
 
         /// <inheritdoc/>
-        /// <response code="200">A collection of cross asset pairs.</response>
+        /// <response code="200">A collection of cross indices.</response>
         [HttpGet]
-        [ProducesResponseType(typeof(IReadOnlyCollection<CrossAssetPairSettingsModel>), (int) HttpStatusCode.OK)]
-        public async Task<IReadOnlyCollection<CrossAssetPairSettingsModel>> GetAllAsync()
+        [ProducesResponseType(typeof(IReadOnlyCollection<CrossIndexSettingsModel>), (int) HttpStatusCode.OK)]
+        public async Task<IReadOnlyCollection<CrossIndexSettingsModel>> GetAllAsync()
         {
-            IReadOnlyCollection<CrossAssetPairSettings> crossAssetPairSettings = await _crossAssetPairSettingsService.GetAllAsync();
+            IReadOnlyCollection<CrossIndexSettings> crossAssetPairSettings = await _crossIndexSettingsService.GetAllAsync();
 
-            return Mapper.Map<CrossAssetPairSettingsModel[]>(crossAssetPairSettings);
+            return Mapper.Map<CrossIndexSettingsModel[]>(crossAssetPairSettings);
         }
 
         /// <inheritdoc/>
-        /// <response code="204">The cross asset pair settings successfully added.</response>
-        /// <response code="400">An error occurred while adding cross asset pair settings.</response>
-        /// <response code="409">The cross asset pair settings already exists.</response>
+        /// <response code="204">The cross index settings successfully added.</response>
+        /// <response code="400">An error occurred while adding cross index settings.</response>
+        /// <response code="409">The cross index settings already exists.</response>
         [HttpPost]
         [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.Conflict)]
-        public async Task<Guid> AddAsync([FromBody] CrossAssetPairSettingsModel model, string userId)
+        public async Task<Guid> AddAsync([FromBody] CrossIndexSettingsModel model, string userId)
         {
             try
             {
-                var assetPairSettings = Mapper.Map<CrossAssetPairSettings>(model);
+                var assetPairSettings = Mapper.Map<CrossIndexSettings>(model);
 
-                var id = await _crossAssetPairSettingsService.AddAsync(assetPairSettings, userId);
+                var id = await _crossIndexSettingsService.AddAsync(assetPairSettings, userId);
 
                 return id;
             }
             catch (EntityAlreadyExistsException)
             {
-                throw new ValidationApiException(HttpStatusCode.Conflict, "The cross asset pair settings already exists");
+                throw new ValidationApiException(HttpStatusCode.Conflict, "The cross index settings already exists");
             }
             catch (InvalidOperationException exception)
             {
@@ -67,23 +67,23 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         }
 
         /// <inheritdoc/>
-        /// <response code="204">The cross asset pair settings successfully updated.</response>
-        /// <response code="400">An error occurred while updating cross asset pair settings.</response>
-        /// <response code="404">The cross asset pair settings does not exist.</response>
+        /// <response code="204">The cross index settings successfully updated.</response>
+        /// <response code="400">An error occurred while updating cross index settings.</response>
+        /// <response code="404">The cross index settings does not exist.</response>
         [HttpPut]
         [ProducesResponseType((int) HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.NotFound)]
-        public async Task UpdateAsync([FromBody] CrossAssetPairSettingsModel model, string userId)
+        public async Task UpdateAsync([FromBody] CrossIndexSettingsModel model, string userId)
         {
             try
             {
-                var crossAssetPairSettings = Mapper.Map<CrossAssetPairSettings>(model);
+                var crossAssetPairSettings = Mapper.Map<CrossIndexSettings>(model);
 
-                await _crossAssetPairSettingsService.UpdateAsync(crossAssetPairSettings, userId);
+                await _crossIndexSettingsService.UpdateAsync(crossAssetPairSettings, userId);
             }
             catch (EntityNotFoundException)
             {
-                throw new ValidationApiException(HttpStatusCode.NotFound, "The cross asset pair settings does not exist");
+                throw new ValidationApiException(HttpStatusCode.NotFound, "The cross index settings does not exist");
             }
             catch (InvalidOperationException exception)
             {
@@ -96,9 +96,9 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         }
 
         /// <inheritdoc/>
-        /// <response code="204">The cross asset pair settings successfully deleted.</response>
-        /// <response code="400">An error occurred while deleting cross asset pair settings.</response>
-        /// <response code="404">The cross asset pair settings does not exist.</response>
+        /// <response code="204">The cross index settings successfully deleted.</response>
+        /// <response code="400">An error occurred while deleting cross index settings.</response>
+        /// <response code="404">The cross index settings does not exist.</response>
         [HttpDelete]
         [ProducesResponseType((int) HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.NotFound)]
@@ -106,11 +106,11 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         {
             try
             {
-                await _crossAssetPairSettingsService.DeleteAsync(id, userId);
+                await _crossIndexSettingsService.DeleteAsync(id, userId);
             }
             catch (EntityNotFoundException)
             {
-                throw new ValidationApiException(HttpStatusCode.NotFound, "The cross asset pair settings does not exist");
+                throw new ValidationApiException(HttpStatusCode.NotFound, "The cross index settings does not exist");
             }
             catch (InvalidOperationException exception)
             {

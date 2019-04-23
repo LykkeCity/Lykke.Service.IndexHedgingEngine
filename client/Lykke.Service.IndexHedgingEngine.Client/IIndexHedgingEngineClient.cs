@@ -52,7 +52,7 @@ namespace Lykke.Service.IndexHedgingEngine.Client
         /// <summary>
         /// Cross asset pair settings API.
         /// </summary>
-        ICrossAssetPairsApi CrossAssetPairs { get; }
+        ICrossIndexApi CrossIndex { get; }
 
         /// <summary>
         /// Market maker API.

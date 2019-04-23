@@ -167,8 +167,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<ITimersSettingsService>()
                 .SingleInstance();
 
-            builder.RegisterType<CrossAssetPairSettingsService>()
-                .As<ICrossAssetPairSettingsService>()
+            builder.RegisterType<CrossIndexSettingsService>()
+                .As<ICrossIndexSettingsService>()
                 .SingleInstance();
 
             builder.RegisterType<SettlementService>()

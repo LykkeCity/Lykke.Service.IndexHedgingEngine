@@ -112,8 +112,8 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
             CreateMap<VirtualTradeEntity, VirtualTrade>(MemberList.Destination)
                 .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Date));
 
-            CreateMap<CrossAssetPairSettings, CrossAssetPairSettingsEntity>(MemberList.Source);
-            CreateMap<CrossAssetPairSettingsEntity, CrossAssetPairSettings>(MemberList.Destination);
+            CreateMap<CrossIndexSettings, CrossIndexSettingsEntity>(MemberList.Source);
+            CreateMap<CrossIndexSettingsEntity, CrossIndexSettings>(MemberList.Destination);
         }
     }
 }

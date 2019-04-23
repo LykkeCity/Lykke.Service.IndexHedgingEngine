@@ -8,13 +8,13 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     [ValueTypeMergingStrategy(ValueTypeMergingStrategy.UpdateIfDirty)]
-    public class CrossAssetPairSettingsEntity : AzureTableEntity
+    public class CrossIndexSettingsEntity : AzureTableEntity
     {
-        public CrossAssetPairSettingsEntity()
+        public CrossIndexSettingsEntity()
         {
         }
 
-        public CrossAssetPairSettingsEntity(string partitionKey, string rowKey)
+        public CrossIndexSettingsEntity(string partitionKey, string rowKey)
         {
             PartitionKey = partitionKey;
             RowKey = rowKey;

@@ -1,11 +1,13 @@
 ﻿using System;
+using JetBrains.Annotations;
 
-namespace Lykke.Service.IndexHedgingEngine.Domain.Settings
+namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settings
 {
     /// <summary>
     /// Represents cross asset pair setting.
     /// </summary>
-    public class CrossAssetPairSettings
+    [PublicAPI]
+    public class CrossIndexSettingsModel
     {
         /// <summary>
         /// Identifier.
@@ -13,7 +15,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Settings
         public Guid? Id { get; set; }
 
         /// <summary>
-        /// The identifier of the index asset pair.
+        /// The identifier of the original asset pair.
         /// </summary>
         public string IndexAssetPairId { get; set; }
 
@@ -28,7 +30,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Settings
         public string AssetPairId { get; set; }
 
         /// <summary>
-        /// If cross asset pair must be inverted.
+        /// If cross asset pair must be inverted
         /// </summary>
         public bool IsInverted { get; set; }
     }

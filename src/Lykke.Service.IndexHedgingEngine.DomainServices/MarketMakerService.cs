@@ -27,6 +27,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ILimitOrderService _limitOrderService;
         private readonly IInstrumentService _instrumentService;
+        private readonly IQuoteService _quoteService;
+        private readonly ICrossIndexSettingsService _crossIndexSettingsService;
         private readonly TraceWriter _traceWriter;
         private readonly ILog _log;
 
@@ -38,6 +40,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             ILykkeExchangeService lykkeExchangeService,
             ILimitOrderService limitOrderService,
             IInstrumentService instrumentService,
+            IQuoteService quoteService,
+            ICrossIndexSettingsService crossIndexSettingsService,
             TraceWriter traceWriter,
             ILogFactory logFactory)
         {
@@ -48,6 +52,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _lykkeExchangeService = lykkeExchangeService;
             _limitOrderService = limitOrderService;
             _instrumentService = instrumentService;
+            _quoteService = quoteService;
+            _crossIndexSettingsService = crossIndexSettingsService;
             _traceWriter = traceWriter;
             _log = logFactory.CreateLog(this);
         }
@@ -64,35 +70,60 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (indexSettings == null)
                 throw new InvalidOperationException("Index settings not found");
 
-            AssetPairSettings assetPairSettings =
+            // original index limit orders
+            await UpdateLimitOrdersAsync(indexPrice.Price, indexSettings);
+
+            // cross index limit orders
+            await UpdateCrossLimitOrdersAsync(indexPrice.Price, indexSettings);
+        }
+
+        public async Task CancelLimitOrdersAsync(string indexName)
+        {
+            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
+
+            if (indexSettings == null)
+                throw new InvalidOperationException("Index settings not found");
+
+            // cancel original index limit orders
+            await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
+
+            // cancel cross index limit orders
+            await CancelCrossLimitOrdersAsync(indexSettings);
+
+            _log.InfoWithDetails("Limit orders canceled", new { IndexName = indexName, indexSettings.AssetPairId });
+        }
+
+        private async Task UpdateLimitOrdersAsync(decimal indexPrice, IndexSettings indexSettings)
+        {
+            AssetPairSettings indexAssetPairSettings =
                 await _instrumentService.GetAssetPairAsync(indexSettings.AssetPairId, Exchange);
 
-            if (assetPairSettings == null)
+            if (indexAssetPairSettings == null)
                 throw new InvalidOperationException("Asset pair settings not found");
 
-            AssetSettings baseAssetSettings =
-                await _instrumentService.GetAssetAsync(assetPairSettings.BaseAsset, ExchangeNames.Lykke);
+            AssetSettings indexBaseAssetSettings =
+                await _instrumentService.GetAssetAsync(indexAssetPairSettings.BaseAsset, ExchangeNames.Lykke);
 
-            if (baseAssetSettings == null)
+            if (indexBaseAssetSettings == null)
                 throw new InvalidOperationException("Base asset settings not found");
 
-            AssetSettings quoteAssetSettings =
-                await _instrumentService.GetAssetAsync(assetPairSettings.QuoteAsset, ExchangeNames.Lykke);
+            AssetSettings indexQuoteAssetSettings =
+                await _instrumentService.GetAssetAsync(indexAssetPairSettings.QuoteAsset, ExchangeNames.Lykke);
 
-            if (quoteAssetSettings == null)
+            if (indexQuoteAssetSettings == null)
                 throw new InvalidOperationException("Quote asset settings not found");
 
-            decimal sellPrice = (indexPrice.Price + indexSettings.SellMarkup)
-                .TruncateDecimalPlaces(assetPairSettings.PriceAccuracy, true);
+            decimal sellPrice = (indexPrice + indexSettings.SellMarkup)
+                .TruncateDecimalPlaces(indexAssetPairSettings.PriceAccuracy, true);
 
-            decimal buyPrice = indexPrice.Price.TruncateDecimalPlaces(assetPairSettings.PriceAccuracy);
+            decimal buyPrice = indexPrice.TruncateDecimalPlaces(indexAssetPairSettings.PriceAccuracy);
 
             IReadOnlyCollection<LimitOrder> limitOrders =
-                CreateLimitOrders(indexSettings, assetPairSettings, sellPrice, buyPrice);
+                CreateLimitOrders(indexSettings, indexAssetPairSettings, sellPrice, buyPrice);
 
-            ValidateBalance(limitOrders, baseAssetSettings, quoteAssetSettings);
+            ValidateBalance(limitOrders, indexBaseAssetSettings, indexQuoteAssetSettings);
 
-            ValidateMinVolume(limitOrders, assetPairSettings.MinVolume);
+            ValidateMinVolume(limitOrders, indexAssetPairSettings.MinVolume);
 
             LimitOrder[] allowedLimitOrders = limitOrders
                 .Where(o => o.Error == LimitOrderError.None)
@@ -107,16 +138,21 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _traceWriter.LimitOrders(indexSettings.AssetPairId, limitOrders);
         }
 
-        public async Task CancelLimitOrdersAsync(string indexName)
+        private async Task UpdateCrossLimitOrdersAsync(decimal indexPrice, IndexSettings indexSettings)
         {
-            IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
+            IReadOnlyList<CrossIndexSettings> crossIndices =
+                await _crossIndexSettingsService.FindByIndexAssetPairAsync(indexSettings.AssetPairId);
 
-            if (indexSettings == null)
-                throw new InvalidOperationException("Index settings not found");
+            foreach (CrossIndexSettings crossIndex in crossIndices)
+            {
+                IndexSettings newIndexSettings = await GetCrossIndexSettings(indexSettings, crossIndex);
 
-            await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
+                decimal crossRate = GetCrossRate(crossIndex);
 
-            _log.InfoWithDetails("Limit orders canceled", new {IndexName = indexName, indexSettings.AssetPairId});
+                decimal crossIndexPrice = indexPrice * crossRate;
+
+                await UpdateLimitOrdersAsync(crossIndexPrice, newIndexSettings);
+            }
         }
 
         private IReadOnlyCollection<LimitOrder> CreateLimitOrders(IndexSettings indexSettings,
@@ -218,6 +254,95 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             {
                 if (limitOrder.Volume < minVolume || limitOrder.Volume <= 0)
                     limitOrder.Error = LimitOrderError.TooSmallVolume;
+            }
+        }
+
+        private static IndexSettings GetCrossIndexSettings(IndexSettings indexSettings,
+            AssetPairSettings crossIndexAssetPairSettings, decimal crossRate)
+        {
+            IndexSettings result = new IndexSettings
+            {
+                Name = indexSettings.Name,
+                AssetId = indexSettings.AssetId,
+                AssetPairId = crossIndexAssetPairSettings.AssetPairId,
+                Alpha = indexSettings.Alpha,
+                TrackingFee = indexSettings.TrackingFee,
+                PerformanceFee = indexSettings.PerformanceFee,
+                SellMarkup = indexSettings.SellMarkup,
+                SellVolume = indexSettings.SellVolume * crossRate,
+                BuyVolume = indexSettings.BuyVolume * crossRate,
+                SellLimitOrdersCount = indexSettings.SellLimitOrdersCount,
+                BuyLimitOrdersCount = indexSettings.BuyLimitOrdersCount
+            };
+
+            return result;
+        }
+
+        private async Task<AssetPairSettings> GetCrossIndexAssetPairSettings(IndexSettings indexSettings, CrossIndexSettings crossIndexSettings)
+        {
+            AssetPairSettings indexAssetPairSettings =
+                await _instrumentService.GetAssetPairAsync(indexSettings.AssetPairId, Exchange);
+
+            AssetSettings indexBaseAssetSettings =
+                await _instrumentService.GetAssetAsync(indexAssetPairSettings.BaseAsset, ExchangeNames.Lykke);
+
+            AssetPairSettings crossAssetPairSettings =
+                await _instrumentService.GetAssetPairAsync(crossIndexSettings.AssetPairId, crossIndexSettings.Exchange);
+
+            AssetSettings crossAssetPairBaseAssetSettings =
+                await _instrumentService.GetAssetAsync(crossAssetPairSettings.BaseAsset, ExchangeNames.Lykke);
+
+            if (crossAssetPairBaseAssetSettings == null)
+                throw new InvalidOperationException("Cross base asset settings not found");
+
+            AssetSettings crossAssetPairQuoteAssetSettings =
+                await _instrumentService.GetAssetAsync(crossAssetPairSettings.QuoteAsset, ExchangeNames.Lykke);
+
+            if (crossAssetPairQuoteAssetSettings == null)
+                throw new InvalidOperationException("Cross quote asset settings not found");
+
+            AssetSettings crossIndexBaseAssetSettings = indexBaseAssetSettings;
+
+            AssetSettings crossIndexQuoteAssetSettings =
+                crossIndexSettings.IsInverted ? crossAssetPairBaseAssetSettings : crossAssetPairQuoteAssetSettings;
+
+            AssetPairSettings crossIndexAssetPairSettings = await _instrumentService.GetAssetPairAsync(
+                crossIndexBaseAssetSettings.AssetId, crossIndexQuoteAssetSettings.AssetId, ExchangeNames.Lykke);
+
+            return crossIndexAssetPairSettings;
+        }
+
+        private async Task<IndexSettings> GetCrossIndexSettings(IndexSettings indexSettings, CrossIndexSettings crossIndexSettings)
+        {
+            AssetPairSettings crossIndexAssetPairSettings = await GetCrossIndexAssetPairSettings(
+                indexSettings, crossIndexSettings);
+
+            var crossRate = GetCrossRate(crossIndexSettings);
+
+            IndexSettings result = GetCrossIndexSettings(indexSettings, crossIndexAssetPairSettings,
+                crossRate);
+
+            return result;
+        }
+
+        private decimal GetCrossRate(CrossIndexSettings crossIndexSettings)
+        {
+            Quote quote = _quoteService.GetByAssetPairId(crossIndexSettings.AssetPairId, crossIndexSettings.Exchange);
+
+            decimal crossRate = crossIndexSettings.IsInverted ? 1 / quote.Mid : quote.Mid;
+            return crossRate;
+        }
+
+        private async Task CancelCrossLimitOrdersAsync(IndexSettings indexSettings)
+        {
+            IReadOnlyList<CrossIndexSettings> crossIndices =
+                await _crossIndexSettingsService.FindByIndexAssetPairAsync(indexSettings.AssetPairId);
+
+            foreach (CrossIndexSettings crossIndex in crossIndices)
+            {
+                IndexSettings crossIndexSettings = await GetCrossIndexSettings(indexSettings, crossIndex);
+
+                await _lykkeExchangeService.CancelAsync(crossIndexSettings.AssetPairId);
             }
         }
     }

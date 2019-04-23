@@ -81,6 +81,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                 .As<IIndexSettingsRepository>()
                 .SingleInstance();
 
+            builder.Register(container => new CrossIndexSettingsRepository(
+                    AzureTableStorage<CrossIndexSettingsEntity>.Create(_connectionString,
+                        "CrossIndexSettings", container.Resolve<ILogFactory>())))
+                .As<ICrossIndexSettingsRepository>()
+                .SingleInstance();
+
             builder.Register(container => new AssetSettingsRepository(
                     AzureTableStorage<AssetSettingsEntity>.Create(_connectionString,
                         "AssetSettings", container.Resolve<ILogFactory>())))
@@ -91,12 +97,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                     AzureTableStorage<AssetPairSettingsEntity>.Create(_connectionString,
                         "AssetPairSettings", container.Resolve<ILogFactory>())))
                 .As<IAssetPairSettingsRepository>()
-                .SingleInstance();
-
-            builder.Register(container => new CrossAssetPairSettingsRepository(
-                    AzureTableStorage<CrossAssetPairSettingsEntity>.Create(_connectionString,
-                        "CrossAssetPairSettings", container.Resolve<ILogFactory>())))
-                .As<ICrossAssetPairSettingsRepository>()
                 .SingleInstance();
 
             builder.Register(container => new HedgeLimitOrderRepository(
