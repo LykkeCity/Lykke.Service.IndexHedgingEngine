@@ -73,7 +73,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             // original index limit orders
             await UpdateLimitOrdersAsync(indexPrice.Price, indexSettings);
 
-            // cross index limit orders
+            // cross indices limit orders
             await UpdateCrossLimitOrdersAsync(indexPrice.Price, indexSettings);
         }
 
@@ -87,7 +87,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             // cancel original index limit orders
             await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
 
-            // cancel cross index limit orders
+            // cancel cross indices limit orders
             await CancelCrossLimitOrdersAsync(indexSettings);
 
             _log.InfoWithDetails("Limit orders canceled", new { IndexName = indexName, indexSettings.AssetPairId });
