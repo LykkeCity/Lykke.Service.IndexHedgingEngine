@@ -145,7 +145,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             foreach (CrossIndexSettings crossIndex in crossIndices)
             {
-                IndexSettings newIndexSettings = await GetCrossIndexSettings(indexSettings, crossIndex);
+                IndexSettings newIndexSettings = await GetNewIndexSettingsForCrossIndex(indexSettings, crossIndex);
 
                 decimal crossRate = GetCrossRate(crossIndex);
 
@@ -257,7 +257,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        private static IndexSettings GetCrossIndexSettings(IndexSettings indexSettings,
+        private static IndexSettings GetNewIndexSettingsForCrossIndex(IndexSettings indexSettings,
             AssetPairSettings crossIndexAssetPairSettings, decimal crossRate)
         {
             IndexSettings result = new IndexSettings
@@ -312,14 +312,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             return crossIndexAssetPairSettings;
         }
 
-        private async Task<IndexSettings> GetCrossIndexSettings(IndexSettings indexSettings, CrossIndexSettings crossIndexSettings)
+        private async Task<IndexSettings> GetNewIndexSettingsForCrossIndex(IndexSettings indexSettings, CrossIndexSettings crossIndexSettings)
         {
             AssetPairSettings crossIndexAssetPairSettings = await GetCrossIndexAssetPairSettings(
                 indexSettings, crossIndexSettings);
 
             var crossRate = GetCrossRate(crossIndexSettings);
 
-            IndexSettings result = GetCrossIndexSettings(indexSettings, crossIndexAssetPairSettings,
+            IndexSettings result = GetNewIndexSettingsForCrossIndex(indexSettings, crossIndexAssetPairSettings,
                 crossRate);
 
             return result;
@@ -340,7 +340,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             foreach (CrossIndexSettings crossIndex in crossIndices)
             {
-                IndexSettings crossIndexSettings = await GetCrossIndexSettings(indexSettings, crossIndex);
+                IndexSettings crossIndexSettings = await GetNewIndexSettingsForCrossIndex(indexSettings, crossIndex);
 
                 await _lykkeExchangeService.CancelAsync(crossIndexSettings.AssetPairId);
             }
