@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AzureStorage;
-using Lykke.AzureStorage.Tables;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
 using Lykke.Service.IndexHedgingEngine.Domain.Settings;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
 {
@@ -30,7 +27,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         public async Task InsertAsync(CrossIndexSettings entity)
         {
             var newEntity = new CrossIndexSettingsEntity(
-                GetPartitionKey(entity.IndexAssetPairId),
+                GetPartitionKey(),
                 GetRowKey(entity.Id));
 
             Mapper.Map(entity, newEntity);
@@ -41,7 +38,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         public Task UpdateAsync(CrossIndexSettings entity)
         {
             return _storage.MergeAsync(
-                GetPartitionKey(entity.IndexAssetPairId),
+                GetPartitionKey(),
                 GetRowKey(entity.Id),
                 x =>
                 {
@@ -50,19 +47,13 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
                 });
         }
 
-        public async Task DeleteAsync(Guid id)
+        public Task DeleteAsync(Guid id)
         {
-            string filter = TableQuery.GenerateFilterCondition(nameof(AzureTableEntity.RowKey), QueryComparisons.Equal, GetRowKey(id));
-
-            var query = new TableQuery<CrossIndexSettingsEntity>().Where(filter);
-
-            var model = (await _storage.WhereAsync(query)).Single();
-
-            await _storage.DeleteAsync(model);
+            return _storage.DeleteAsync(GetPartitionKey(), GetRowKey(id));
         }
 
-        private static string GetPartitionKey(string indexAssetPairId)
-            => indexAssetPairId;
+        private static string GetPartitionKey()
+            => "CrossIndexSettings";
 
         private static string GetRowKey(Guid? id)
             => $"{id}";

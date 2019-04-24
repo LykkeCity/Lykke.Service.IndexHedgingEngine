@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Lykke.Service.IndexHedgingEngine.Domain.Investments;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {
