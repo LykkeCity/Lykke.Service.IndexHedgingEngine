@@ -1,6 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Lykke.Service.IndexHedgingEngine.Domain
+namespace Lykke.Service.IndexHedgingEngine.Domain.Reports
 {
     public class TokenReport
     {
