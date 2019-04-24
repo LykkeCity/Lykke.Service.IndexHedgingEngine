@@ -13,6 +13,7 @@ using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Handlers;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.Domain.Trades;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 using Lykke.Service.IndexHedgingEngine.Settings.ServiceSettings.Rabbit.Subscribers;
 

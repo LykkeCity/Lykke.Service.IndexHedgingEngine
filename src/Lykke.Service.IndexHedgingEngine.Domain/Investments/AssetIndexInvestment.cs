@@ -1,4 +1,4 @@
-namespace Lykke.Service.IndexHedgingEngine.Domain
+﻿namespace Lykke.Service.IndexHedgingEngine.Domain.Investments
 {
     /// <summary>
     /// Represents an asset investment in index details.

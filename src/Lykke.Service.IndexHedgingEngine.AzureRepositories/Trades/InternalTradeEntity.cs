@@ -4,6 +4,7 @@ using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
 using Lykke.AzureStorage.Tables.Entity.ValueTypesMerging;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Trades;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades
 {

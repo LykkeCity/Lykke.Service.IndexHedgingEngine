@@ -1,4 +1,4 @@
-namespace Lykke.Service.IndexHedgingEngine.Domain
+﻿namespace Lykke.Service.IndexHedgingEngine.Domain.Settlements
 {
     /// <summary>
     /// Specifies settlement error.

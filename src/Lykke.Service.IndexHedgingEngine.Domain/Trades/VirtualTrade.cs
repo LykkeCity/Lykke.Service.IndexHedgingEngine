@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace Lykke.Service.IndexHedgingEngine.Domain
+namespace Lykke.Service.IndexHedgingEngine.Domain.Trades
 {
     /// <summary>
     /// Represents a trade that was executed on virtual exchange.

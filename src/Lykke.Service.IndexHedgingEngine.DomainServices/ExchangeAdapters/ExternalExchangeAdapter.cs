@@ -13,6 +13,7 @@ using Lykke.Service.IndexHedgingEngine.Domain.Infrastructure;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.Domain.Settings;
+using Lykke.Service.IndexHedgingEngine.Domain.Trades;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 using TradeType = Lykke.Common.ExchangeAdapter.Contracts.TradeType;
 
@@ -83,8 +84,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
                     {
                         await _positionService.UpdateAsync(hedgeLimitOrder.AssetId, hedgeLimitOrder.Exchange,
                             hedgeLimitOrder.Type == LimitOrderType.Sell
-                                ? Domain.TradeType.Sell
-                                : Domain.TradeType.Buy,
+                                ? Domain.Trades.TradeType.Sell
+                                : Domain.Trades.TradeType.Buy,
                             order.ExecutedVolume, order.ExecutedVolume * order.AvgExecutionPrice);
 
                         await _externalTradeService.RegisterAsync(new ExternalTrade
@@ -95,8 +96,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.ExchangeAdapters
                             ExchangeOrderId = externalOrder.Id,
                             AssetPairId = hedgeLimitOrder.AssetPairId,
                             Type = hedgeLimitOrder.Type == LimitOrderType.Sell
-                                ? Domain.TradeType.Sell
-                                : Domain.TradeType.Buy,
+                                ? Domain.Trades.TradeType.Sell
+                                : Domain.Trades.TradeType.Buy,
                             Timestamp = order.Timestamp,
                             Price = order.AvgExecutionPrice,
                             Volume = order.ExecutedVolume,

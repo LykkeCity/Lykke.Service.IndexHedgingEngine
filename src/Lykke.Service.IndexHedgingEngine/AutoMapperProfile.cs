@@ -19,8 +19,11 @@ using Lykke.Service.IndexHedgingEngine.Client.Models.Settlements;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Tokens;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Trades;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Investments;
 using Lykke.Service.IndexHedgingEngine.Domain.Reports;
 using Lykke.Service.IndexHedgingEngine.Domain.Settings;
+using Lykke.Service.IndexHedgingEngine.Domain.Settlements;
+using Lykke.Service.IndexHedgingEngine.Domain.Trades;
 
 namespace Lykke.Service.IndexHedgingEngine
 {

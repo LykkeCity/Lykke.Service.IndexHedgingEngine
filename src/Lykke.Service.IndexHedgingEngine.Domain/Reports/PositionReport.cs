@@ -1,4 +1,6 @@
-﻿namespace Lykke.Service.IndexHedgingEngine.Domain.Reports
+﻿using Lykke.Service.IndexHedgingEngine.Domain.Investments;
+
+namespace Lykke.Service.IndexHedgingEngine.Domain.Reports
 {
     /// <summary>
     /// Represents an opened position by asset. 

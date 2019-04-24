@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Lykke.Service.IndexHedgingEngine.Domain;
+using Lykke.Service.IndexHedgingEngine.Domain.Investments;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Hedging

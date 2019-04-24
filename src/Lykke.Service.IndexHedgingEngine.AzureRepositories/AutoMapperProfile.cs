@@ -14,7 +14,9 @@ using Lykke.Service.IndexHedgingEngine.AzureRepositories.Simulation;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Trades;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Settings;
+using Lykke.Service.IndexHedgingEngine.Domain.Settlements;
 using Lykke.Service.IndexHedgingEngine.Domain.Simulation;
+using Lykke.Service.IndexHedgingEngine.Domain.Trades;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
 {

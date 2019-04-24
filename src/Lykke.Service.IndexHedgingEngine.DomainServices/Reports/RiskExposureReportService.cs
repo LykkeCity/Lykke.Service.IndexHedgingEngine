@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
+using Lykke.Service.IndexHedgingEngine.Domain.Investments;
 using Lykke.Service.IndexHedgingEngine.Domain.Reports;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
 using Lykke.Service.IndexHedgingEngine.Domain.Settings;

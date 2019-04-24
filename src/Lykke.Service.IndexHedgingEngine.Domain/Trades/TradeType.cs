@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.IndexHedgingEngine.Domain
+﻿namespace Lykke.Service.IndexHedgingEngine.Domain.Trades
 {
     /// <summary>
     /// Specifies a type of a trade.
