@@ -117,7 +117,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
         private async Task ValidateAsync(CrossIndexSettings entity)
         {
-            var indexAssetPair = (await _indexSettingsService.GetAllAsync())
+            AssetPairSettings indexAssetPair = (await _instrumentService.GetAssetPairsAsync())
                 .SingleOrDefault(x => x.AssetPairId == entity.IndexAssetPairId);
 
             if (indexAssetPair == null)
@@ -128,6 +128,43 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
             if (crossAssetPair == null)
                 throw new InvalidOperationException("Asset pair not found.");
+
+            bool isAssetToAssetValid = entity.IsInverted
+                ? indexAssetPair.QuoteAsset == crossAssetPair.QuoteAsset
+                : indexAssetPair.QuoteAsset == crossAssetPair.BaseAsset;
+
+            if (!isAssetToAssetValid)
+                throw new InvalidOperationException("Index asset pair can not be matched with cross asset pair.");
+
+            IReadOnlyList<string> existedQuoteAssets = (await GetCrossIndicesByIndexAsync(entity.IndexAssetPairId))
+                .Select(async x => await GetIndexQuoteAssetAsync(x))
+                .Select(x => x.Result)
+                .ToList();
+
+            string currentQuoteAsset = await GetIndexQuoteAssetAsync(entity);
+
+            if (existedQuoteAssets.Contains(currentQuoteAsset))
+                throw new InvalidOperationException("Index with the same quote asset already existed.");
+        }
+
+        private async Task<IReadOnlyList<CrossIndexSettings>> GetCrossIndicesByIndexAsync(string indexAssetPairId)
+        {
+            return (await GetAllAsync()).Where(x => x.IndexAssetPairId == indexAssetPairId).ToList();
+        }
+
+        private async Task<string> GetIndexQuoteAssetAsync(CrossIndexSettings crossIndexSettings)
+        {
+            AssetPairSettings crossAssetPairSettings = (await _instrumentService.GetAssetPairsAsync())
+                .SingleOrDefault(x => x.Exchange == crossIndexSettings.Exchange && x.AssetPairId == crossIndexSettings.AssetPairId);
+
+            if (crossAssetPairSettings == null)
+                throw new InvalidOperationException("Cross asset pair not found.");
+
+            string quoteAsset = crossIndexSettings.IsInverted
+                ? crossAssetPairSettings.BaseAsset
+                : crossAssetPairSettings.QuoteAsset;
+
+            return quoteAsset;
         }
 
         private static string GetKey(CrossIndexSettings entity)
