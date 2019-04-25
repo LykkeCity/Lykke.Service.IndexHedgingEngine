@@ -11,6 +11,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             IEnumerable<string> assets,
             IReadOnlyCollection<IndexSettings> indicesSettings,
             IReadOnlyCollection<Token> tokens,
+            IReadOnlyCollection<TokenInvestment> tokenInvestments,
             IReadOnlyCollection<IndexPrice> indexPrices,
             IReadOnlyCollection<Position> positions,
             IReadOnlyDictionary<string, Quote> assetPrices)
@@ -39,13 +40,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                     isDisabled = isDisabled || (assetWeight?.IsDisabled ?? false);
 
+                    decimal totalIndexInvestment = GetTotalIndexUsdInvestmentVolume(indexSettings.AssetId,
+                        tokenInvestments, assetPrices);
+
                     indexInvestments.Add(new AssetIndexInvestment
                     {
                         Name = indexSettings.Name,
                         Value = indexPrice.Value,
                         Price = indexPrice.Price,
                         OpenVolume = token?.OpenVolume ?? 0,
-                        OppositeVolume = token?.OppositeVolume ?? 0,
+                        OppositeVolume = totalIndexInvestment,
                         Amount = amount,
                         Weight = weight
                     });
@@ -76,6 +80,25 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             }
 
             return assetsInvestments;
+        }
+
+        private static decimal GetTotalIndexUsdInvestmentVolume(string assetId,
+            IReadOnlyCollection<TokenInvestment> tokenInvestments,
+            IReadOnlyDictionary<string, Quote> assetPrices)
+        {
+            var currentTokenInvestments = tokenInvestments.Where(x => x.AssetId == assetId).ToList();
+
+            decimal totalIndexInvestmentInUsd = 0;
+            foreach (TokenInvestment tokenInvestment in currentTokenInvestments)
+            {
+                assetPrices.TryGetValue(tokenInvestment.QuoteAssetId, out Quote quote);
+
+                decimal assetUsdPrice = quote?.Mid ?? 0;
+
+                totalIndexInvestmentInUsd += tokenInvestment.QuoteVolume * assetUsdPrice;
+            }
+
+            return totalIndexInvestmentInUsd;
         }
     }
 }

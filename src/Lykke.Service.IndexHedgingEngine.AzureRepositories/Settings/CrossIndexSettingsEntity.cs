@@ -34,11 +34,11 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             }
         }
 
-        public string IndexAssetPairId { get; set; }
+        public string OriginalAssetPairId { get; set; }
 
         public string Exchange { get; set; }
 
-        public string AssetPairId { get; set; }
+        public string CrossAssetPairId { get; set; }
 
         private bool _isInverted;
         public bool IsInverted
@@ -53,5 +53,11 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
                 }
             }
         }
+
+        public string AssetPairId { get; set; }
+
+        public string AssetId { get; set; }
+
+        public string QuoteAssetId { get; set; }
     }
 }

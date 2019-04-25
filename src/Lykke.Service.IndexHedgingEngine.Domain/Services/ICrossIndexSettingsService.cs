@@ -11,7 +11,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task<CrossIndexSettings> GetAsync(Guid id);
 
-        Task<IReadOnlyList<CrossIndexSettings>> FindByIndexAssetPairAsync(string indexAssetPairId);
+        Task<IReadOnlyList<CrossIndexSettings>> FindByOriginalIndexAssetPairAsync(string indexAssetPairId);
 
         Task<Guid> AddAsync(CrossIndexSettings entity, string userId);
 

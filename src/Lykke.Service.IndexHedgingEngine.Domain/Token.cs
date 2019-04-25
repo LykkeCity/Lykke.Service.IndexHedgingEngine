@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain
 {
@@ -25,7 +25,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// <summary>
         /// The amount of USD that received from clients.
         /// </summary>
-        public decimal OppositeVolume { get; set; }
+        //public decimal OppositeVolume { get; set; }
         
         public void IncreaseAmount(decimal amount)
         {
@@ -43,7 +43,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         public void IncreaseVolume(decimal volume, decimal oppositeVolume)
         {
             OpenVolume += volume;
-            OppositeVolume += oppositeVolume;
+            //OppositeVolume += oppositeVolume;
         }
         
         public void DecreaseVolume(decimal volume, decimal oppositeVolume)
@@ -52,13 +52,13 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
                 throw new InvalidOperationException("Open volume can not be less than zero");
             
             OpenVolume -= volume;
-            OppositeVolume -= oppositeVolume;
+            //OppositeVolume -= oppositeVolume;
         }
 
         public void Close(decimal volume, decimal price)
         {
             OpenVolume -= volume;
-            OppositeVolume -= volume * price;
+            //OppositeVolume -= volume * price;
         }
 
         public Token Copy()
@@ -68,7 +68,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
                 AssetId = AssetId,
                 Amount = Amount,
                 OpenVolume = OpenVolume,
-                OppositeVolume = OppositeVolume
+                //OppositeVolume = OppositeVolume
             };
         }
     }

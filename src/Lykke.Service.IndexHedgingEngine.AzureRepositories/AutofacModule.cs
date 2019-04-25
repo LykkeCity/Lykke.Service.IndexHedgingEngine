@@ -57,6 +57,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                 .As<ITokenRepository>()
                 .SingleInstance();
 
+            builder.Register(container => new TokenInvestmentRepository(
+                    AzureTableStorage<TokenInvestmentEntity>.Create(_connectionString,
+                        "TokenInvestments", container.Resolve<ILogFactory>())))
+                .As<ITokenInvestmentRepository>()
+                .SingleInstance();
+
             builder.Register(container => new ExternalOrderRepository(
                     AzureTableStorage<ExternalOrderEntity>.Create(_connectionString,
                         "ExternalOrders", container.Resolve<ILogFactory>())))

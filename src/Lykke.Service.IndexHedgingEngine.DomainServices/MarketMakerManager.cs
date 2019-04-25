@@ -123,8 +123,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     IndexSettings indexSettings = indicesSettings
                         .SingleOrDefault(o => o.AssetPairId == internalTrade.AssetPairId);
 
+                    // TODO: check for cross indices also to update QuoteVolume
+
                     if (indexSettings != null)
                     {
+                        // TODO: add logging
+
                         await _internalTradeService.RegisterAsync(internalTrade);
 
                         await _tokenService.UpdateVolumeAsync(indexSettings.AssetId, internalTrade);

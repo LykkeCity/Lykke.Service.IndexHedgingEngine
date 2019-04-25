@@ -19,8 +19,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
     {
         private readonly IIndexPriceService _indexPriceService;
         private readonly IIndexSettingsService _indexSettingsService;
+        private readonly ICrossIndexSettingsService _crossIndexSettingsService;
         private readonly IAssetHedgeSettingsService _assetHedgeSettingsService;
         private readonly ITokenService _tokenService;
+        private readonly ITokenInvestmentService _tokenInvestmentService;
         private readonly IPositionService _positionService;
         private readonly IHedgeSettingsService _hedgeSettingsService;
         private readonly IInvestmentService _investmentService;
@@ -31,8 +33,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         public HedgeService(
             IIndexPriceService indexPriceService,
             IIndexSettingsService indexSettingsService,
+            ICrossIndexSettingsService crossIndexSettingsService,
             IAssetHedgeSettingsService assetHedgeSettingsService,
             ITokenService tokenService,
+            ITokenInvestmentService tokenInvestmentService,
             IPositionService positionService,
             IHedgeSettingsService hedgeSettingsService,
             IInvestmentService investmentService,
@@ -42,8 +46,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         {
             _indexPriceService = indexPriceService;
             _indexSettingsService = indexSettingsService;
+            _crossIndexSettingsService = crossIndexSettingsService;
             _assetHedgeSettingsService = assetHedgeSettingsService;
             _tokenService = tokenService;
+            _tokenInvestmentService = tokenInvestmentService;
             _positionService = positionService;
             _hedgeSettingsService = hedgeSettingsService;
             _investmentService = investmentService;
@@ -63,6 +69,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             IReadOnlyCollection<Token> tokens = await _tokenService.GetAllAsync();
 
+            IReadOnlyCollection<TokenInvestment> tokenInvestments = await _tokenInvestmentService.GetAllAsync();
+
             IReadOnlyCollection<Position> positions = await GetCurrentPositionsAsync();
 
             IReadOnlyCollection<IndexPrice> indexPrices = await _indexPriceService.GetAllAsync();
@@ -72,7 +80,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             IReadOnlyDictionary<string, Quote> assetPrices = await GetAssetPricesAsync(assets);
 
             IReadOnlyCollection<AssetInvestment> assetInvestments =
-                InvestmentCalculator.Calculate(assets, indicesSettings, tokens, indexPrices, positions, assetPrices);
+                InvestmentCalculator.Calculate(assets, indicesSettings, tokens, tokenInvestments,
+                    indexPrices, positions, assetPrices);
 
             _log.InfoWithDetails("Investments calculated", assetInvestments);
 
@@ -106,9 +115,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 assetHedgeSettings.AssetId, assetHedgeSettings.AssetPairId, limitOrderType, PriceType.Limit, price,
                 volume);
 
-            hedgeLimitOrder.Context = new {price, volume, userId}.ToJson();
+            hedgeLimitOrder.Context = new { price, volume, userId }.ToJson();
 
-            _log.InfoWithDetails("Manual hedge limit order created", new {hedgeLimitOrder, userId});
+            _log.InfoWithDetails("Manual hedge limit order created", new { hedgeLimitOrder, userId });
 
             await exchangeAdapter.ExecuteLimitOrderAsync(hedgeLimitOrder);
         }
@@ -124,7 +133,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (!_exchangeAdapters.TryGetValue(assetHedgeSettings.Exchange, out IExchangeAdapter exchangeAdapter))
                 throw new InvalidOperationException("There is no exchange provider");
 
-            _log.InfoWithDetails("Hedge limit order cancelled by user", new {assetId, exchange, userId});
+            _log.InfoWithDetails("Hedge limit order cancelled by user", new { assetId, exchange, userId });
 
             await exchangeAdapter.CancelLimitOrderAsync(assetId);
         }
@@ -168,9 +177,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 assetHedgeSettings.AssetId, assetHedgeSettings.AssetPairId, limitOrderType, PriceType.Limit, price,
                 volume);
 
-            hedgeLimitOrder.Context = new {userId}.ToJson();
+            hedgeLimitOrder.Context = new { userId }.ToJson();
 
-            _log.InfoWithDetails("Manual hedge limit order created to closed position", new {hedgeLimitOrder, userId});
+            _log.InfoWithDetails("Manual hedge limit order created to closed position", new { hedgeLimitOrder, userId });
 
             await exchangeAdapter.ExecuteLimitOrderAsync(hedgeLimitOrder);
         }
@@ -255,7 +264,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     if (hedgeLimitOrder != null)
                     {
                         _log.WarningWithDetails("There is no exchange provider",
-                            new {assetHedgeSettings, hedgeLimitOrder});
+                            new { assetHedgeSettings, hedgeLimitOrder });
                         // TODO: send health issue
                     }
                 }
@@ -369,11 +378,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
         private async Task<IReadOnlyCollection<string>> GetAssetsAsync()
         {
-            IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
-
             IReadOnlyCollection<Position> positions = await _positionService.GetAllAsync();
 
             List<string> assets = positions.Select(o => o.AssetId).ToList();
+
+            IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
 
             foreach (IndexSettings indexSettings in indicesSettings)
             {
@@ -382,6 +391,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 if (indexPrice != null)
                     assets.AddRange(indexPrice.Weights.Select(o => o.AssetId));
             }
+
+            IReadOnlyCollection<CrossIndexSettings> crossIndicesSettings = await _crossIndexSettingsService.GetAllAsync();
+
+            assets.AddRange(crossIndicesSettings.Select(x => x.QuoteAssetId));
 
             return assets.Distinct().ToList();
         }

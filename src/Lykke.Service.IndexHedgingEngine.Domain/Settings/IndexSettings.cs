@@ -14,7 +14,7 @@
         public string Name { get; set; }
 
         /// <summary>
-        /// The identifier of the asset that associated with index.
+        /// The identifier of the asset that associated with index (LyCI).
         /// </summary>
         public string AssetId { get; set; }
 

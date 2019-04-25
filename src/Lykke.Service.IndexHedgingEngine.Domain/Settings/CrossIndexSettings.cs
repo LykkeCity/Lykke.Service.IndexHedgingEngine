@@ -13,9 +13,9 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Settings
         public Guid? Id { get; set; }
 
         /// <summary>
-        /// The identifier of the index asset pair.
+        /// The identifier of the original index asset pair (LyCI/USD).
         /// </summary>
-        public string IndexAssetPairId { get; set; }
+        public string OriginalAssetPairId { get; set; }
 
         /// <summary>
         /// The name of the cross asset pair exchange.
@@ -23,13 +23,28 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Settings
         public string Exchange { get; set; }
 
         /// <summary>
-        /// The identifier of the cross asset pair.
+        /// The identifier of the cross asset pair (EUR/USD).
         /// </summary>
-        public string AssetPairId { get; set; }
+        public string CrossAssetPairId { get; set; }
 
         /// <summary>
         /// If cross asset pair must be inverted.
         /// </summary>
         public bool IsInverted { get; set; }
+
+        /// <summary>
+        /// The identifier of the resulting index asset pair (LyCI/EUR).
+        /// </summary>
+        public string AssetPairId { get; set; }
+
+        /// <summary>
+        /// The identifier of the resulting index base asset (LyCI).
+        /// </summary>
+        public string AssetId { get; set; }
+
+        /// <summary>
+        /// The identifier of the resulting index quote asset (EUR).
+        /// </summary>
+        public string QuoteAssetId { get; set; }
     }
 }

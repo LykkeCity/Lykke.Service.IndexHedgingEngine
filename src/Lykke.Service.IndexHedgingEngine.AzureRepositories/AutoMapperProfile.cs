@@ -36,6 +36,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
             CreateMap<Token, TokenEntity>(MemberList.Source);
             CreateMap<TokenEntity, Token>(MemberList.Destination);
 
+            CreateMap<TokenInvestment, TokenInvestmentEntity>(MemberList.Source);
+            CreateMap<TokenInvestmentEntity, TokenInvestment>(MemberList.Destination);
+
             CreateMap<ExternalOrder, ExternalOrderEntity>(MemberList.Source);
             CreateMap<ExternalOrderEntity, ExternalOrder>(MemberList.Destination);
 
@@ -47,6 +50,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
 
             CreateMap<IndexSettings, IndexSettingsEntity>(MemberList.Source);
             CreateMap<IndexSettingsEntity, IndexSettings>(MemberList.Destination);
+
+            CreateMap<CrossIndexSettings, CrossIndexSettingsEntity>(MemberList.Source);
+            CreateMap<CrossIndexSettingsEntity, CrossIndexSettings>(MemberList.Destination);
 
             CreateMap<AssetSettings, AssetSettingsEntity>(MemberList.Source);
             CreateMap<AssetSettingsEntity, AssetSettings>(MemberList.Destination);
@@ -113,9 +119,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp));
             CreateMap<VirtualTradeEntity, VirtualTrade>(MemberList.Destination)
                 .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Date));
-
-            CreateMap<CrossIndexSettings, CrossIndexSettingsEntity>(MemberList.Source);
-            CreateMap<CrossIndexSettingsEntity, CrossIndexSettings>(MemberList.Destination);
         }
     }
 }
