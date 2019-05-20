@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -186,16 +186,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 AssetHedgeSettings assetHedgeSettings =
                     await _assetHedgeSettingsService.EnsureAsync(assetInvestment.AssetId);
 
-                if (!CanCreateHedgeLimitOrder(assetInvestment, assetHedgeSettings, hedgeSettings))
-                    continue;
-
                 LimitOrderType limitOrderType = assetInvestment.RemainingAmount > 0
                     ? LimitOrderType.Sell
                     : LimitOrderType.Buy;
 
+                if (!CanCreateHedgeLimitOrder(assetInvestment, assetHedgeSettings, hedgeSettings, limitOrderType))
+                    continue;
+
+                decimal commonThresholdUp = limitOrderType == LimitOrderType.Buy
+                    ? hedgeSettings.ThresholdUpBuy
+                    : hedgeSettings.ThresholdUpSell;
+
                 LimitOrderPrice limitOrderPrice = LimitOrderPriceCalculator.Calculate(assetInvestment.Quote,
                     Math.Abs(assetInvestment.RemainingAmount), limitOrderType,
-                    assetHedgeSettings.ThresholdUp ?? hedgeSettings.ThresholdUp, hedgeSettings.MarketOrderMarkup);
+                    assetHedgeSettings.ThresholdUp ?? commonThresholdUp, hedgeSettings.MarketOrderMarkup);
 
                 decimal price = limitOrderPrice.Price;
 
@@ -386,7 +390,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         }
 
         private static bool CanCreateHedgeLimitOrder(AssetInvestment assetInvestment,
-            AssetHedgeSettings assetHedgeSettings, HedgeSettings hedgeSettings)
+            AssetHedgeSettings assetHedgeSettings, HedgeSettings hedgeSettings, LimitOrderType limitOrderType)
         {
             if (assetInvestment.IsDisabled)
                 return false;
@@ -401,7 +405,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (0 < thresholdCritical && thresholdCritical <= absoluteRemainingAmount)
                 return false;
 
-            decimal thresholdDown = assetHedgeSettings.ThresholdDown ?? hedgeSettings.ThresholdDown;
+            decimal commonThresholdDown = limitOrderType == LimitOrderType.Buy ? hedgeSettings.ThresholdDownBuy : hedgeSettings.ThresholdDownSell;
+
+            decimal thresholdDown = assetHedgeSettings.ThresholdDown ?? commonThresholdDown;
 
             if (assetHedgeSettings.Exchange != ExchangeNames.Virtual && absoluteRemainingAmount < thresholdDown)
                 return false;
