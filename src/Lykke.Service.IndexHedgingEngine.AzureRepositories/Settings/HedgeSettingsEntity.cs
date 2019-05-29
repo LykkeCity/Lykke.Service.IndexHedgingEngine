@@ -1,3 +1,4 @@
+﻿using System;
 using JetBrains.Annotations;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
@@ -9,8 +10,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
     [ValueTypeMergingStrategy(ValueTypeMergingStrategy.UpdateIfDirty)]
     public class HedgeSettingsEntity : AzureTableEntity
     {
-        private decimal _thresholdUp;
-        private decimal _thresholdDown;
         private decimal _marketOrderMarkup;
         private decimal _thresholdCritical;
 
@@ -24,6 +23,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             RowKey = rowKey;
         }
 
+        [Obsolete]
+        private decimal _thresholdUp;
+        [Obsolete]
         public decimal ThresholdUp
         {
             get => _thresholdUp;
@@ -37,6 +39,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             }
         }
 
+        [Obsolete]
+        private decimal _thresholdDown;
+        [Obsolete]
         public decimal ThresholdDown
         {
             get => _thresholdDown;
@@ -45,6 +50,62 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
                 if (_thresholdDown != value)
                 {
                     _thresholdDown = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        private decimal _thresholdUpBuy;
+        public decimal ThresholdUpBuy
+        {
+            get => _thresholdUpBuy;
+            set
+            {
+                if (_thresholdUpBuy != value)
+                {
+                    _thresholdUpBuy = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        private decimal _thresholdUpSell;
+        public decimal ThresholdUpSell
+        {
+            get => _thresholdUpSell;
+            set
+            {
+                if (_thresholdUpSell != value)
+                {
+                    _thresholdUpSell = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        private decimal _thresholdDownBuy;
+        public decimal ThresholdDownBuy
+        {
+            get => _thresholdDownBuy;
+            set
+            {
+                if (_thresholdDownBuy != value)
+                {
+                    _thresholdDownBuy = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        private decimal _thresholdDownSell;
+        public decimal ThresholdDownSell
+        {
+            get => _thresholdDownSell;
+            set
+            {
+                if (_thresholdDownSell != value)
+                {
+                    _thresholdDownSell = value;
                     MarkValueTypePropertyAsDirty();
                 }
             }

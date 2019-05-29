@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
@@ -35,11 +35,44 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
                         MarketOrderMarkup = .02m,
                         ThresholdDown = 1000,
                         ThresholdUp = 5000,
+                        ThresholdDownBuy = 1000,
+                        ThresholdDownSell = 1000,
+                        ThresholdUpBuy = 5000,
+                        ThresholdUpSell = 5000,
                         ThresholdCritical = 10000
                     };
                 }
 
-                _cache.Initialize(new[] {hedgeSettings});
+                _cache.Initialize(new[] { hedgeSettings });
+
+                bool isDirty = false;
+
+                if (hedgeSettings.ThresholdDownBuy == default(decimal))
+                {
+                    hedgeSettings.ThresholdDownBuy = hedgeSettings.ThresholdDown;
+                    isDirty = true;
+                }
+
+                if (hedgeSettings.ThresholdDownSell == default(decimal))
+                {
+                    hedgeSettings.ThresholdDownSell = hedgeSettings.ThresholdDown;
+                    isDirty = true;
+                }
+
+                if (hedgeSettings.ThresholdUpBuy == default(decimal))
+                {
+                    hedgeSettings.ThresholdUpBuy = hedgeSettings.ThresholdUp;
+                    isDirty = true;
+                }
+
+                if (hedgeSettings.ThresholdUpSell == default(decimal))
+                {
+                    hedgeSettings.ThresholdUpSell = hedgeSettings.ThresholdUp;
+                    isDirty = true;
+                }
+
+                if (isDirty)
+                    await UpdateAsync(hedgeSettings);
             }
 
             return hedgeSettings;
