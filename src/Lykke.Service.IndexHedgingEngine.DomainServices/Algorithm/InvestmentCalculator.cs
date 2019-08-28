@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Lykke.Service.IndexHedgingEngine.Domain;
 
@@ -18,7 +18,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
             foreach (string assetId in assets)
             {
-                var indexInvestments = new List<AssetIndexInvestment>();
+                var assetIndexInvestments = new List<AssetIndexInvestment>();
 
                 bool isDisabled = false;
 
@@ -38,9 +38,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                     isDisabled = isDisabled || (assetWeight?.IsDisabled ?? false);
 
-                    indexInvestments.Add(new AssetIndexInvestment
+                    assetIndexInvestments.Add(new AssetIndexInvestment
                     {
                         Name = indexSettings.Name,
+                        IsShort = indexSettings.IsShort,
                         Value = indexPrice.Value,
                         Price = indexPrice.Price,
                         OpenVolume = token?.OpenVolume ?? 0,
@@ -58,8 +59,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                 decimal assetPrice = quote?.Mid ?? 0;
 
-                decimal totalAmount = indexInvestments.Sum(o => o.Amount);
-                
+                decimal totalLongAmount = assetIndexInvestments.Where(x => !x.IsShort).Sum(o => o.Amount);
+
+                decimal totalShortAmount = assetIndexInvestments.Where(x => x.IsShort).Sum(o => o.Amount);
+
+                decimal totalAmount = totalLongAmount - totalShortAmount;
+
                 decimal remainingAmount = assetVolume * assetPrice - totalAmount;
 
                 assetsInvestments.Add(new AssetInvestment
@@ -70,7 +75,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                     TotalAmount = totalAmount,
                     RemainingAmount = remainingAmount,
                     IsDisabled = isDisabled,
-                    Indices = indexInvestments
+                    Indices = assetIndexInvestments
                 });
             }
 

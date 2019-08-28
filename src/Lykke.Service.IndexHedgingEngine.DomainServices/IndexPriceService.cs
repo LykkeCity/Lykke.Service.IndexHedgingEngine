@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -80,7 +80,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             {
                 IndexSettlementPrice indexSettlementPrice = IndexSettlementPriceCalculator.Calculate(
                     index.Value, indexPrice.Value, indexSettings.Alpha, indexPrice.K, indexPrice.Price,
-                    index.Timestamp, indexPrice.Timestamp, indexSettings.TrackingFee, indexSettings.PerformanceFee);
+                    index.Timestamp, indexPrice.Timestamp, indexSettings.TrackingFee, indexSettings.PerformanceFee,
+                    indexSettings.IsShort);
                 
                 indexPrice.Update(index.Value, index.Timestamp, indexSettlementPrice.Price, indexSettlementPrice.K,
                     indexSettlementPrice.R, indexSettlementPrice.Delta, index.Weights);

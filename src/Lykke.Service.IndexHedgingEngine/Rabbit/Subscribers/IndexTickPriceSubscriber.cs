@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Common;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
@@ -62,12 +63,25 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
         {
             try
             {
-                var index = new Index(message.AssetPair, message.Ask, message.Source, message.Timestamp,
-                    message.AssetsInfo
-                        .Select(o => new AssetWeight(o.AssetId, o.Weight, o.Price, o.IsDisabled))
-                        .ToArray());
-                
+                if (!message.Ask.HasValue)
+                    throw new InvalidOperationException($"IndexTickPrice doesn't have 'ask' price: {message.ToJson()}");
+
+                // Handle main index.
+
+                var index = CreateIndex(message, message.AssetPair);
+
                 await _indexHandler.HandleIndexAsync(index);
+
+                // Handle short version of the index.
+
+                bool isShort = !string.IsNullOrWhiteSpace(message.ShortIndexName);
+
+                if (isShort)
+                {
+                    var shortIndex = CreateIndex(message, message.ShortIndexName);
+
+                    await _indexHandler.HandleIndexAsync(shortIndex);
+                }
 
                 _log.InfoWithDetails("Index price handled", message);
             }
@@ -76,6 +90,19 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                 _log.ErrorWithDetails(exception, "An error occurred while processing index tick price", message);
                 throw;
             }
+        }
+
+        private Index CreateIndex(IndexTickPrice message, string name)
+        {
+            if (!message.Ask.HasValue)
+                return null;
+
+            var index = new Index(name, message.Ask.Value, message.Source, message.Timestamp,
+                message.AssetsInfo
+                    .Select(o => new AssetWeight(o.AssetId, o.Weight, o.Price, o.IsDisabled))
+                    .ToArray());
+
+            return index;
         }
     }
 }

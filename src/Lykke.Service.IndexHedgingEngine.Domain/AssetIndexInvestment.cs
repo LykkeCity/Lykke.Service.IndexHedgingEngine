@@ -1,4 +1,4 @@
-namespace Lykke.Service.IndexHedgingEngine.Domain
+﻿namespace Lykke.Service.IndexHedgingEngine.Domain
 {
     /// <summary>
     /// Represents an asset investment in index details.
@@ -9,6 +9,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The name of the index.
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Is index short.
+        /// </summary>
+        public bool IsShort { get; set; }
 
         /// <summary>
         /// The value of the index.

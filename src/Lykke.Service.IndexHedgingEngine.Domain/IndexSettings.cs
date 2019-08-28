@@ -1,4 +1,4 @@
-namespace Lykke.Service.IndexHedgingEngine.Domain
+﻿namespace Lykke.Service.IndexHedgingEngine.Domain
 {
     /// <summary>
     /// Represents an index settings
@@ -22,6 +22,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// The identifier of the asset pair that used to create limit orders.
         /// </summary>
         public string AssetPairId { get; set; }
+
+        /// <summary>
+        /// 'True' if this index is 'short'.
+        /// </summary>
+        public bool IsShort { get; set; }
 
         /// <summary>
         /// The alpha coefficient.
@@ -75,6 +80,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         {
             AssetId = indexSettings.AssetId;
             AssetPairId = indexSettings.AssetPairId;
+            IsShort = indexSettings.IsShort;
             Alpha = indexSettings.Alpha;
             TrackingFee = indexSettings.TrackingFee;
             PerformanceFee = indexSettings.PerformanceFee;
