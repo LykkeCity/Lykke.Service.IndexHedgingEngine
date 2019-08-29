@@ -1,4 +1,4 @@
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
 using Lykke.AzureStorage.Tables.Entity.ValueTypesMerging;
@@ -9,6 +9,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices
     [ValueTypeMergingStrategy(ValueTypeMergingStrategy.UpdateIfDirty)]
     public class IndexSettingsEntity : AzureTableEntity
     {
+        private bool _isShort;
         private decimal _alpha;
         private decimal _trackingFee;
         private decimal _performanceFee;
@@ -33,6 +34,19 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices
         public string AssetId { get; set; }
 
         public string AssetPairId { get; set; }
+
+        public bool IsShort
+        {
+            get => _isShort;
+            set
+            {
+                if (_isShort != value)
+                {
+                    _isShort = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
 
         public decimal Alpha
         {

@@ -1,4 +1,4 @@
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace Lykke.Service.IndexHedgingEngine.Client.Models.IndexSettings
 {
@@ -22,7 +22,12 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.IndexSettings
         /// The identifier of the asset pair that used to create limit orders.
         /// </summary>
         public string AssetPairId { get; set; }
-        
+
+        /// <summary>
+        /// 'True' if this index is 'short'.
+        /// </summary>
+        public bool IsShort { get; set; }
+
         /// <summary>
         /// The alpha coefficient.
         /// </summary>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -39,7 +39,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.Algorithm
                 currentIndexTimestamp,
                 previousIndexTimestamp,
                 trackingFee,
-                performanceFee);
+                performanceFee,
+                false);
 
             // assert
 

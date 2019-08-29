@@ -23,13 +23,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Indices
             return Mapper.Map<IndexSettings[]>(entities);
         }
 
-        public async Task<IndexSettings> GetByIndexAsync(string indexName)
-        {
-            IndexSettingsEntity entity = await _storage.GetDataAsync(GetPartitionKey(), GetRowKey(indexName));
-
-            return Mapper.Map<IndexSettings>(entity);
-        }
-
         public async Task InsertAsync(IndexSettings indexSettings)
         {
             var entity = new IndexSettingsEntity(GetPartitionKey(), GetRowKey(indexSettings.Name));

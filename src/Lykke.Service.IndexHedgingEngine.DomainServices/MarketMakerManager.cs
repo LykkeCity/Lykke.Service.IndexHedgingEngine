@@ -61,17 +61,19 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(index.Name);
             
+            // Update weights
             if (marketMakerState.Status != MarketMakerStatus.Active)
             {
                 if (indexSettings != null)
                 {
                     foreach (AssetWeight assetWeight in index.Weights)
-                        await _assetHedgeSettingsService.EnsureAsync(assetWeight.AssetId);                        
+                        await _assetHedgeSettingsService.EnsureAsync(assetWeight.AssetId);
                 }
                 
                 return;
             }
 
+            // Update prices
             foreach (var assetWeight in index.Weights)
             {
                 Quote quote = new Quote($"{assetWeight.AssetId}USD", index.Timestamp, assetWeight.Price,
@@ -135,8 +137,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        public async Task HandleMarketMakerStateAsync(MarketMakerStatus marketMakerStatus, string comment,
-            string userId)
+        public async Task HandleMarketMakerStateAsync(MarketMakerStatus marketMakerStatus, string comment, string userId)
         {
             await _marketMakerStateService.UpdateAsync(marketMakerStatus, comment, userId);
 
