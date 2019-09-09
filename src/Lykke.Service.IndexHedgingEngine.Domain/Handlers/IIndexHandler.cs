@@ -1,9 +1,9 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Handlers
 {
     public interface IIndexHandler
     {
-        Task HandleIndexAsync(Index index);
+        Task HandleIndexAsync(Index index, Index shortIndex);
     }
 }
