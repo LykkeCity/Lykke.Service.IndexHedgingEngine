@@ -55,32 +55,25 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _log = logFactory.CreateLog(this);
         }
 
-        public async Task HandleIndexAsync(Index index)
+        public async Task HandleIndexAsync(Index index, Index shortIndex)
         {
             MarketMakerState marketMakerState = await _marketMakerStateService.GetAsync();
 
             IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(index.Name);
-            
-            // Update weights
+
+            IndexSettings shortIndexSettings = null;
+
+            if (shortIndex != null)
+                shortIndexSettings = await _indexSettingsService.GetByIndexAsync(index.Name);
+
             if (marketMakerState.Status != MarketMakerStatus.Active)
             {
-                if (indexSettings != null)
-                {
-                    foreach (AssetWeight assetWeight in index.Weights)
-                        await _assetHedgeSettingsService.EnsureAsync(assetWeight.AssetId);
-                }
-                
+                await UpdateAssets(indexSettings, index);
+
                 return;
             }
-
-            // Update prices
-            foreach (var assetWeight in index.Weights)
-            {
-                Quote quote = new Quote($"{assetWeight.AssetId}USD", index.Timestamp, assetWeight.Price,
-                    assetWeight.Price, ExchangeNames.Virtual);
-
-                await _quoteService.UpdateAsync(quote);
-            }
+            
+            await UpdateVirtualExchangePrices(index);
 
             if (indexSettings == null)
                 return;
@@ -89,11 +82,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             try
             {
-                await _indexPriceService.UpdateAsync(index);
+                await RecalculateIndicesPrices(index, shortIndex, shortIndexSettings);
 
                 await _hedgeService.UpdateLimitOrdersAsync();
 
-                await _marketMakerService.UpdateLimitOrdersAsync(index.Name);
+                await UpdateMarketMakerOrders(index, shortIndex, shortIndexSettings);
             }
             catch (InvalidOperationException exception)
             {
@@ -162,6 +155,50 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             {
                 _semaphore.Release();
             }
+        }
+
+        private async Task UpdateAssets(IndexSettings indexSettings, Index index)
+        {
+            if (indexSettings != null)
+            {
+                foreach (AssetWeight assetWeight in index.Weights)
+                    await _assetHedgeSettingsService.EnsureAsync(assetWeight.AssetId);
+            }
+        }
+
+        private async Task UpdateVirtualExchangePrices(Index index)
+        {
+            foreach (var assetWeight in index.Weights)
+            {
+                Quote quote = new Quote($"{assetWeight.AssetId}USD", index.Timestamp, assetWeight.Price,
+                    assetWeight.Price, ExchangeNames.Virtual);
+
+                await _quoteService.UpdateAsync(quote);
+            }
+        }
+
+        private async Task RecalculateIndicesPrices(Index index, Index shortIndex, IndexSettings shortIndexSettings)
+        {
+            var indexPriceTasks = new List<Task>();
+
+            indexPriceTasks.Add(_indexPriceService.UpdateAsync(index));
+
+            if (shortIndexSettings != null)
+                indexPriceTasks.Add(_indexPriceService.UpdateAsync(shortIndex));
+
+            await Task.WhenAll(indexPriceTasks);
+        }
+
+        private async Task UpdateMarketMakerOrders(Index index, Index shortIndex, IndexSettings shortIndexSettings)
+        {
+            var updateLimitOrdersTasks = new List<Task>();
+
+            updateLimitOrdersTasks.Add(_marketMakerService.UpdateLimitOrdersAsync(index.Name));
+
+            if (shortIndexSettings != null)
+                updateLimitOrdersTasks.Add(_marketMakerService.UpdateLimitOrdersAsync(shortIndex.Name));
+
+            await Task.WhenAll(updateLimitOrdersTasks);
         }
     }
 }

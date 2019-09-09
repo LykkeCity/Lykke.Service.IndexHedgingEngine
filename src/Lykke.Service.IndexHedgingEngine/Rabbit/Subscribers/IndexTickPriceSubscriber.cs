@@ -66,22 +66,16 @@ namespace Lykke.Service.IndexHedgingEngine.Rabbit.Subscribers
                 if (!message.Ask.HasValue)
                     throw new InvalidOperationException($"IndexTickPrice doesn't have 'ask' price: {message.ToJson()}");
 
-                // Handle main index.
-
                 var index = CreateIndex(message, message.AssetPair);
 
-                await _indexHandler.HandleIndexAsync(index);
-
-                // Handle short version of the index.
+                Index shortIndex = null;
 
                 bool isShort = !string.IsNullOrWhiteSpace(message.ShortIndexName);
 
                 if (isShort)
-                {
-                    var shortIndex = CreateIndex(message, message.ShortIndexName);
+                    shortIndex = CreateIndex(message, message.ShortIndexName);
 
-                    await _indexHandler.HandleIndexAsync(shortIndex);
-                }
+                await _indexHandler.HandleIndexAsync(index, shortIndex);
 
                 _log.InfoWithDetails("Index price handled", message);
             }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -93,6 +93,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Exchanges
                 
                 throw new ExchangeException("Cannot create limit orders an unexpected error occurred", exception);
             }
+
+            _log.InfoWithDetails("Matching engine placed orders", assetPairId);
 
             if (response == null)
                 throw new ExchangeException("Matching engine returned an empty response");
