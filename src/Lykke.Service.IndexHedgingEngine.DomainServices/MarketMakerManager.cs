@@ -64,10 +64,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             IndexSettings shortIndexSettings = null;
 
             if (shortIndex != null)
-                shortIndexSettings = await _indexSettingsService.GetByIndexAsync(index.Name);
+                shortIndexSettings = await _indexSettingsService.GetByIndexAsync(shortIndex.Name);
 
             if (marketMakerState.Status != MarketMakerStatus.Active)
             {
+                // TODO: Shouldn't they be updated if Market Maker status is Active?
                 await UpdateAssets(indexSettings, index);
 
                 return;
