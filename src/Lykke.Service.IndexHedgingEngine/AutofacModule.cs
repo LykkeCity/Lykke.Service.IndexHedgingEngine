@@ -18,6 +18,8 @@ using Lykke.SettingsReader;
 
 namespace Lykke.Service.IndexHedgingEngine
 {
+    using Rabbit;
+
     [UsedImplicitly]
     public class AutofacModule : Module
     {
@@ -77,6 +79,8 @@ namespace Lykke.Service.IndexHedgingEngine
                     .IndexTickPrices))
                 .AsSelf()
                 .SingleInstance();
+            
+            builder.RegisterType<QuoteSubscriberMetricsCollector>().SingleInstance(); 
 
             QuotesSettings quotesSettings = _settings.CurrentValue.IndexHedgingEngineService.Rabbit.Subscribers.Quotes;
 
