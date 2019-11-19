@@ -68,7 +68,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             if (marketMakerState.Status != MarketMakerStatus.Active)
             {
-                // TODO: Shouldn't they be updated if Market Maker status is Active?
                 await UpdateAssets(indexSettings, index);
 
                 return;
