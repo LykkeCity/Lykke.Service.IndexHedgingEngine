@@ -66,6 +66,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (shortIndex != null)
                 shortIndexSettings = await _indexSettingsService.GetByIndexAsync(shortIndex.Name);
 
+            if (shortIndexSettings == null)
+                shortIndex = null;
+
             if (marketMakerState.Status != MarketMakerStatus.Active)
             {
                 await UpdateAssets(indexSettings, index);
@@ -82,11 +85,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             try
             {
-                await RecalculateIndicesPrices(index, shortIndex, shortIndexSettings);
+                await UpdateIndicesPrices(index, shortIndex);
 
                 await _hedgeService.UpdateLimitOrdersAsync();
 
-                await UpdateMarketMakerOrders(index, shortIndex, shortIndexSettings);
+                await UpdateMarketMakerOrders(index, shortIndex);
             }
             catch (InvalidOperationException exception)
             {
@@ -177,26 +180,31 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        private async Task RecalculateIndicesPrices(Index index, Index shortIndex, IndexSettings shortIndexSettings)
+        private async Task UpdateIndicesPrices(Index index, Index shortIndex)
         {
             var indexPriceTasks = new List<Task>();
 
             indexPriceTasks.Add(_indexPriceService.UpdateAsync(index));
 
-            if (shortIndexSettings != null)
+            if (shortIndex != null)
                 indexPriceTasks.Add(_indexPriceService.UpdateAsync(shortIndex));
 
             await Task.WhenAll(indexPriceTasks);
         }
 
-        private async Task UpdateMarketMakerOrders(Index index, Index shortIndex, IndexSettings shortIndexSettings)
+        private async Task UpdateMarketMakerOrders(Index index, Index shortIndex)
         {
             var updateLimitOrdersTasks = new List<Task>();
 
             updateLimitOrdersTasks.Add(_marketMakerService.UpdateLimitOrdersAsync(index.Name));
 
-            if (shortIndexSettings != null)
+            if (shortIndex != null)
                 updateLimitOrdersTasks.Add(_marketMakerService.UpdateLimitOrdersAsync(shortIndex.Name));
+
+            await _marketMakerService.UpdateCrossPairsLimitOrders(index.Name);
+
+            if (shortIndex != null)
+                updateLimitOrdersTasks.Add(_marketMakerService.UpdateCrossPairsLimitOrders(shortIndex.Name));
 
             await Task.WhenAll(updateLimitOrdersTasks);
         }

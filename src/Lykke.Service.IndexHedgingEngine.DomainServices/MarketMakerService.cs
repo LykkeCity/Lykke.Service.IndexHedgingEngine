@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -106,6 +106,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _traceWriter.LimitOrders(indexSettings.AssetPairId, limitOrders);
         }
 
+        public async Task UpdateCrossPairsLimitOrders(string indexName)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task CancelLimitOrdersAsync(string indexName)
         {
             IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
@@ -116,6 +121,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
 
             _log.InfoWithDetails("Limit orders canceled", new {IndexName = indexName, indexSettings.AssetPairId});
+        }
+
+        public Task CancelCrossPairsLimitOrders(string indexName)
+        {
+            throw new NotImplementedException();
         }
 
         private IReadOnlyCollection<LimitOrder> CreateLimitOrders(IndexSettings indexSettings,
