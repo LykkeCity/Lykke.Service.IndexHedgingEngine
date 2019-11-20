@@ -115,11 +115,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
         public async Task UpdateCrossPairLimitOrders(CrossAssetPairSettings crossAssetPairSettings)
         {
-            var allIndexPrices = await _indexPriceService.GetAllAsync();
-
             var allAssetPairSettings = await _instrumentService.GetAssetPairsAsync();
-
-            var allQuotes = _quoteService.GetAll();
 
             var assetPairSettings = allAssetPairSettings.FirstOrDefault(x => x.BaseAsset == crossAssetPairSettings.BaseAsset
                                                                           && x.QuoteAsset == crossAssetPairSettings.QuoteAsset);
@@ -138,6 +134,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             if (quoteAssetSettings == null)
                 throw new InvalidOperationException("Quote asset settings for the cross pair is not found");
+
+            var allIndexPrices = await _indexPriceService.GetAllAsync();
+
+            var allQuotes = _quoteService.GetAll();
 
             var price = CrossAssetPairPriceCalculator.Calculate(crossAssetPairSettings, allIndexPrices,
                 allAssetPairSettings, allQuotes, out var priceErrorMessage);
