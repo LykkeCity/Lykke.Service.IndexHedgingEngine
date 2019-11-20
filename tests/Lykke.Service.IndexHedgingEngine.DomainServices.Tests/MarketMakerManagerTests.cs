@@ -65,7 +65,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
             _tokenServiceMock.Setup(o => o.UpdateVolumeAsync(It.IsAny<string>(), It.IsAny<InternalTrade>()))
                 .Returns(() => Task.CompletedTask);
 
-            _crossAssetPairSettingsServiceMock.Setup(o => o.GetAll())
+            _crossAssetPairSettingsServiceMock.Setup(o => o.GetAllAsync())
                 .Returns(() => Task.FromResult(
                     (IReadOnlyCollection<CrossAssetPairSettings>) new List<CrossAssetPairSettings>().AsReadOnly()));
 

@@ -5,8 +5,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {
     public interface ICrossAssetPairSettingsService
     {
-        Task<IReadOnlyCollection<CrossAssetPairSettings>> GetAll();
+        Task<IReadOnlyCollection<CrossAssetPairSettings>> GetAllAsync();
 
-        Task<IReadOnlyCollection<CrossAssetPairSettings>> FindCrossAssetPairsByIndex(string indexName, string shortIndexName);
+        Task<IReadOnlyCollection<CrossAssetPairSettings>> FindCrossAssetPairsByIndexAsync(string indexName, string shortIndexName);
     }
 }

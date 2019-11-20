@@ -113,7 +113,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _traceWriter.LimitOrders(indexSettings.AssetPairId, limitOrders);
         }
 
-        public async Task UpdateCrossPairLimitOrders(CrossAssetPairSettings crossAssetPairSettings)
+        public async Task UpdateCrossPairLimitOrdersAsync(CrossAssetPairSettings crossAssetPairSettings)
         {
             var allAssetPairSettings = await _instrumentService.GetAssetPairsAsync();
 
@@ -190,17 +190,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
 
             // find all cross pairs with the index and cancel their limit orders
-            var indexCrossPairs = await _crossAssetPairSettingsService.FindCrossAssetPairsByIndex(indexName, null);
+            var indexCrossPairs = await _crossAssetPairSettingsService.FindCrossAssetPairsByIndexAsync(indexName, null);
 
             foreach (var crossAssetPairSettings in indexCrossPairs)
             {
-                await CancelCrossPairLimitOrders(crossAssetPairSettings);
+                await CancelCrossPairLimitOrdersAsync(crossAssetPairSettings);
             }
 
             _log.InfoWithDetails("Limit orders canceled", new {IndexName = indexName, indexSettings.AssetPairId});
         }
 
-        public async Task CancelCrossPairLimitOrders(CrossAssetPairSettings crossAssetPairSettings)
+        public async Task CancelCrossPairLimitOrdersAsync(CrossAssetPairSettings crossAssetPairSettings)
         {
             var allAssetPairSettings = await _instrumentService.GetAssetPairsAsync();
 

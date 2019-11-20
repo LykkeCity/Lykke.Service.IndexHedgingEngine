@@ -23,7 +23,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             _cache = new InMemoryCache<CrossAssetPairSettings>(settings => CacheKey, true);
         }
 
-        public async Task<IReadOnlyCollection<CrossAssetPairSettings>> GetAll()
+        public async Task<IReadOnlyCollection<CrossAssetPairSettings>> GetAllAsync()
         {
             IReadOnlyCollection<CrossAssetPairSettings> crossAssetPairSettings = _cache.GetAll();
 
@@ -37,9 +37,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             return crossAssetPairSettings;
         }
 
-        public async Task<IReadOnlyCollection<CrossAssetPairSettings>> FindCrossAssetPairsByIndex(string indexName, string shortIndexName)
+        public async Task<IReadOnlyCollection<CrossAssetPairSettings>> FindCrossAssetPairsByIndexAsync(string indexName, string shortIndexName)
         {
-            var allCrossPairs = await GetAll();
+            var allCrossPairs = await GetAllAsync();
 
             List<CrossAssetPairSettings> crossPairsToUpdate =
                 allCrossPairs.Where(x => x.BaseAsset == indexName || x.QuoteAsset == indexName).ToList();
@@ -47,7 +47,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             if (shortIndexName != null)
             {
                 var shortIndexCrossPairs = allCrossPairs.Where(x => x.BaseAsset == shortIndexName 
-                                                                || x.QuoteAsset == shortIndexName);
+                                                                 || x.QuoteAsset == shortIndexName);
 
                 crossPairsToUpdate.AddRange(shortIndexCrossPairs);
             }

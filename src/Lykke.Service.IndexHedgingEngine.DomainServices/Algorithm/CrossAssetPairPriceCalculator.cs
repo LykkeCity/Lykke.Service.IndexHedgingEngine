@@ -16,7 +16,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
         /// <param name="allAssetPairSettings">All available asset pairs settings</param>
         /// <param name="allQuotes">All available quotes</param>
         /// <param name="errorMessage">Error message if there was any</param>
-        /// <returns>Resulting price or null</returns>
+        /// <returns>Resulting price or null, if there was an error</returns>
         public static decimal? Calculate(
             CrossAssetPairSettings crossAssetPairSettings,
             IReadOnlyCollection<IndexPrice> indexPrices,
