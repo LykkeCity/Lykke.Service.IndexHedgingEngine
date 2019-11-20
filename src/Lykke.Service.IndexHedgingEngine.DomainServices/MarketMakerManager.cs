@@ -27,6 +27,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly IMarketMakerStateService _marketMakerStateService;
         private readonly ISettlementService _settlementService;
         private readonly IQuoteService _quoteService;
+        private readonly ICrossAssetPairSettingsService _crossAssetPairSettingsService;
         private readonly ILog _log;
 
         public MarketMakerManager(
@@ -40,6 +41,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             IMarketMakerStateService marketMakerStateService,
             ISettlementService settlementService,
             IQuoteService quoteService,
+            ICrossAssetPairSettingsService crossAssetPairSettingsService,
             ILogFactory logFactory)
         {
             _indexPriceService = indexPriceService;
@@ -52,6 +54,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _marketMakerStateService = marketMakerStateService;
             _settlementService = settlementService;
             _quoteService = quoteService;
+            _crossAssetPairSettingsService = crossAssetPairSettingsService;
             _log = logFactory.CreateLog(this);
         }
 
@@ -201,12 +204,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (shortIndex != null)
                 updateLimitOrdersTasks.Add(_marketMakerService.UpdateLimitOrdersAsync(shortIndex.Name));
 
-            await _marketMakerService.UpdateCrossPairsLimitOrders(index.Name);
-
-            if (shortIndex != null)
-                updateLimitOrdersTasks.Add(_marketMakerService.UpdateCrossPairsLimitOrders(shortIndex.Name));
+            await AddCrossPairsLimitOrdersUpdateTasks(index, shortIndex, updateLimitOrdersTasks);
 
             await Task.WhenAll(updateLimitOrdersTasks);
+        }
+
+        private async Task AddCrossPairsLimitOrdersUpdateTasks(Index index, Index shortIndex, List<Task> updateLimitOrdersTasks)
+        {
+            var crossPairsToUpdate = await _crossAssetPairSettingsService.FindCrossAssetPairsByIndex(index.Name, shortIndex.Name);
+
+            foreach (var crossAssetPairSettings in crossPairsToUpdate)
+                updateLimitOrdersTasks.Add(_marketMakerService.UpdateCrossPairLimitOrders(crossAssetPairSettings));
         }
     }
 }

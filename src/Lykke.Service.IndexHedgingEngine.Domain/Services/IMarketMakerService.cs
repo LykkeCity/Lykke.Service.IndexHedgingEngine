@@ -6,10 +6,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
     {
         Task UpdateLimitOrdersAsync(string indexName);
 
-        Task UpdateCrossPairsLimitOrders(string indexName);
+        Task UpdateCrossPairLimitOrders(CrossAssetPairSettings crossAssetPairSettings);
 
         Task CancelLimitOrdersAsync(string indexName);
 
-        Task CancelCrossPairsLimitOrders(string indexName);
+        Task CancelCrossPairLimitOrders(CrossAssetPairSettings crossAssetPairSettings);
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Repositories;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using MoreLinq;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 {
@@ -33,6 +35,26 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             }
 
             return crossAssetPairSettings;
+        }
+
+        public async Task<IReadOnlyCollection<CrossAssetPairSettings>> FindCrossAssetPairsByIndex(string indexName, string shortIndexName)
+        {
+            var allCrossPairs = await GetAll();
+
+            List<CrossAssetPairSettings> crossPairsToUpdate =
+                allCrossPairs.Where(x => x.BaseAsset == indexName || x.QuoteAsset == indexName).ToList();
+
+            if (shortIndexName != null)
+            {
+                var shortIndexCrossPairs = allCrossPairs.Where(x => x.BaseAsset == shortIndexName 
+                                                                || x.QuoteAsset == shortIndexName);
+
+                crossPairsToUpdate.AddRange(shortIndexCrossPairs);
+            }
+
+            var result = crossPairsToUpdate.DistinctBy(x => x.Id).ToList().AsReadOnly();
+
+            return result;
         }
     }
 }

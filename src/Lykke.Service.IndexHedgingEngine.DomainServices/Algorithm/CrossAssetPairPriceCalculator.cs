@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Common;
 using Lykke.Service.IndexHedgingEngine.Domain;
 
 namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
@@ -9,19 +7,22 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
     public static class CrossAssetPairPriceCalculator
     {
         /// <summary>
+        /// Calculates price for a cross asset pair.
         /// Tries to find 2 asset pairs - IndexToken/USD and (QuoteAsset/USD or USD/QuoteAsset)
-        /// and then calculate new price.
+        /// and calculate new price.
         /// </summary>
         /// <param name="crossAssetPairSettings">Settings for resulting asset pair</param>
         /// <param name="indexPrices">Actual prices of all the indices</param>
         /// <param name="allAssetPairSettings">All available asset pairs settings</param>
         /// <param name="allQuotes">All available quotes</param>
-        /// <returns>Tuple with resulting price or null and an error if there was any</returns>
-        public static Tuple<decimal?, string> Calculate(
+        /// <param name="errorMessage">Error message if there was any</param>
+        /// <returns>Resulting price or null</returns>
+        public static decimal? Calculate(
             CrossAssetPairSettings crossAssetPairSettings,
             IReadOnlyCollection<IndexPrice> indexPrices,
             IReadOnlyCollection<AssetPairSettings> allAssetPairSettings,
-            IReadOnlyCollection<Quote> allQuotes)
+            IReadOnlyCollection<Quote> allQuotes,
+            out string errorMessage)
         {
             var baseAsset = crossAssetPairSettings.BaseAsset;
             var quoteAsset = crossAssetPairSettings.QuoteAsset;
@@ -31,15 +32,21 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                 .FirstOrDefault(x => x.BaseAsset == baseAsset && x.QuoteAsset == quoteAsset);
 
             if (resultingAssetPairSettings == null)
-                return new Tuple<decimal?, string>(null, $"Can't find {baseAsset}/{quoteAsset} asset pair settings.");
+            {
+                errorMessage = $"Can't find {baseAsset}/{quoteAsset} asset pair settings.";
+                return null;
+            }
 
             // base asset is always an index token
 
             IndexPrice baseIndexTokenPrice = indexPrices.FirstOrDefault(x => x.Name == baseAsset);
 
             if (baseIndexTokenPrice == null)
-                return new Tuple<decimal?, string>(null, $"Can't find {baseAsset} index price.");
-
+            {
+                errorMessage = $"Can't find {baseAsset} index price.";
+                return null;
+            }
+            
             // if quote asset also is an index token, then get its price
 
             IndexPrice quoteIndexTokenPrice = indexPrices.FirstOrDefault(x => x.Name == baseAsset);
@@ -49,7 +56,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             if (quoteIndexTokenPrice != null)
             {
                 if (quoteIndexTokenPrice.Price <= 0)
-                    return new Tuple<decimal?, string>(null, $"Quote Index Token price value is {quoteIndexTokenPrice.Price}.");
+                {
+                    errorMessage = $"Quote Index Token price value is {quoteIndexTokenPrice.Price}.";
+                    return null;
+                }
 
                 result = baseIndexTokenPrice.Price / quoteIndexTokenPrice.Price;
             }
@@ -65,7 +75,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                                                                             && x.QuoteAsset == quoteAsset).ToList();
 
                 if (assetPairsWithQuoteAsset.Count != 1)
-                    return new Tuple<decimal?, string>(null, $"Found {assetPairsWithQuoteAsset.Count} {quoteAsset}/USD or USD/{quoteAsset} asset pairs.");
+                {
+                    errorMessage = $"Found {assetPairsWithQuoteAsset.Count} {quoteAsset}/USD or USD/{quoteAsset} asset pairs.";
+                    return null;
+                }
 
                 AssetPairSettings assetPairWithQuoteAsset = assetPairsWithQuoteAsset.First();
 
@@ -74,12 +87,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                 Quote quoteTickPrice = allQuotes.FirstOrDefault(x => x.AssetPairId == assetPairWithQuoteAsset.AssetPairId);
 
                 if (quoteTickPrice == null)
-                    return new Tuple<decimal?, string>(null, $"Found {assetPairsWithQuoteAsset.Count} {quoteAsset}/USD or USD/{quoteAsset} asset pairs.");
+                {
+                    errorMessage = $"Found {assetPairsWithQuoteAsset.Count} {quoteAsset}/USD or USD/{quoteAsset} asset pairs.";
+                    return null;
+                }
 
                 decimal quoteIndexTokenPriceValue = quoteTickPrice.Mid;
 
                 if (quoteIndexTokenPriceValue <= 0)
-                    return new Tuple<decimal?, string>(null, $"Quote Index Token price value is {quoteIndexTokenPriceValue}.");
+                {
+                    errorMessage = $"Quote Index Token price value is {quoteIndexTokenPriceValue}.";
+                    return null;
+                }
 
                 // calculating price
                 
@@ -91,7 +110,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
                     result = baseIndexTokenPrice.Price / quoteIndexTokenPriceValue;
             }
 
-            return new Tuple<decimal?, string>(result, string.Empty);
+            errorMessage = null;
+
+            return result;
         }
     }
 }
