@@ -3,7 +3,7 @@
 namespace Lykke.Service.IndexHedgingEngine.Domain
 {
     /// <summary>
-    /// Represents cross asset pairs setting for exchange.
+    /// Represents cross asset pairs setting.
     /// </summary>
     public class CrossAssetPairSettings
     {
@@ -38,5 +38,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         /// Volume on 'sell' side.
         /// </summary>
         public decimal SellVolume { get; set; }
+
+        /// <summary>
+        /// Is cross pair enabled or disabled.
+        /// </summary>
+        public CrossAssetPairsSettingsMode Mode { get; set; }
     }
 }

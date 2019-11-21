@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
 using Lykke.AzureStorage.Tables.Entity.ValueTypesMerging;
+using Lykke.Service.IndexHedgingEngine.Domain;
 
 namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
 {
@@ -15,6 +16,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         private int _buyVolume;
         private int _sellSpread;
         private int _sellVolume;
+        private CrossAssetPairsSettingsMode _mode;
 
         public CrossAssetPairSettingsEntity()
         {
@@ -26,7 +28,18 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             RowKey = rowKey;
         }
         
-        public Guid Id { get; set; }
+        public Guid Id
+        {
+            get => _id;
+            set
+            {
+                if (_id != value)
+                {
+                    _id = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
 
         public string BaseAsset { get; set; }
 
@@ -79,6 +92,19 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
                 if (_sellVolume != value)
                 {
                     _sellVolume = value;
+                    MarkValueTypePropertyAsDirty();
+                }
+            }
+        }
+
+        public CrossAssetPairsSettingsMode Mode
+        {
+            get => _mode;
+            set
+            {
+                if (_mode != value)
+                {
+                    _mode = value;
                     MarkValueTypePropertyAsDirty();
                 }
             }
