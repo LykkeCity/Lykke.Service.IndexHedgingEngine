@@ -59,7 +59,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             {
                 if (quoteIndexTokenPrice.Price <= 0)
                 {
-                    errorMessage = $"Quote Index Token price value is {quoteIndexTokenPrice.Price}.";
+                    errorMessage = $"{quoteIndexTokenPrice.Name} price value is {quoteIndexTokenPrice.Price}.";
 
                     return null;
                 }
@@ -79,7 +79,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                 if (assetPairsWithQuoteAsset.Count != 1)
                 {
-                    errorMessage = $"Found {assetPairsWithQuoteAsset.Count} {quoteAsset}/USD or USD/{quoteAsset} asset pairs.";
+                    errorMessage = $"Found {assetPairsWithQuoteAsset.Count} {quoteAsset}/USD or USD/{quoteAsset} asset pairs settings.";
 
                     return null;
                 }
@@ -92,7 +92,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                 if (quoteTickPrice == null)
                 {
-                    errorMessage = $"Found {assetPairsWithQuoteAsset.Count} {quoteAsset}/USD or USD/{quoteAsset} asset pairs.";
+                    errorMessage = $"Found {assetPairsWithQuoteAsset.Count} {quoteAsset}/USD or USD/{quoteAsset} quotes.";
 
                     return null;
                 }
@@ -101,7 +101,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
                 if (quoteIndexTokenPriceValue <= 0)
                 {
-                    errorMessage = $"Quote Index Token price value is {quoteIndexTokenPriceValue}.";
+                    errorMessage = $"{quoteTickPrice.AssetPairId} mid price is {quoteIndexTokenPriceValue}.";
 
                     return null;
                 }
