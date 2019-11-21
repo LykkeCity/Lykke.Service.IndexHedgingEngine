@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.Balances;
 using Lykke.Service.IndexHedgingEngine.AzureRepositories.ExternalOrders;
@@ -53,6 +53,9 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
 
             CreateMap<AssetPairSettings, AssetPairSettingsEntity>(MemberList.Source);
             CreateMap<AssetPairSettingsEntity, AssetPairSettings>(MemberList.Destination);
+
+            CreateMap<CrossAssetPairSettings, CrossAssetPairSettingsEntity>(MemberList.Source);
+            CreateMap<CrossAssetPairSettingsEntity, CrossAssetPairSettings>(MemberList.Destination);
 
             CreateMap<HedgeLimitOrder, HedgeLimitOrderEntity>(MemberList.Source)
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Timestamp))

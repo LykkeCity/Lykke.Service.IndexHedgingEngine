@@ -1,4 +1,4 @@
-using Autofac;
+﻿using Autofac;
 using AzureStorage.Tables;
 using AzureStorage.Tables.Templates.Index;
 using JetBrains.Annotations;
@@ -91,6 +91,12 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories
                     AzureTableStorage<AssetPairSettingsEntity>.Create(_connectionString,
                         "AssetPairSettings", container.Resolve<ILogFactory>())))
                 .As<IAssetPairSettingsRepository>()
+                .SingleInstance();
+
+            builder.Register(container => new CrossAssetPairSettingsRepository(
+                    AzureTableStorage<CrossAssetPairSettingsEntity>.Create(_connectionString,
+                        "CrossAssetPairSettings", container.Resolve<ILogFactory>())))
+                .As<ICrossAssetPairSettingsRepository>()
                 .SingleInstance();
 
             builder.Register(container => new HedgeLimitOrderRepository(
