@@ -7,6 +7,9 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
     /// </summary>
     public class CrossAssetPairSettings
     {
+        /// <summary>
+        /// Identifier.
+        /// </summary>
         public Guid Id { get; set; }
 
         /// <summary>

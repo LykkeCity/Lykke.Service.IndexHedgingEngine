@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Services
@@ -7,6 +8,16 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
     {
         Task<IReadOnlyCollection<CrossAssetPairSettings>> GetAllAsync();
 
-        Task<IReadOnlyCollection<CrossAssetPairSettings>> FindCrossAssetPairsByIndexAsync(string indexName, string shortIndexName);
+        Task<IReadOnlyCollection<CrossAssetPairSettings>> FindByIndexAsync(string indexName, string shortIndexName);
+
+        Task<CrossAssetPairSettings> FindByBaseAndQuoteAssetsAsync(string baseAsset, string quoteAsset);
+
+        Task<CrossAssetPairSettings> FindByIdAsync(Guid id);
+
+        Task AddCrossAssetPairAsync(CrossAssetPairSettings crossAssetPairSettings, string userId);
+
+        Task UpdateCrossAssetPairAsync(CrossAssetPairSettings crossAssetPairSettings, string userId);
+
+        Task DeleteCrossAssetPairAsync(Guid id, string userId);
     }
 }

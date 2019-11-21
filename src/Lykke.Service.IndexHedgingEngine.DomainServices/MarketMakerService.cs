@@ -191,7 +191,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             // find all cross pairs with the index and cancel their limit orders
 
-            var indexCrossPairs = await _crossAssetPairSettingsService.FindCrossAssetPairsByIndexAsync(indexName, null);
+            var indexCrossPairs = await _crossAssetPairSettingsService.FindByIndexAsync(indexName, null);
 
             foreach (var crossAssetPairSettings in indexCrossPairs)
             {
