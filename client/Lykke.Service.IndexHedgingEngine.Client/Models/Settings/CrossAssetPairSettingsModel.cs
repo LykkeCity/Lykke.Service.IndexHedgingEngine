@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Lykke.Service.IndexHedgingEngine.Domain
+namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settings
 {
     /// <summary>
     /// Represents cross asset pairs setting.
     /// </summary>
-    public class CrossAssetPairSettings
+    public class CrossAssetPairSettingsModel
     {
         /// <summary>
         /// Identifier.

@@ -7,7 +7,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
     /// <summary>
     /// Represents cross asset pairs setting mode.
     /// </summary>
-    public enum CrossAssetPairsSettingsMode
+    public enum CrossAssetPairSettingsMode
     {
         /// <summary>
         /// Unspecified mode.

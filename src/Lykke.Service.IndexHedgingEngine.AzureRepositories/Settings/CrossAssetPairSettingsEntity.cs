@@ -16,7 +16,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         private int _buyVolume;
         private int _sellSpread;
         private int _sellVolume;
-        private CrossAssetPairsSettingsMode _mode;
+        private CrossAssetPairSettingsMode _mode;
 
         public CrossAssetPairSettingsEntity()
         {
@@ -97,7 +97,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             }
         }
 
-        public CrossAssetPairsSettingsMode Mode
+        public CrossAssetPairSettingsMode Mode
         {
             get => _mode;
             set

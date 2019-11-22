@@ -66,12 +66,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             return result;
         }
 
-        public async Task<IReadOnlyCollection<CrossAssetPairSettings>> FindByIndexAsync(string indexName, string shortIndexName)
+        public async Task<IReadOnlyCollection<CrossAssetPairSettings>> FindEnabledByIndexAsync(string indexName, string shortIndexName)
         {
             var allCrossPairs = await GetAllAsync();
 
-            List<CrossAssetPairSettings> crossPairsToUpdate =
-                allCrossPairs.Where(x => x.BaseAsset == indexName || x.QuoteAsset == indexName).ToList();
+            List<CrossAssetPairSettings> crossPairsToUpdate = allCrossPairs
+                .Where(x => x.Mode == CrossAssetPairSettingsMode.Enabled).ToList();
+
+            crossPairsToUpdate = crossPairsToUpdate.Where(x => x.BaseAsset == indexName || x.QuoteAsset == indexName).ToList();
 
             if (shortIndexName != null)
             {
@@ -124,6 +126,24 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             _log.InfoWithDetails("Cross asset pair settings updated", new { crossAssetPairSettings, userId });
         }
 
+        public async Task UpdateModeAsync(Guid id, CrossAssetPairSettingsMode mode, string userId)
+        {
+            CrossAssetPairSettings crossAssetPairSettings = await FindByIdAsync(id);
+
+            if (crossAssetPairSettings == null)
+                throw new EntityNotFoundException();
+
+            crossAssetPairSettings.Mode = mode;
+
+            await ValidateCrossAssetPairSettingsAsync(crossAssetPairSettings);
+
+            await _crossAssetPairSettingsRepository.UpdateAsync(crossAssetPairSettings);
+
+            _cache.Set(crossAssetPairSettings);
+
+            _log.InfoWithDetails("Cross asset pair settings mode changed", new { crossAssetPairSettings, mode, userId });
+        }
+
         public async Task DeleteCrossAssetPairAsync(Guid id, string userId)
         {
             CrossAssetPairSettings existingAssetPairSettings = await FindByIdAsync(id);
@@ -131,7 +151,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             if (existingAssetPairSettings == null)
                 throw new EntityNotFoundException();
 
-            if (existingAssetPairSettings.Mode != CrossAssetPairsSettingsMode.Disabled)
+            if (existingAssetPairSettings.Mode != CrossAssetPairSettingsMode.Disabled)
                 throw new InvalidOperationException("Cross asset pair has to be stopped before deleting.");
 
             await _crossAssetPairSettingsRepository.DeleteAsync(id);

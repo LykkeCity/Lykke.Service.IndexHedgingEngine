@@ -149,6 +149,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
+        public async Task HandleCrossAssetPairStateAsync(Guid id, CrossAssetPairSettingsMode mode, string userId)
+        {
+            await _crossAssetPairSettingsService.UpdateModeAsync(id, mode, userId);
+
+            CrossAssetPairSettings crossAssetPairSettings = await _crossAssetPairSettingsService.FindByIdAsync(id);
+
+            if (mode == CrossAssetPairSettingsMode.Enabled)
+                await _marketMakerService.UpdateCrossPairLimitOrdersAsync(crossAssetPairSettings);
+            else
+                await _marketMakerService.CancelCrossPairLimitOrdersAsync(crossAssetPairSettings);
+        }
+
         public async Task ExecuteAsync()
         {
             await _semaphore.WaitAsync();
@@ -213,7 +225,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
         private async Task UpdateCrossPairsMarketMakerOrdersAsync(Index index, Index shortIndex, List<Task> updateLimitOrdersTasks)
         {
-            var crossPairsToUpdate = await _crossAssetPairSettingsService.FindByIndexAsync(index.Name, shortIndex?.Name);
+            var crossPairsToUpdate = await _crossAssetPairSettingsService.FindEnabledByIndexAsync(index.Name, shortIndex?.Name);
 
             foreach (var crossAssetPairSettings in crossPairsToUpdate)
                 updateLimitOrdersTasks.Add(_marketMakerService.UpdateCrossPairLimitOrdersAsync(crossAssetPairSettings));

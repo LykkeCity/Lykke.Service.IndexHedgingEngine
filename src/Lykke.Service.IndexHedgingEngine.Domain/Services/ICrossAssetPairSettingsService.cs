@@ -8,7 +8,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
     {
         Task<IReadOnlyCollection<CrossAssetPairSettings>> GetAllAsync();
 
-        Task<IReadOnlyCollection<CrossAssetPairSettings>> FindByIndexAsync(string indexName, string shortIndexName);
+        Task<IReadOnlyCollection<CrossAssetPairSettings>> FindEnabledByIndexAsync(string indexName, string shortIndexName);
 
         Task<CrossAssetPairSettings> FindByBaseAndQuoteAssetsAsync(string baseAsset, string quoteAsset);
 
@@ -17,6 +17,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
         Task AddCrossAssetPairAsync(CrossAssetPairSettings crossAssetPairSettings, string userId);
 
         Task UpdateCrossAssetPairAsync(CrossAssetPairSettings crossAssetPairSettings, string userId);
+
+        Task UpdateModeAsync(Guid id, CrossAssetPairSettingsMode mode, string userId);
 
         Task DeleteCrossAssetPairAsync(Guid id, string userId);
     }

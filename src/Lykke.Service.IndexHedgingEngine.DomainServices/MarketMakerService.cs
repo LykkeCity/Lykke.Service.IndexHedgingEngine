@@ -189,9 +189,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
 
-            // find all cross pairs with the index and cancel their limit orders
+            // find enabled cross pairs with the index and cancel their limit orders
 
-            var indexCrossPairs = await _crossAssetPairSettingsService.FindByIndexAsync(indexName, null);
+            var indexCrossPairs = await _crossAssetPairSettingsService.FindEnabledByIndexAsync(indexName, null);
 
             foreach (var crossAssetPairSettings in indexCrossPairs)
             {
@@ -205,8 +205,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         {
             var allAssetPairSettings = await _instrumentService.GetAssetPairsAsync();
 
-            var assetPairSettings = allAssetPairSettings.FirstOrDefault(x => x.BaseAsset == crossAssetPairSettings.BaseAsset
-                                                                             && x.QuoteAsset == crossAssetPairSettings.QuoteAsset);
+            var assetPairSettings = allAssetPairSettings.FirstOrDefault(x => x.BaseAsset == crossAssetPairSettings.BaseAsset 
+                                                                         && x.QuoteAsset == crossAssetPairSettings.QuoteAsset);
 
             if (assetPairSettings == null)
                 throw new InvalidOperationException("Asset pair settings for the cross pair is not found");
