@@ -117,6 +117,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             {
                 IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
 
+                IReadOnlyCollection<CrossAssetPairSettings> crossAssetPairsSettings = await _crossAssetPairSettingsService.GetAllAsync();
+
                 foreach (InternalTrade internalTrade in internalTrades)
                 {
                     IndexSettings indexSettings = indicesSettings
@@ -127,6 +129,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                         await _internalTradeService.RegisterAsync(internalTrade);
 
                         await _tokenService.UpdateVolumeAsync(indexSettings.AssetId, internalTrade);
+                    }
+
+                    CrossAssetPairSettings crossAssetPairSettings = crossAssetPairsSettings
+                        .SingleOrDefault(x => x.AssetPairId == internalTrade.AssetPairId);
+
+                    if (crossAssetPairSettings != null)
+                    {
+                        await _internalTradeService.RegisterAsync(internalTrade);
+
+                        await _tokenService.UpdateVolumeCrossPairAsync(crossAssetPairSettings.BaseAsset, crossAssetPairSettings.QuoteAsset, internalTrade);
                     }
                 }
             }

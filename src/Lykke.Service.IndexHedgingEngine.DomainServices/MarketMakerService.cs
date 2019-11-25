@@ -117,20 +117,19 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         {
             var allAssetPairSettings = await _instrumentService.GetAssetPairsAsync();
 
-            var assetPairSettings = allAssetPairSettings.FirstOrDefault(x => x.BaseAsset == crossAssetPairSettings.BaseAsset
-                                                                          && x.QuoteAsset == crossAssetPairSettings.QuoteAsset);
+            var assetPairSettings = allAssetPairSettings.FirstOrDefault(x => x.AssetPairId == crossAssetPairSettings.AssetPairId);
 
             if (assetPairSettings == null)
                 throw new InvalidOperationException("Asset pair settings for the cross pair is not found");
 
             AssetSettings baseAssetSettings =
-                await _instrumentService.GetAssetAsync(crossAssetPairSettings.BaseAsset, ExchangeNames.Lykke);
+                await _instrumentService.GetAssetAsync(assetPairSettings.BaseAsset, ExchangeNames.Lykke);
 
             if (baseAssetSettings == null)
                 throw new InvalidOperationException("Base asset settings for the cross pair is not found");
 
             AssetSettings quoteAssetSettings =
-                await _instrumentService.GetAssetAsync(crossAssetPairSettings.QuoteAsset, ExchangeNames.Lykke);
+                await _instrumentService.GetAssetAsync(assetPairSettings.QuoteAsset, ExchangeNames.Lykke);
 
             if (quoteAssetSettings == null)
                 throw new InvalidOperationException("Quote asset settings for the cross pair is not found");
@@ -205,8 +204,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         {
             var allAssetPairSettings = await _instrumentService.GetAssetPairsAsync();
 
-            var assetPairSettings = allAssetPairSettings.FirstOrDefault(x => x.BaseAsset == crossAssetPairSettings.BaseAsset 
-                                                                         && x.QuoteAsset == crossAssetPairSettings.QuoteAsset);
+            var assetPairSettings = allAssetPairSettings.FirstOrDefault(x => x.AssetPairId == crossAssetPairSettings.AssetPairId);
 
             if (assetPairSettings == null)
                 throw new InvalidOperationException("Asset pair settings for the cross pair is not found");

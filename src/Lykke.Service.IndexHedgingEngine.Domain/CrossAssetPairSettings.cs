@@ -13,14 +13,19 @@ namespace Lykke.Service.IndexHedgingEngine.Domain
         public Guid Id { get; set; }
 
         /// <summary>
-        /// Name of base asset.
+        /// Base asset.
         /// </summary>
         public string BaseAsset { get; set; }
 
         /// <summary>
-        /// Name of quote asset.
+        /// Quote asset.
         /// </summary>
         public string QuoteAsset { get; set; }
+
+        /// <summary>
+        /// Identifier of the asset pair.
+        /// </summary>
+        public string AssetPairId { get; set; }
 
         /// <summary>
         /// Spread on 'buy' side.

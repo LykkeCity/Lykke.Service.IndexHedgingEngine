@@ -41,9 +41,17 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             }
         }
 
+        /// <summary>
+        /// Base asset.
+        /// </summary>
         public string BaseAsset { get; set; }
 
+        /// <summary>
+        /// Quote asset.
+        /// </summary>
         public string QuoteAsset { get; set; }
+
+        public string AssetPairId { get; set; }
 
         public int BuySpread
         {

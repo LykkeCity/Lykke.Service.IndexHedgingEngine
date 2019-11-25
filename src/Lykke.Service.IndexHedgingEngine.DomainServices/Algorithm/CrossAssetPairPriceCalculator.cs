@@ -24,19 +24,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
             IReadOnlyCollection<Quote> allQuotes,
             out string errorMessage)
         {
-            var baseAsset = crossAssetPairSettings.BaseAsset;
-            var quoteAsset = crossAssetPairSettings.QuoteAsset;
             var usd = "USD";
 
-            AssetPairSettings resultingAssetPairSettings = allAssetPairSettings
-                .FirstOrDefault(x => x.BaseAsset == baseAsset && x.QuoteAsset == quoteAsset);
+            AssetPairSettings assetPairSettings = allAssetPairSettings
+                .FirstOrDefault(x => x.AssetPairId == crossAssetPairSettings.AssetPairId);
 
-            if (resultingAssetPairSettings == null)
+            if (assetPairSettings == null)
             {
-                errorMessage = $"Can't find {baseAsset}/{quoteAsset} asset pair settings.";
+                errorMessage = $"Can't find asset pair settings for {crossAssetPairSettings.AssetPairId}.";
 
                 return null;
             }
+
+            var baseAsset = assetPairSettings.BaseAsset;
+            var quoteAsset = assetPairSettings.QuoteAsset;
 
             // base asset is always an index token
 

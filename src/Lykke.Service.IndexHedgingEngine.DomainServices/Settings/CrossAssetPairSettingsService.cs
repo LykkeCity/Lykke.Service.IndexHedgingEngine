@@ -48,11 +48,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             return crossAssetPairSettings;
         }
 
-        public async Task<CrossAssetPairSettings> FindByBaseAndQuoteAssetsAsync(string baseAsset, string quoteAsset)
+        public async Task<CrossAssetPairSettings> FindByAssetPairIdAsync(string assetPairId)
         {
             var allCrossPairs = await GetAllAsync();
 
-            var result = allCrossPairs.FirstOrDefault(x => x.BaseAsset == baseAsset && x.QuoteAsset == quoteAsset);
+            var result = allCrossPairs.FirstOrDefault(x => x.AssetPairId == assetPairId);
 
             return result;
         }
@@ -91,7 +91,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
         public async Task AddCrossAssetPairAsync(CrossAssetPairSettings crossAssetPairSettings, string userId)
         {
             CrossAssetPairSettings existingAssetPairSettings =
-                await FindByBaseAndQuoteAssetsAsync(crossAssetPairSettings.BaseAsset, crossAssetPairSettings.QuoteAsset);
+                await FindByAssetPairIdAsync(crossAssetPairSettings.AssetPairId);
 
             if (crossAssetPairSettings.Id != Guid.Empty)
                 throw new InvalidOperationException("Id must be empty");
@@ -116,6 +116,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
             if (existingAssetPairSettings == null)
                 throw new EntityNotFoundException();
+
+            existingAssetPairSettings.BuySpread = crossAssetPairSettings.BuySpread;
+            existingAssetPairSettings.BuyVolume = crossAssetPairSettings.BuyVolume;
+            existingAssetPairSettings.SellSpread = crossAssetPairSettings.SellSpread;
+            existingAssetPairSettings.SellVolume = crossAssetPairSettings.SellVolume;
 
             await ValidateCrossAssetPairSettingsAsync(crossAssetPairSettings);
 
@@ -175,9 +180,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
         }
 
         private static string GetKey(CrossAssetPairSettings crossAssetPairSettings)
-            => GetKey(crossAssetPairSettings.BaseAsset, crossAssetPairSettings.QuoteAsset);
+            => GetKey(crossAssetPairSettings.AssetPairId);
 
-        private static string GetKey(string baseAsset, string quoteAsset)
-            => $"{baseAsset}_{quoteAsset}";
+        private static string GetKey(string assetPairId)
+            => $"{assetPairId}";
     }
 }

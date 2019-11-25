@@ -10,7 +10,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task<IReadOnlyCollection<CrossAssetPairSettings>> FindEnabledByIndexAsync(string indexName, string shortIndexName);
 
-        Task<CrossAssetPairSettings> FindByBaseAndQuoteAssetsAsync(string baseAsset, string quoteAsset);
+        Task<CrossAssetPairSettings> FindByAssetPairIdAsync(string assetPairId);
 
         Task<CrossAssetPairSettings> FindByIdAsync(Guid id);
 
