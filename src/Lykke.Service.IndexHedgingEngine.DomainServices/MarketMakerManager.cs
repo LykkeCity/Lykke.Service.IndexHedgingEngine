@@ -229,13 +229,15 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             {
                 updateLimitOrdersTasks.Add(_marketMakerService.UpdateLimitOrdersAsync(shortIndex.Name));
 
-                await UpdateCrossPairsMarketMakerOrdersAsync(index, shortIndex, updateLimitOrdersTasks);
+                // commented out before the first release to dev env (not sure about logic here: TokenService -> UpdateVolumeCrossPairAsync)
+                // await UpdateCrossPairsMarketMakerOrdersAsync(updateLimitOrdersTasks, index, shortIndex);
             }
 
             await Task.WhenAll(updateLimitOrdersTasks);
         }
 
-        private async Task UpdateCrossPairsMarketMakerOrdersAsync(Index index, Index shortIndex, List<Task> updateLimitOrdersTasks)
+        private async Task UpdateCrossPairsMarketMakerOrdersAsync(List<Task> updateLimitOrdersTasks, Index index,
+            Index shortIndex)
         {
             var crossPairsToUpdate = await _crossAssetPairSettingsService.FindEnabledByIndexAsync(index.Name, shortIndex?.Name);
 
