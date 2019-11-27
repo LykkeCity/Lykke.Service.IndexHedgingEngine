@@ -33,8 +33,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
                     hedgeSettings = new HedgeSettings
                     {
                         MarketOrderMarkup = .02m,
-                        ThresholdDown = 1000,
-                        ThresholdUp = 5000,
                         ThresholdDownBuy = 1000,
                         ThresholdDownSell = 1000,
                         ThresholdUpBuy = 5000,
@@ -44,35 +42,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
                 }
 
                 _cache.Initialize(new[] { hedgeSettings });
-
-                bool isDirty = false;
-
-                if (hedgeSettings.ThresholdDownBuy == default(decimal))
-                {
-                    hedgeSettings.ThresholdDownBuy = hedgeSettings.ThresholdDown;
-                    isDirty = true;
-                }
-
-                if (hedgeSettings.ThresholdDownSell == default(decimal))
-                {
-                    hedgeSettings.ThresholdDownSell = hedgeSettings.ThresholdDown;
-                    isDirty = true;
-                }
-
-                if (hedgeSettings.ThresholdUpBuy == default(decimal))
-                {
-                    hedgeSettings.ThresholdUpBuy = hedgeSettings.ThresholdUp;
-                    isDirty = true;
-                }
-
-                if (hedgeSettings.ThresholdUpSell == default(decimal))
-                {
-                    hedgeSettings.ThresholdUpSell = hedgeSettings.ThresholdUp;
-                    isDirty = true;
-                }
-
-                if (isDirty)
-                    await UpdateAsync(hedgeSettings);
             }
 
             return hedgeSettings;

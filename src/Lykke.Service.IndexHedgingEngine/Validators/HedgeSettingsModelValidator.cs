@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Client.Models.Settings;
 
@@ -9,16 +9,27 @@ namespace Lykke.Service.IndexHedgingEngine.Validators
     {
         public HedgeSettingsModelValidator()
         {
-            RuleFor(o => o.ThresholdDown)
+            RuleFor(o => o.ThresholdDownBuy)
                 .GreaterThanOrEqualTo(0)
-                .WithMessage("Threshold down should be greater than or equal to zero");
-            
-            RuleFor(o => o.ThresholdUp)
+                .WithMessage("Threshold down buy should be greater than or equal to zero");
+
+            RuleFor(o => o.ThresholdDownSell)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Threshold down sell should be greater than or equal to zero");
+
+            RuleFor(o => o.ThresholdUpBuy)
                 .Cascade(CascadeMode.StopOnFirstFailure)
                 .GreaterThanOrEqualTo(0)
-                .WithMessage("Threshold up should be greater than or equal to zero")
-                .Must((model, value) => model.ThresholdDown <= value)
-                .WithMessage("Threshold up should be greater than or equal to threshold down");
+                .WithMessage("Threshold up buy should be greater than or equal to zero")
+                .Must((model, value) => model.ThresholdDownBuy <= value)
+                .WithMessage("Threshold up buy should be greater than or equal to threshold down buy");
+
+            RuleFor(o => o.ThresholdUpSell)
+                .Cascade(CascadeMode.StopOnFirstFailure)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Threshold up sell should be greater than or equal to zero")
+                .Must((model, value) => model.ThresholdDownSell <= value)
+                .WithMessage("Threshold up sell should be greater than or equal to threshold down sell");
 
             RuleFor(o => o.ThresholdCritical)
                 .GreaterThan(0)
