@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Client.Models;
 using Lykke.Service.IndexHedgingEngine.Client.Models.AssetHedgeSettings;
@@ -75,6 +75,9 @@ namespace Lykke.Service.IndexHedgingEngine
 
             CreateMap<QuoteThresholdSettings, QuoteThresholdSettingsModel>(MemberList.Source);
             CreateMap<QuoteThresholdSettingsModel, QuoteThresholdSettings>(MemberList.Destination);
+
+            CreateMap<CrossAssetPairSettings, CrossAssetPairSettingsModel>(MemberList.Source);
+            CreateMap<CrossAssetPairSettingsModel, CrossAssetPairSettings>(MemberList.Destination);
 
             CreateMap<AssetSettlement, AssetSettlementModel>(MemberList.Source)
                 .ForSourceMember(src => src.SettlementId, opt => opt.DoNotValidate());

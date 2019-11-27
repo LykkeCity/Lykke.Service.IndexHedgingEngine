@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Services
@@ -13,6 +13,8 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
             string comment, string userId);
 
         Task UpdateVolumeAsync(string assetId, InternalTrade internalTrade);
+
+        Task UpdateVolumeCrossPairAsync(string baseAssetId, string quoteAssetId, InternalTrade internalTrade);
 
         Task CloseAsync(string assetId, decimal volume, decimal price);
     }

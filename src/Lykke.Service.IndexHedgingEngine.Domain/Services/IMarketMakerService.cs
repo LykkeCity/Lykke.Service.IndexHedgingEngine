@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {
@@ -6,6 +6,10 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
     {
         Task UpdateLimitOrdersAsync(string indexName);
 
+        Task UpdateCrossPairLimitOrdersAsync(CrossAssetPairSettings crossAssetPairSettings);
+
         Task CancelLimitOrdersAsync(string indexName);
+
+        Task CancelCrossPairLimitOrdersAsync(CrossAssetPairSettings crossAssetPairSettings);
     }
 }

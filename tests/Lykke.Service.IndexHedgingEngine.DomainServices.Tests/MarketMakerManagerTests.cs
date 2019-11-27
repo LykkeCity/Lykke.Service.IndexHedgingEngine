@@ -41,6 +41,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
         private readonly Mock<IQuoteService> _quoteServiceMock =
             new Mock<IQuoteService>();
 
+        private readonly Mock<ICrossAssetPairSettingsService> _crossAssetPairSettingsServiceMock =
+            new Mock<ICrossAssetPairSettingsService>();
+
         private MarketMakerManager _marketMakerManager;
 
         private List<IndexSettings> _indexSettings = new List<IndexSettings>();
@@ -62,6 +65,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
             _tokenServiceMock.Setup(o => o.UpdateVolumeAsync(It.IsAny<string>(), It.IsAny<InternalTrade>()))
                 .Returns(() => Task.CompletedTask);
 
+            _crossAssetPairSettingsServiceMock.Setup(o => o.GetAllAsync())
+                .Returns(() => Task.FromResult(
+                    (IReadOnlyCollection<CrossAssetPairSettings>) new List<CrossAssetPairSettings>().AsReadOnly()));
+
             _marketMakerManager = new MarketMakerManager(
                 _indexPriceServiceMock.Object,
                 _marketMakerServiceMock.Object,
@@ -73,6 +80,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests
                 _marketMakerStateServiceMock.Object,
                 _settlementServiceMock.Object,
                 _quoteServiceMock.Object,
+                _crossAssetPairSettingsServiceMock.Object,
                 EmptyLogFactory.Instance);
         }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
 using Lykke.AzureStorage.Tables.Entity.ValueTypesMerging;
@@ -21,38 +20,6 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
         {
             PartitionKey = partitionKey;
             RowKey = rowKey;
-        }
-
-        [Obsolete]
-        private decimal _thresholdUp;
-        [Obsolete]
-        public decimal ThresholdUp
-        {
-            get => _thresholdUp;
-            set
-            {
-                if (_thresholdUp != value)
-                {
-                    _thresholdUp = value;
-                    MarkValueTypePropertyAsDirty();
-                }
-            }
-        }
-
-        [Obsolete]
-        private decimal _thresholdDown;
-        [Obsolete]
-        public decimal ThresholdDown
-        {
-            get => _thresholdDown;
-            set
-            {
-                if (_thresholdDown != value)
-                {
-                    _thresholdDown = value;
-                    MarkValueTypePropertyAsDirty();
-                }
-            }
         }
 
         private decimal _thresholdUpBuy;

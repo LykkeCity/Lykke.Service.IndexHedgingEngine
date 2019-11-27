@@ -10,18 +10,6 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settings
     public class HedgeSettingsModel
     {
         /// <summary>
-        /// The upper delta threshold used for risk exposure.
-        /// </summary>
-        [Obsolete]
-        public decimal ThresholdUp { get; set; }
-
-        /// <summary>
-        /// The lower delta threshold used for risk exposure.
-        /// </summary>
-        [Obsolete]
-        public decimal ThresholdDown { get; set; }
-
-        /// <summary>
         /// The upper delta threshold used for risk exposure for buying.
         /// </summary>
         public decimal ThresholdUpBuy { get; set; }

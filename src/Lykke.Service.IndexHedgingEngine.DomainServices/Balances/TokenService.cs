@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -180,6 +180,61 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
                 _log.WarningWithDetails("An error occurred while updating open tokens", exception, new
                 {
                     AssetId = assetId,
+                    InternalTrade = internalTrade
+                });
+
+                throw;
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        public async Task UpdateVolumeCrossPairAsync(string baseAssetId, string quoteAssetId, InternalTrade internalTrade)
+        {
+            await _semaphore.WaitAsync();
+
+            try
+            {
+                Token previousBaseToken = await GetAsync(baseAssetId);
+                Token currentBaseToken = previousBaseToken.Copy();
+
+                Token previousQuoteToken = await GetAsync(quoteAssetId);
+                Token currentQuoteToken = previousQuoteToken.Copy();
+
+                if (internalTrade.Type == TradeType.Sell)
+                {
+                    currentBaseToken.IncreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
+                    currentQuoteToken.DecreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
+                }
+                else
+                {
+                    currentBaseToken.DecreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
+                    currentQuoteToken.IncreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
+                }
+
+                await _tokenRepository.SaveAsync(currentBaseToken);
+                await _tokenRepository.SaveAsync(currentQuoteToken);
+
+                _cache.Set(currentBaseToken);
+                _cache.Set(currentQuoteToken);
+
+                _log.InfoWithDetails("Token open amount updated", new
+                {
+                    PreviuosBaseToken = previousBaseToken,
+                    CurrentBaseToken = currentBaseToken,
+                    PreviuosQuoteToken = previousQuoteToken,
+                    CurrentQuoteToken = currentQuoteToken,
+                    InternalTrade = internalTrade
+                });
+            }
+            catch (Exception exception)
+            {
+                _log.WarningWithDetails("An error occurred while updating open tokens", exception, new
+                {
+                    BaseAssetId = baseAssetId,
+                    QuoteAssetId = quoteAssetId,
                     InternalTrade = internalTrade
                 });
 

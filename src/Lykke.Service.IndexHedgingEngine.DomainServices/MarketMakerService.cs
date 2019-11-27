@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +9,7 @@ using Lykke.Common.Log;
 using Lykke.Service.IndexHedgingEngine.Domain;
 using Lykke.Service.IndexHedgingEngine.Domain.Constants;
 using Lykke.Service.IndexHedgingEngine.Domain.Services;
+using Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Extensions;
 using Lykke.Service.IndexHedgingEngine.DomainServices.Utils;
 
@@ -26,6 +27,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ILimitOrderService _limitOrderService;
         private readonly IInstrumentService _instrumentService;
+        private readonly IQuoteService _quoteService;
+        private readonly ICrossAssetPairSettingsService _crossAssetPairSettingsService;
         private readonly TraceWriter _traceWriter;
         private readonly ILog _log;
 
@@ -37,6 +40,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             ILykkeExchangeService lykkeExchangeService,
             ILimitOrderService limitOrderService,
             IInstrumentService instrumentService,
+            IQuoteService quoteService,
+            ICrossAssetPairSettingsService crossAssetPairSettingsService,
             TraceWriter traceWriter,
             ILogFactory logFactory)
         {
@@ -47,6 +52,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _lykkeExchangeService = lykkeExchangeService;
             _limitOrderService = limitOrderService;
             _instrumentService = instrumentService;
+            _quoteService = quoteService;
+            _crossAssetPairSettingsService = crossAssetPairSettingsService;
             _traceWriter = traceWriter;
             _log = logFactory.CreateLog(this);
         }
@@ -106,6 +113,72 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _traceWriter.LimitOrders(indexSettings.AssetPairId, limitOrders);
         }
 
+        public async Task UpdateCrossPairLimitOrdersAsync(CrossAssetPairSettings crossAssetPairSettings)
+        {
+            var allAssetPairSettings = await _instrumentService.GetAssetPairsAsync();
+
+            var assetPairSettings = allAssetPairSettings.FirstOrDefault(x => x.AssetPairId == crossAssetPairSettings.AssetPairId);
+
+            if (assetPairSettings == null)
+                throw new InvalidOperationException("Asset pair settings for the cross pair is not found");
+
+            AssetSettings baseAssetSettings =
+                await _instrumentService.GetAssetAsync(assetPairSettings.BaseAsset, ExchangeNames.Lykke);
+
+            if (baseAssetSettings == null)
+                throw new InvalidOperationException("Base asset settings for the cross pair is not found");
+
+            AssetSettings quoteAssetSettings =
+                await _instrumentService.GetAssetAsync(assetPairSettings.QuoteAsset, ExchangeNames.Lykke);
+
+            if (quoteAssetSettings == null)
+                throw new InvalidOperationException("Quote asset settings for the cross pair is not found");
+
+            var allIndexPrices = await _indexPriceService.GetAllAsync();
+
+            var allQuotes = _quoteService.GetAll();
+
+            var price = CrossAssetPairPriceCalculator.Calculate(crossAssetPairSettings, allIndexPrices,
+                allAssetPairSettings, allQuotes, out var priceErrorMessage);
+
+            if (price == null || price.Value <= 0)
+            {
+                var errorMessage = "Can't calculate a price for the cross pair";
+
+                _log.WarningWithDetails(errorMessage, new { priceErrorMessage, crossAssetPairSettings });
+
+                throw new InvalidOperationException(errorMessage);
+            }
+            
+            decimal sellPrice = (price.Value * (1 + crossAssetPairSettings.SellSpread))
+                .TruncateDecimalPlaces(assetPairSettings.PriceAccuracy, true);
+
+            decimal buyPrice = (price.Value * (1 - crossAssetPairSettings.BuySpread))
+                .TruncateDecimalPlaces(assetPairSettings.PriceAccuracy);
+
+            var limitOrders = CreateCrossPairLimitOrders(crossAssetPairSettings, assetPairSettings, sellPrice, buyPrice);
+
+            // validate balance and min volume
+
+            ValidateBalance(limitOrders, baseAssetSettings, quoteAssetSettings);
+
+            ValidateMinVolume(limitOrders, assetPairSettings.MinVolume);
+
+            // update valid limit orders and apply them to Matching Engine
+
+            LimitOrder[] allowedLimitOrders = limitOrders
+                .Where(o => o.Error == LimitOrderError.None)
+                .ToArray();
+
+            _log.InfoWithDetails("Limit orders for the cross pair created", limitOrders);
+
+            _limitOrderService.Update(assetPairSettings.AssetPairId, limitOrders);
+
+            await _lykkeExchangeService.ApplyAsync(assetPairSettings.AssetPairId, allowedLimitOrders);
+
+            _traceWriter.LimitOrders(assetPairSettings.AssetPairId, limitOrders);
+        }
+
         public async Task CancelLimitOrdersAsync(string indexName)
         {
             IndexSettings indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
@@ -115,7 +188,28 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             await _lykkeExchangeService.CancelAsync(indexSettings.AssetPairId);
 
+            // find enabled cross pairs with the index and cancel their limit orders
+
+            var indexCrossPairs = await _crossAssetPairSettingsService.FindEnabledByIndexAsync(indexName, null);
+
+            foreach (var crossAssetPairSettings in indexCrossPairs)
+            {
+                await CancelCrossPairLimitOrdersAsync(crossAssetPairSettings);
+            }
+
             _log.InfoWithDetails("Limit orders canceled", new {IndexName = indexName, indexSettings.AssetPairId});
+        }
+
+        public async Task CancelCrossPairLimitOrdersAsync(CrossAssetPairSettings crossAssetPairSettings)
+        {
+            var allAssetPairSettings = await _instrumentService.GetAssetPairsAsync();
+
+            var assetPairSettings = allAssetPairSettings.FirstOrDefault(x => x.AssetPairId == crossAssetPairSettings.AssetPairId);
+
+            if (assetPairSettings == null)
+                throw new InvalidOperationException("Asset pair settings for the cross pair is not found");
+
+            await _lykkeExchangeService.CancelAsync(assetPairSettings.AssetPairId);
         }
 
         private IReadOnlyCollection<LimitOrder> CreateLimitOrders(IndexSettings indexSettings,
@@ -152,6 +246,24 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 limitOrders.Add(LimitOrder.CreateBuy(walletId, buyPrice,
                     Math.Round(indexSettings.BuyVolume, assetPairSettings.VolumeAccuracy)));
             }
+
+            return limitOrders;
+        }
+
+        private IReadOnlyCollection<LimitOrder> CreateCrossPairLimitOrders(CrossAssetPairSettings crossAssetPairSettings,
+            AssetPairSettings assetPairSettings, decimal sellPrice, decimal buyPrice)
+        {
+            var limitOrders = new List<LimitOrder>();
+
+            string walletId = _settingsService.GetWalletId();
+
+            decimal sellVolume = Math.Round(crossAssetPairSettings.SellVolume, assetPairSettings.VolumeAccuracy);
+            
+            limitOrders.Add(LimitOrder.CreateSell(walletId, sellPrice, sellVolume));
+
+            decimal buyVolume = Math.Round(crossAssetPairSettings.SellVolume, assetPairSettings.VolumeAccuracy);
+
+            limitOrders.Add(LimitOrder.CreateBuy(walletId, buyPrice, buyVolume));
 
             return limitOrders;
         }

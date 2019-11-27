@@ -27,6 +27,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
         private readonly IMarketMakerStateService _marketMakerStateService;
         private readonly ISettlementService _settlementService;
         private readonly IQuoteService _quoteService;
+        private readonly ICrossAssetPairSettingsService _crossAssetPairSettingsService;
         private readonly ILog _log;
 
         public MarketMakerManager(
@@ -40,6 +41,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             IMarketMakerStateService marketMakerStateService,
             ISettlementService settlementService,
             IQuoteService quoteService,
+            ICrossAssetPairSettingsService crossAssetPairSettingsService,
             ILogFactory logFactory)
         {
             _indexPriceService = indexPriceService;
@@ -52,6 +54,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             _marketMakerStateService = marketMakerStateService;
             _settlementService = settlementService;
             _quoteService = quoteService;
+            _crossAssetPairSettingsService = crossAssetPairSettingsService;
             _log = logFactory.CreateLog(this);
         }
 
@@ -66,15 +69,17 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (shortIndex != null)
                 shortIndexSettings = await _indexSettingsService.GetByIndexAsync(shortIndex.Name);
 
+            if (shortIndexSettings == null)
+                shortIndex = null;
+
             if (marketMakerState.Status != MarketMakerStatus.Active)
             {
-                // TODO: Shouldn't they be updated if Market Maker status is Active?
-                await UpdateAssets(indexSettings, index);
+                await UpdateAssetsAsync(indexSettings, index);
 
                 return;
             }
             
-            await UpdateVirtualExchangePrices(index);
+            await UpdateVirtualExchangePricesAsync(index);
 
             if (indexSettings == null)
                 return;
@@ -83,11 +88,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             try
             {
-                await RecalculateIndicesPrices(index, shortIndex, shortIndexSettings);
+                await UpdateIndicesPricesAsync(index, shortIndex);
 
                 await _hedgeService.UpdateLimitOrdersAsync();
 
-                await UpdateMarketMakerOrders(index, shortIndex, shortIndexSettings);
+                await UpdateMarketMakerOrdersAsync(index, shortIndex);
             }
             catch (InvalidOperationException exception)
             {
@@ -112,6 +117,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             {
                 IReadOnlyCollection<IndexSettings> indicesSettings = await _indexSettingsService.GetAllAsync();
 
+                IReadOnlyCollection<CrossAssetPairSettings> crossAssetPairsSettings = await _crossAssetPairSettingsService.GetAllAsync();
+
                 foreach (InternalTrade internalTrade in internalTrades)
                 {
                     IndexSettings indexSettings = indicesSettings
@@ -122,6 +129,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                         await _internalTradeService.RegisterAsync(internalTrade);
 
                         await _tokenService.UpdateVolumeAsync(indexSettings.AssetId, internalTrade);
+                    }
+
+                    CrossAssetPairSettings crossAssetPairSettings = crossAssetPairsSettings
+                        .SingleOrDefault(x => x.AssetPairId == internalTrade.AssetPairId);
+
+                    if (crossAssetPairSettings != null)
+                    {
+                        await _internalTradeService.RegisterAsync(internalTrade);
+
+                        await _tokenService.UpdateVolumeCrossPairAsync(crossAssetPairSettings.BaseAsset, crossAssetPairSettings.QuoteAsset, internalTrade);
                     }
                 }
             }
@@ -144,6 +161,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
+        public async Task HandleCrossAssetPairStateAsync(Guid id, CrossAssetPairSettingsMode mode, string userId)
+        {
+            await _crossAssetPairSettingsService.UpdateModeAsync(id, mode, userId);
+
+            CrossAssetPairSettings crossAssetPairSettings = await _crossAssetPairSettingsService.FindByIdAsync(id);
+
+            if (mode == CrossAssetPairSettingsMode.Enabled)
+                await _marketMakerService.UpdateCrossPairLimitOrdersAsync(crossAssetPairSettings);
+            else
+                await _marketMakerService.CancelCrossPairLimitOrdersAsync(crossAssetPairSettings);
+        }
+
         public async Task ExecuteAsync()
         {
             await _semaphore.WaitAsync();
@@ -158,7 +187,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        private async Task UpdateAssets(IndexSettings indexSettings, Index index)
+        private async Task UpdateAssetsAsync(IndexSettings indexSettings, Index index)
         {
             if (indexSettings != null)
             {
@@ -167,7 +196,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        private async Task UpdateVirtualExchangePrices(Index index)
+        private async Task UpdateVirtualExchangePricesAsync(Index index)
         {
             foreach (var assetWeight in index.Weights)
             {
@@ -178,28 +207,42 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             }
         }
 
-        private async Task RecalculateIndicesPrices(Index index, Index shortIndex, IndexSettings shortIndexSettings)
+        private async Task UpdateIndicesPricesAsync(Index index, Index shortIndex)
         {
             var indexPriceTasks = new List<Task>();
 
             indexPriceTasks.Add(_indexPriceService.UpdateAsync(index));
 
-            if (shortIndexSettings != null)
+            if (shortIndex != null)
                 indexPriceTasks.Add(_indexPriceService.UpdateAsync(shortIndex));
 
             await Task.WhenAll(indexPriceTasks);
         }
 
-        private async Task UpdateMarketMakerOrders(Index index, Index shortIndex, IndexSettings shortIndexSettings)
+        private async Task UpdateMarketMakerOrdersAsync(Index index, Index shortIndex)
         {
             var updateLimitOrdersTasks = new List<Task>();
 
             updateLimitOrdersTasks.Add(_marketMakerService.UpdateLimitOrdersAsync(index.Name));
 
-            if (shortIndexSettings != null)
+            if (shortIndex != null)
+            {
                 updateLimitOrdersTasks.Add(_marketMakerService.UpdateLimitOrdersAsync(shortIndex.Name));
 
+                // commented out before the first release to dev env (not sure about logic here: TokenService -> UpdateVolumeCrossPairAsync)
+                // await UpdateCrossPairsMarketMakerOrdersAsync(updateLimitOrdersTasks, index, shortIndex);
+            }
+
             await Task.WhenAll(updateLimitOrdersTasks);
+        }
+
+        private async Task UpdateCrossPairsMarketMakerOrdersAsync(List<Task> updateLimitOrdersTasks, Index index,
+            Index shortIndex)
+        {
+            var crossPairsToUpdate = await _crossAssetPairSettingsService.FindEnabledByIndexAsync(index.Name, shortIndex?.Name);
+
+            foreach (var crossAssetPairSettings in crossPairsToUpdate)
+                updateLimitOrdersTasks.Add(_marketMakerService.UpdateCrossPairLimitOrdersAsync(crossAssetPairSettings));
         }
     }
 }
