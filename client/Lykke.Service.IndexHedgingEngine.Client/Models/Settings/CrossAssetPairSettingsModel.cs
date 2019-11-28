@@ -13,14 +13,14 @@ namespace Lykke.Service.IndexHedgingEngine.Client.Models.Settings
         public Guid Id { get; set; }
 
         /// <summary>
-        /// Base asset.
+        /// Base asset identifier.
         /// </summary>
-        public string BaseAsset { get; set; }
+        public string BaseAssetId { get; set; }
 
         /// <summary>
-        /// Quote asset.
+        /// Quote asset identifier.
         /// </summary>
-        public string QuoteAsset { get; set; }
+        public string QuoteAssetId { get; set; }
 
         /// <summary>
         /// Name of base asset.

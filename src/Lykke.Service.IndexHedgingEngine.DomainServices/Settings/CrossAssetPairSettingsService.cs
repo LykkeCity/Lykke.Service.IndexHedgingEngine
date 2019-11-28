@@ -73,12 +73,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             List<CrossAssetPairSettings> crossPairsToUpdate = allCrossPairs
                 .Where(x => x.Mode == CrossAssetPairSettingsMode.Enabled).ToList();
 
-            crossPairsToUpdate = crossPairsToUpdate.Where(x => x.BaseAsset == indexName || x.QuoteAsset == indexName).ToList();
+            crossPairsToUpdate = crossPairsToUpdate.Where(x => x.BaseAssetId == indexName || x.QuoteAssetId == indexName).ToList();
 
             if (shortIndexName != null)
             {
-                var shortIndexCrossPairs = allCrossPairs.Where(x => x.BaseAsset == shortIndexName 
-                                                                 || x.QuoteAsset == shortIndexName);
+                var shortIndexCrossPairs = allCrossPairs.Where(x => x.BaseAssetId == shortIndexName 
+                                                                 || x.QuoteAssetId == shortIndexName);
 
                 crossPairsToUpdate.AddRange(shortIndexCrossPairs);
             }
@@ -90,16 +90,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
         public async Task AddCrossAssetPairAsync(CrossAssetPairSettings crossAssetPairSettings, string userId)
         {
-            CrossAssetPairSettings existingAssetPairSettings =
-                await FindByAssetPairIdAsync(crossAssetPairSettings.AssetPairId);
-
             if (crossAssetPairSettings.Id != Guid.Empty)
                 throw new InvalidOperationException("Id must be empty");
 
-            if (existingAssetPairSettings != null)
-                throw new EntityAlreadyExistsException();
+            var assetPair = await _instrumentService.GetAssetPairAsync(crossAssetPairSettings.AssetPairId, LykkeExchangeName);
+
+            if (assetPair == null)
+                throw new InvalidOperationException($"Asset pair {crossAssetPairSettings.AssetPairId} not found");
 
             crossAssetPairSettings.Id = Guid.NewGuid();
+            crossAssetPairSettings.Mode = CrossAssetPairSettingsMode.Disabled;
 
             await ValidateCrossAssetPairSettingsAsync(crossAssetPairSettings);
 
@@ -168,12 +168,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
         private async Task ValidateCrossAssetPairSettingsAsync(CrossAssetPairSettings crossAssetPairSettings)
         {
-            AssetSettings baseAssetSettings = await _instrumentService.GetAssetAsync(crossAssetPairSettings.BaseAsset, LykkeExchangeName);
+            AssetSettings baseAssetSettings = await _instrumentService.GetAssetAsync(crossAssetPairSettings.BaseAssetId, LykkeExchangeName);
 
             if (baseAssetSettings == null)
                 throw new InvalidOperationException("Base asset not found");
 
-            AssetSettings quoteAssetSettings = await _instrumentService.GetAssetAsync(crossAssetPairSettings.QuoteAsset, LykkeExchangeName);
+            AssetSettings quoteAssetSettings = await _instrumentService.GetAssetAsync(crossAssetPairSettings.QuoteAssetId, LykkeExchangeName);
 
             if (quoteAssetSettings == null)
                 throw new InvalidOperationException("Quote asset not found");

@@ -138,7 +138,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                     {
                         await _internalTradeService.RegisterAsync(internalTrade);
 
-                        await _tokenService.UpdateVolumeCrossPairAsync(crossAssetPairSettings.BaseAsset, crossAssetPairSettings.QuoteAsset, internalTrade);
+                        await _tokenService.UpdateVolumeCrossPairAsync(crossAssetPairSettings.BaseAssetId, crossAssetPairSettings.QuoteAssetId, internalTrade);
                     }
                 }
             }
