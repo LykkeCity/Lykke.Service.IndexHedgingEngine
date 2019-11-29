@@ -93,7 +93,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             if (crossAssetPairSettings.Id != Guid.Empty)
                 throw new InvalidOperationException("Id must be empty");
 
-            var assetPair = await _instrumentService.GetAssetPairAsync(crossAssetPairSettings.AssetPairId, LykkeExchangeName);
+            var assetPair = await _instrumentService.GetAssetPairByIdAsync(crossAssetPairSettings.AssetPairId, LykkeExchangeName);
 
             if (assetPair == null)
                 throw new InvalidOperationException($"Asset pair {crossAssetPairSettings.AssetPairId} not found");
@@ -168,15 +168,15 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
         private async Task ValidateCrossAssetPairSettingsAsync(CrossAssetPairSettings crossAssetPairSettings)
         {
-            AssetSettings baseAssetSettings = await _instrumentService.GetAssetAsync(crossAssetPairSettings.BaseAssetId, LykkeExchangeName);
+            AssetSettings baseAssetSettings = await _instrumentService.GetAssetByIdAsync(crossAssetPairSettings.BaseAssetId, LykkeExchangeName);
 
             if (baseAssetSettings == null)
-                throw new InvalidOperationException("Base asset not found");
+                throw new InvalidOperationException($"Base asset with id '{crossAssetPairSettings.BaseAssetId}' not found");
 
-            AssetSettings quoteAssetSettings = await _instrumentService.GetAssetAsync(crossAssetPairSettings.QuoteAssetId, LykkeExchangeName);
+            AssetSettings quoteAssetSettings = await _instrumentService.GetAssetByIdAsync(crossAssetPairSettings.QuoteAssetId, LykkeExchangeName);
 
             if (quoteAssetSettings == null)
-                throw new InvalidOperationException("Quote asset not found");
+                throw new InvalidOperationException($"Quote asset with id '{crossAssetPairSettings.QuoteAssetId}' not found");
         }
 
         private static string GetKey(CrossAssetPairSettings crossAssetPairSettings)
