@@ -94,7 +94,7 @@ namespace Lykke.Service.IndexHedgingEngine.Controllers
         /// <response code="204">The cross asset pair settings successfully updated.</response>
         /// <response code="400">An error occurred while updating cross asset pair settings.</response>
         /// <response code="404">The cross asset pair settings does not exist.</response>
-        [HttpPut]
+        [HttpPut("updateMode")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.NotFound)]
         public async Task UpdateModeAsync(Guid id, CrossAssetPairSettingsMode mode, string userId)
