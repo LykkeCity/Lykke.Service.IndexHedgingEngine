@@ -21,15 +21,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
         private readonly ICrossAssetPairSettingsRepository _crossAssetPairSettingsRepository;
         private readonly IInstrumentService _instrumentService;
+        private readonly IIndexSettingsService _indexSettingsService;
         private readonly ILog _log;
         private readonly InMemoryCache<CrossAssetPairSettings> _cache;
 
         public CrossAssetPairSettingsService(ICrossAssetPairSettingsRepository crossAssetPairSettingsRepository,
             IInstrumentService instrumentService,
+            IIndexSettingsService indexSettingsService,
             ILogFactory logFactory)
         {
             _crossAssetPairSettingsRepository = crossAssetPairSettingsRepository;
             _instrumentService = instrumentService;
+            _indexSettingsService = indexSettingsService;
             _log = logFactory.CreateLog(this);
             _cache = new InMemoryCache<CrossAssetPairSettings>(GetKey, false);
         }
@@ -70,15 +73,19 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
         {
             var allCrossPairs = await GetAllAsync();
 
+            var indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
+
             List<CrossAssetPairSettings> crossPairsToUpdate = allCrossPairs
                 .Where(x => x.Mode == CrossAssetPairSettingsMode.Enabled).ToList();
 
-            crossPairsToUpdate = crossPairsToUpdate.Where(x => x.BaseAssetId == indexName || x.QuoteAssetId == indexName).ToList();
+            crossPairsToUpdate = crossPairsToUpdate.Where(x => x.BaseAssetId == indexSettings.AssetId || x.QuoteAssetId == indexSettings.AssetId).ToList();
 
             if (shortIndexName != null)
             {
-                var shortIndexCrossPairs = allCrossPairs.Where(x => x.BaseAssetId == shortIndexName 
-                                                                 || x.QuoteAssetId == shortIndexName);
+                var shortIndexSettings = await _indexSettingsService.GetByIndexAsync(shortIndexName);
+
+                var shortIndexCrossPairs = allCrossPairs.Where(x => x.BaseAssetId == shortIndexSettings.AssetId
+                                                                 || x.QuoteAssetId == shortIndexSettings.AssetId);
 
                 crossPairsToUpdate.AddRange(shortIndexCrossPairs);
             }

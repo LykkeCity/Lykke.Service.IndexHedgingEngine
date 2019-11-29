@@ -138,7 +138,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
             var allQuotes = _quoteService.GetAll();
 
-            var price = CrossAssetPairPriceCalculator.Calculate(crossAssetPairSettings, allIndexPrices,
+            var indicesSettings = await _indexSettingsService.GetAllAsync();
+
+            var assetSettings = await _instrumentService.GetAssetsAsync();
+
+            var price = CrossAssetPairPriceCalculator.Calculate(crossAssetPairSettings, allIndexPrices, indicesSettings, assetSettings,
                 allAssetPairSettings, allQuotes, out var priceErrorMessage);
 
             if (price == null || price.Value <= 0)
