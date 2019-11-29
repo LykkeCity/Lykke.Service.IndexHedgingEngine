@@ -205,13 +205,13 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
 
                 if (internalTrade.Type == TradeType.Sell)
                 {
-                    currentBaseToken.IncreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
-                    currentQuoteToken.DecreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
+                    currentBaseToken.IncreaseVolume(internalTrade.Volume, 0);
+                    currentQuoteToken.DecreaseVolume(internalTrade.Volume, 0);
                 }
                 else
                 {
-                    currentBaseToken.DecreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
-                    currentQuoteToken.IncreaseVolume(internalTrade.Volume, internalTrade.OppositeVolume);
+                    currentBaseToken.DecreaseVolume(internalTrade.Volume, 0);
+                    currentQuoteToken.IncreaseVolume(internalTrade.Volume, 0);
                 }
 
                 await _tokenRepository.SaveAsync(currentBaseToken);
