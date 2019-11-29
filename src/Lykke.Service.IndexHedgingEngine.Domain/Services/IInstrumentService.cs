@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Services
@@ -11,7 +11,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task<AssetSettings> GetAssetAsync(string asset, string exchange);
 
+        Task<AssetSettings> GetAssetByIdAsync(string assetId, string exchange);
+
         Task<AssetPairSettings> GetAssetPairAsync(string assetPair, string exchange);
+
+        Task<AssetPairSettings> GetAssetPairByIdAsync(string assetPairId, string exchange);
 
         Task AddAssetAsync(AssetSettings assetSettings, string userId);
 

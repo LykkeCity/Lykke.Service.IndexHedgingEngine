@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -76,11 +76,25 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Instruments
             return assetsSettings.SingleOrDefault(o => o.Asset == asset && o.Exchange == exchange);
         }
 
+        public async Task<AssetSettings> GetAssetByIdAsync(string assetId, string exchange)
+        {
+            IReadOnlyCollection<AssetSettings> assetsSettings = await GetAssetsAsync();
+
+            return assetsSettings.SingleOrDefault(o => o.AssetId == assetId && o.Exchange == exchange);
+        }
+
         public async Task<AssetPairSettings> GetAssetPairAsync(string assetPair, string exchange)
         {
             IReadOnlyCollection<AssetPairSettings> assetPairsSettings = await GetAssetPairsAsync();
 
             return assetPairsSettings.SingleOrDefault(o => o.AssetPair == assetPair && o.Exchange == exchange);
+        }
+
+        public async Task<AssetPairSettings> GetAssetPairByIdAsync(string assetPairId, string exchange)
+        {
+            IReadOnlyCollection<AssetPairSettings> assetPairsSettings = await GetAssetPairsAsync();
+
+            return assetPairsSettings.SingleOrDefault(o => o.AssetPairId == assetPairId && o.Exchange == exchange);
         }
 
         public async Task AddAssetAsync(AssetSettings assetSettings, string userId)
