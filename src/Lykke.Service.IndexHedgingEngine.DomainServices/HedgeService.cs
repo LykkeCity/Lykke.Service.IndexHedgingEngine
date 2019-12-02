@@ -147,8 +147,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             if (!_exchangeAdapters.TryGetValue(assetHedgeSettings.Exchange, out IExchangeAdapter exchangeAdapter))
                 throw new InvalidOperationException("There is no exchange provider");
 
-            Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.Exchange,
-                assetHedgeSettings.AssetPairId);
+            Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.AssetPairId, assetHedgeSettings.Exchange);
 
             if (quote == null)
                 throw new InvalidOperationException("No quote");
@@ -308,8 +307,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 if (!string.IsNullOrEmpty(assetHedgeSettings.ReferenceExchange) &&
                     assetHedgeSettings.ReferenceDelta.HasValue)
                 {
-                    Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.ReferenceExchange,
-                        assetHedgeSettings.AssetPairId);
+                    Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.AssetPairId, assetHedgeSettings.ReferenceExchange);
 
                     if (quote == null)
                     {
@@ -336,8 +334,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             {
                 AssetHedgeSettings assetHedgeSettings = await _assetHedgeSettingsService.EnsureAsync(assetId);
 
-                Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.Exchange,
-                    assetHedgeSettings.AssetPairId);
+                Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.AssetPairId, assetHedgeSettings.Exchange);
 
                 if (quote != null)
                     assetPrices[assetId] = quote;

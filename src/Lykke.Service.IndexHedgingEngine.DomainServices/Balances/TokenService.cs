@@ -24,6 +24,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
         private readonly ILykkeExchangeService _lykkeExchangeService;
         private readonly ISettingsService _settingsService;
         private readonly IBalanceOperationService _balanceOperationService;
+        private readonly IConvertingService _convertingService;
 
         private readonly ILog _log;
         private readonly InMemoryCache<Token> _cache;
@@ -33,12 +34,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
             ILykkeExchangeService lykkeExchangeService,
             ISettingsService settingsService,
             IBalanceOperationService balanceOperationService,
+            IConvertingService convertingService,
             ILogFactory logFactory)
         {
             _tokenRepository = tokenRepository;
             _lykkeExchangeService = lykkeExchangeService;
             _settingsService = settingsService;
             _balanceOperationService = balanceOperationService;
+            _convertingService = convertingService;
 
             _cache = new InMemoryCache<Token>(GetKey, false);
             _log = logFactory.CreateLog(this);
@@ -203,15 +206,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Balances
                 Token previousQuoteToken = await GetAsync(quoteAssetId);
                 Token currentQuoteToken = previousQuoteToken.Copy();
 
+                var oppositeVolumeInUsd = await _convertingService.ConvertToUsdAsync(quoteAssetId, internalTrade.OppositeVolume);
+                oppositeVolumeInUsd = oppositeVolumeInUsd ?? 0;
+
                 if (internalTrade.Type == TradeType.Sell)
                 {
-                    currentBaseToken.IncreaseVolume(internalTrade.Volume, 0);
-                    currentQuoteToken.DecreaseVolume(internalTrade.Volume, 0);
+                    currentBaseToken.IncreaseVolume(internalTrade.Volume, oppositeVolumeInUsd.Value);
+                    currentQuoteToken.DecreaseVolume(internalTrade.Volume, oppositeVolumeInUsd.Value);
                 }
                 else
                 {
-                    currentBaseToken.DecreaseVolume(internalTrade.Volume, 0);
-                    currentQuoteToken.IncreaseVolume(internalTrade.Volume, 0);
+                    currentBaseToken.DecreaseVolume(internalTrade.Volume, oppositeVolumeInUsd.Value);
+                    currentQuoteToken.IncreaseVolume(internalTrade.Volume, oppositeVolumeInUsd.Value);
                 }
 
                 await _tokenRepository.SaveAsync(currentBaseToken);

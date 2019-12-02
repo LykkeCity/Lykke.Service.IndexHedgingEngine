@@ -238,6 +238,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 .As<IPrimaryMarketService>()
                 .WithParameter(new NamedParameter("walletId", _primaryMarketWalletId))
                 .SingleInstance();
+
+            builder.RegisterType<ConvertingService>()
+                .As<IConvertingService>()
+                .SingleInstance();
         }
     }
 }

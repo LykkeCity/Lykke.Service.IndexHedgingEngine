@@ -15,7 +15,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
 
         public Quote GetQuoteUsd(string assetId, string exchange)
         {
-            return _quoteService.GetByAssetPairId(exchange, $"{assetId}USD");
+            return _quoteService.GetByAssetPairId($"{assetId}USD", exchange);
         }
 
         public decimal GetRateInUsd(string assetId, string exchange)
