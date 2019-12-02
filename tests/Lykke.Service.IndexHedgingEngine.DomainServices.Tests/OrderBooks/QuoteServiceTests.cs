@@ -59,7 +59,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
 
             await _service.UpdateAsync(secondQuote);
 
-            Quote quote = _service.GetByAssetPairId("lykke", "BTCUSD");
+            Quote quote = _service.GetByAssetPairId("BTCUSD", "lykke");
 
             // assert
 
@@ -83,7 +83,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
 
             await _service.UpdateAsync(secondQuote);
 
-            Quote quote = _service.GetByAssetPairId("lykke", "BTCUSD");
+            Quote quote = _service.GetByAssetPairId("BTCUSD", "lykke");
 
             // assert
 
@@ -109,7 +109,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
 
             await _service.UpdateAsync(secondQuote);
 
-            Quote quote = _service.GetByAssetPairId("lykke", "BTCUSD");
+            Quote quote = _service.GetByAssetPairId("BTCUSD", "lykke");
 
             // assert
 
@@ -125,7 +125,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
 
             // act
 
-            Quote actualQuote = _service.GetByAssetPairId(ExchangeNames.Virtual, assetPair);
+            Quote actualQuote = _service.GetByAssetPairId(assetPair, ExchangeNames.Virtual);
 
             // assert
 
@@ -146,7 +146,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.OrderBooks
 
             await _service.UpdateAsync(expectedQuote);
 
-            Quote actualQuote = _service.GetByAssetPairId(expectedQuote.Source, expectedQuote.AssetPairId);
+            Quote actualQuote = _service.GetByAssetPairId(expectedQuote.AssetPairId, expectedQuote.Source);
 
             // assert
 

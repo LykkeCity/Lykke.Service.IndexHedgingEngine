@@ -39,9 +39,9 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
         public IReadOnlyCollection<string> GetExchanges()
             => _exchanges.ToArray();
 
-        public Quote GetByAssetPairId(string source, string assetPairId)
+        public Quote GetByAssetPairId(string assetPairId, string source = "lykke")
         {
-            return _cache.Get($"{source}-{assetPairId}");
+            return _cache.Get(GetKey(source, assetPairId));
         }
 
         public async Task UpdateAsync(Quote quote)

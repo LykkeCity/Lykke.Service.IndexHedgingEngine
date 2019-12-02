@@ -312,8 +312,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settlements
                 AssetHedgeSettings assetHedgeSettings =
                     await _assetHedgeSettingsService.EnsureAsync(assetWeight.AssetId);
 
-                Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.Exchange,
-                    assetHedgeSettings.AssetPairId);
+                Quote quote = _quoteService.GetByAssetPairId(assetHedgeSettings.AssetPairId, assetHedgeSettings.Exchange);
 
                 decimal amount = 0;
                 decimal price = 0;

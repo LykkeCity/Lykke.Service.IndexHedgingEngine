@@ -17,8 +17,6 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
     [UsedImplicitly]
     public class CrossAssetPairSettingsService : ICrossAssetPairSettingsService
     {
-        private const string LykkeExchangeName = "lykke";
-
         private readonly ICrossAssetPairSettingsRepository _crossAssetPairSettingsRepository;
         private readonly IInstrumentService _instrumentService;
         private readonly IIndexSettingsService _indexSettingsService;
@@ -100,7 +98,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
             if (crossAssetPairSettings.Id != Guid.Empty)
                 throw new InvalidOperationException("Id must be empty");
 
-            var assetPair = await _instrumentService.GetAssetPairByIdAsync(crossAssetPairSettings.AssetPairId, LykkeExchangeName);
+            var assetPair = await _instrumentService.GetAssetPairByIdAsync(crossAssetPairSettings.AssetPairId);
 
             if (assetPair == null)
                 throw new InvalidOperationException($"Asset pair {crossAssetPairSettings.AssetPairId} not found");
@@ -175,12 +173,12 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
         private async Task ValidateCrossAssetPairSettingsAsync(CrossAssetPairSettings crossAssetPairSettings)
         {
-            AssetSettings baseAssetSettings = await _instrumentService.GetAssetByIdAsync(crossAssetPairSettings.BaseAssetId, LykkeExchangeName);
+            AssetSettings baseAssetSettings = await _instrumentService.GetAssetByIdAsync(crossAssetPairSettings.BaseAssetId);
 
             if (baseAssetSettings == null)
                 throw new InvalidOperationException($"Base asset with id '{crossAssetPairSettings.BaseAssetId}' not found");
 
-            AssetSettings quoteAssetSettings = await _instrumentService.GetAssetByIdAsync(crossAssetPairSettings.QuoteAssetId, LykkeExchangeName);
+            AssetSettings quoteAssetSettings = await _instrumentService.GetAssetByIdAsync(crossAssetPairSettings.QuoteAssetId);
 
             if (quoteAssetSettings == null)
                 throw new InvalidOperationException($"Quote asset with id '{crossAssetPairSettings.QuoteAssetId}' not found");

@@ -135,7 +135,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Reports
                 AssetHedgeSettings hedgeSettings = assetHedgeSettings.SingleOrDefault(o => o.AssetId == assetId);
 
                 Quote quote = hedgeSettings != null
-                    ? _quoteService.GetByAssetPairId(hedgeSettings.Exchange, hedgeSettings.AssetPairId)
+                    ? _quoteService.GetByAssetPairId(hedgeSettings.AssetPairId, hedgeSettings.Exchange)
                     : null;
 
                 decimal? price = quote?.Mid;

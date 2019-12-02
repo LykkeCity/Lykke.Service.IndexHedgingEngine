@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Services
@@ -9,7 +9,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         IReadOnlyCollection<string> GetExchanges();
 
-        Quote GetByAssetPairId(string source, string assetPairId);
+        Quote GetByAssetPairId(string assetPairId, string source = "lykke");
 
         Task UpdateAsync(Quote quote);
     }

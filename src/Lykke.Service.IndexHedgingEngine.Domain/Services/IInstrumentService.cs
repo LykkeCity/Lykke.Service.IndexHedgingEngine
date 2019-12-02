@@ -11,11 +11,11 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 
         Task<AssetSettings> GetAssetAsync(string asset, string exchange);
 
-        Task<AssetSettings> GetAssetByIdAsync(string assetId, string exchange);
+        Task<AssetSettings> GetAssetByIdAsync(string assetId, string exchange = "lykke");
 
         Task<AssetPairSettings> GetAssetPairAsync(string assetPair, string exchange);
 
-        Task<AssetPairSettings> GetAssetPairByIdAsync(string assetPairId, string exchange);
+        Task<AssetPairSettings> GetAssetPairByIdAsync(string assetPairId, string exchange = "lykke");
 
         Task AddAssetAsync(AssetSettings assetSettings, string userId);
 
