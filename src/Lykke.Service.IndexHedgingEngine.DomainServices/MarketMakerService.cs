@@ -154,10 +154,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 throw new InvalidOperationException(errorMessage);
             }
             
-            decimal sellPrice = (price.Value * (1 + crossAssetPairSettings.SellSpread))
+            decimal sellPrice = (price.Value * (1 + crossAssetPairSettings.SellSpread / 100))
                 .TruncateDecimalPlaces(assetPairSettings.PriceAccuracy, true);
 
-            decimal buyPrice = (price.Value * (1 - crossAssetPairSettings.BuySpread))
+            decimal buyPrice = (price.Value * (1 - crossAssetPairSettings.BuySpread / 100))
                 .TruncateDecimalPlaces(assetPairSettings.PriceAccuracy);
 
             var limitOrders = CreateCrossPairLimitOrders(crossAssetPairSettings, assetPairSettings, sellPrice, buyPrice);

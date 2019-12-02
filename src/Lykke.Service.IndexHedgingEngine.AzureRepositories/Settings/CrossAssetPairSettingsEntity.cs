@@ -12,10 +12,10 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
     public class CrossAssetPairSettingsEntity : AzureTableEntity
     {
         private Guid _id;
-        private int _buySpread;
-        private int _buyVolume;
-        private int _sellSpread;
-        private int _sellVolume;
+        private decimal _buySpread;
+        private decimal _buyVolume;
+        private decimal _sellSpread;
+        private decimal _sellVolume;
         private CrossAssetPairSettingsMode _mode;
 
         public CrossAssetPairSettingsEntity()
@@ -53,7 +53,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
 
         public string AssetPairId { get; set; }
 
-        public int BuySpread
+        public decimal BuySpread
         {
             get => _buySpread;
             set
@@ -66,7 +66,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             }
         }
 
-        public int BuyVolume
+        public decimal BuyVolume
         {
             get => _buyVolume;
             set
@@ -79,7 +79,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             }
         }
 
-        public int SellSpread
+        public decimal SellSpread
         {
             get => _sellSpread;
             set
@@ -92,7 +92,7 @@ namespace Lykke.Service.IndexHedgingEngine.AzureRepositories.Settings
             }
         }
 
-        public int SellVolume
+        public decimal SellVolume
         {
             get => _sellVolume;
             set
