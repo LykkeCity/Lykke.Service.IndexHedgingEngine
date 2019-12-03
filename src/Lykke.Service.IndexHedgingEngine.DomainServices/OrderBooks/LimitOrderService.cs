@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Lykke.Service.IndexHedgingEngine.Domain;
@@ -34,6 +34,11 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.OrderBooks
                 Timestamp = DateTime.UtcNow,
                 LimitOrders = limitOrders
             });
+        }
+
+        public void Remove(string assetPairId)
+        {
+            _cache.Remove(assetPairId);
         }
 
         private static string GetKey(OrderBook orderBook)
