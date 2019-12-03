@@ -69,20 +69,18 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
         public async Task<IReadOnlyCollection<CrossAssetPairSettings>> FindEnabledByIndexAsync(string indexName, string shortIndexName)
         {
-            var allCrossPairs = await GetAllAsync();
+            var enabledCrossPairs = (await GetAllAsync())
+                .Where(x => x.Mode == CrossAssetPairSettingsMode.Enabled).ToList();
 
             var indexSettings = await _indexSettingsService.GetByIndexAsync(indexName);
 
-            List<CrossAssetPairSettings> crossPairsToUpdate = allCrossPairs
-                .Where(x => x.Mode == CrossAssetPairSettingsMode.Enabled).ToList();
-
-            crossPairsToUpdate = crossPairsToUpdate.Where(x => x.BaseAssetId == indexSettings.AssetId || x.QuoteAssetId == indexSettings.AssetId).ToList();
+            var crossPairsToUpdate = enabledCrossPairs.Where(x => x.BaseAssetId == indexSettings.AssetId || x.QuoteAssetId == indexSettings.AssetId).ToList();
 
             if (shortIndexName != null)
             {
                 var shortIndexSettings = await _indexSettingsService.GetByIndexAsync(shortIndexName);
 
-                var shortIndexCrossPairs = allCrossPairs.Where(x => x.BaseAssetId == shortIndexSettings.AssetId
+                var shortIndexCrossPairs = enabledCrossPairs.Where(x => x.BaseAssetId == shortIndexSettings.AssetId
                                                                  || x.QuoteAssetId == shortIndexSettings.AssetId);
 
                 crossPairsToUpdate.AddRange(shortIndexCrossPairs);
