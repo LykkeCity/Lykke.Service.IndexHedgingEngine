@@ -265,7 +265,7 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
             
             limitOrders.Add(LimitOrder.CreateSell(walletId, sellPrice, sellVolume));
 
-            decimal buyVolume = Math.Round(crossAssetPairSettings.SellVolume, assetPairSettings.VolumeAccuracy);
+            decimal buyVolume = Math.Round(crossAssetPairSettings.BuyVolume, assetPairSettings.VolumeAccuracy);
 
             limitOrders.Add(LimitOrder.CreateBuy(walletId, buyPrice, buyVolume));
 
