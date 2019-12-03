@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Lykke.Service.IndexHedgingEngine.Domain.Services
 {
@@ -9,5 +9,7 @@ namespace Lykke.Service.IndexHedgingEngine.Domain.Services
         OrderBook GetByAssetPairId(string assetPairId);
 
         void Update(string assetPairId, IReadOnlyCollection<LimitOrder> limitOrders);
+
+        void Remove(string assetPairId);
     }
 }

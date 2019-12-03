@@ -214,6 +214,8 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices
                 throw new InvalidOperationException("Asset pair settings for the cross pair is not found");
 
             await _lykkeExchangeService.CancelAsync(assetPairSettings.AssetPairId);
+
+            _limitOrderService.Remove(assetPairSettings.AssetPairId);
         }
 
         private IReadOnlyCollection<LimitOrder> CreateLimitOrders(IndexSettings indexSettings,
