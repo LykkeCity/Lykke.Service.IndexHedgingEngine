@@ -171,15 +171,20 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
         private async Task ValidateCrossAssetPairSettingsAsync(CrossAssetPairSettings crossAssetPairSettings)
         {
-            AssetSettings baseAssetSettings = await _instrumentService.GetAssetByIdAsync(crossAssetPairSettings.BaseAssetId);
+            if (crossAssetPairSettings.BaseAssetId == crossAssetPairSettings.QuoteAssetId)
+                throw new InvalidOperationException($"Base and quote assets are the same");
 
-            if (baseAssetSettings == null)
-                throw new InvalidOperationException($"Base asset with id '{crossAssetPairSettings.BaseAssetId}' not found");
+            var allIndexSettings = await _indexSettingsService.GetAllAsync();
 
-            AssetSettings quoteAssetSettings = await _instrumentService.GetAssetByIdAsync(crossAssetPairSettings.QuoteAssetId);
+            var baseTokenSettings = allIndexSettings.SingleOrDefault(x => x.AssetId == crossAssetPairSettings.BaseAssetId);
 
-            if (quoteAssetSettings == null)
-                throw new InvalidOperationException($"Quote asset with id '{crossAssetPairSettings.QuoteAssetId}' not found");
+            if (baseTokenSettings == null)
+                throw new InvalidOperationException($"Base token with id '{crossAssetPairSettings.BaseAssetId}' not found");
+
+            var quoteTokenSettings = allIndexSettings.SingleOrDefault(x => x.AssetId == crossAssetPairSettings.QuoteAssetId);
+
+            if (quoteTokenSettings == null)
+                throw new InvalidOperationException($"Base token with id '{crossAssetPairSettings.QuoteAssetId}' not found");
         }
 
         private static string GetKey(CrossAssetPairSettings crossAssetPairSettings)
