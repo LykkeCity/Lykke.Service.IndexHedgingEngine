@@ -171,8 +171,16 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Settings
 
         private async Task ValidateCrossAssetPairSettingsAsync(CrossAssetPairSettings crossAssetPairSettings)
         {
+            var allCrossPairs = await GetAllAsync();
+
+            var existedCrossPair = allCrossPairs.SingleOrDefault(x => x.BaseAssetId == crossAssetPairSettings.BaseAssetId
+                                                                   && x.QuoteAssetId == crossAssetPairSettings.QuoteAssetId);
+
+            if (existedCrossPair != null)
+                throw new InvalidOperationException("There is a cross pair with the same base and quote assets");
+
             if (crossAssetPairSettings.BaseAssetId == crossAssetPairSettings.QuoteAssetId)
-                throw new InvalidOperationException($"Base and quote assets are the same");
+                throw new InvalidOperationException("Base and quote assets are the same");
 
             var allIndexSettings = await _indexSettingsService.GetAllAsync();
 
