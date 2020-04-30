@@ -33,10 +33,6 @@ IndexHedgingEngineService:
           settings-key: MatchingEngineRabbitMqConnectionString
           types:
           - RabbitMq
-        AlternateConnectionString:
-          settings-key: AlternateMatchingEngineRabbitMqConnectionString
-          types:
-          - RabbitMq
         Exchange:
           settings-key: MatchingEngineSpotEventsExchange
         Queue:
