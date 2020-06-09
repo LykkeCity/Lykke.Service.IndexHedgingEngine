@@ -28,14 +28,14 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Algorithm
 
             decimal delta = secondsSinceLastIndex / (daysInCurrentYear * 24 * 60 * 60);
 
-            decimal rTrackingFeeAndDelta = r - trackingFee * delta;
+            decimal trackingFeeAndDelta = trackingFee * delta;
 
             if (!isShort)
-                rTrackingFeeAndDelta = 1 + rTrackingFeeAndDelta;
+                trackingFeeAndDelta = 1 + r - trackingFeeAndDelta;
             else
-                rTrackingFeeAndDelta = 1 - rTrackingFeeAndDelta;
+                trackingFeeAndDelta = 1 - r - trackingFeeAndDelta;
 
-            decimal price = previousPrice * rTrackingFeeAndDelta - performanceFee * delta * Math.Max(0, k);
+            decimal price = previousPrice * trackingFeeAndDelta - performanceFee * delta * Math.Max(0, k);
 
             return new IndexSettlementPrice(price, k, r, delta);
         }
