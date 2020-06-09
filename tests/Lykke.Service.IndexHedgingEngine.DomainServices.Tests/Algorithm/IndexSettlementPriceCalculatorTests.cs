@@ -23,10 +23,10 @@ namespace Lykke.Service.IndexHedgingEngine.DomainServices.Tests.Algorithm
             decimal performanceFee = .2m;
 
             var expectedIndexSettlementPrice = new IndexSettlementPrice(
-                1249.9995719176186738968163368m,
+                1249.9995730872490702824580044m,
                 125.0005m,
                 0.25m,
-                0.0000019025875158548959918823m);
+                0.0000018973891608480064764218m);
 
             // act
 
