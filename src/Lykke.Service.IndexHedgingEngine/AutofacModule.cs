@@ -5,6 +5,7 @@ using System.Linq;
 using Autofac;
 using JetBrains.Annotations;
 using Lykke.Common.ExchangeAdapter.Client;
+using Lykke.MatchingEngine.Connector.Services;
 using Lykke.Sdk;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.ExchangeOperations.Client;
@@ -118,7 +119,7 @@ namespace Lykke.Service.IndexHedgingEngine
 
             var endPoint = new IPEndPoint(address, matchingEngineClientSettings.IpEndpoint.Port);
 
-            builder.RegisgterMeClient(endPoint);
+            builder.RegisterMeClient(new MeClientSettings{Endpoint = endPoint, EnableRetries = true, DisconnectInterval = TimeSpan.FromSeconds(15)});
         }
     }
 }
