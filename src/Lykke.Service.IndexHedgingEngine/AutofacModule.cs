@@ -119,7 +119,7 @@ namespace Lykke.Service.IndexHedgingEngine
 
             var endPoint = new IPEndPoint(address, matchingEngineClientSettings.IpEndpoint.Port);
 
-            builder.RegisterMeClient(new MeClientSettings{Endpoint = endPoint, EnableRetries = true});
+            builder.RegisterMeClient(new MeClientSettings{Endpoint = endPoint, EnableRetries = true, DisconnectInterval = TimeSpan.FromSeconds(15)});
         }
     }
 }
